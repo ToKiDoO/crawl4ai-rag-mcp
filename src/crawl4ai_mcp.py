@@ -188,7 +188,7 @@ async def crawl4ai_lifespan(server: FastMCP) -> AsyncIterator[Crawl4AIContext]:
         try:
             reranking_model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
         except Exception as e:
-            print(f"Failed to load reranking model: {e}")
+            print(f"Failed to load reranking model: {e}", file=sys.stderr)
             reranking_model = None
     
     # Initialize Neo4j components if configured and enabled
@@ -205,26 +205,26 @@ async def crawl4ai_lifespan(server: FastMCP) -> AsyncIterator[Crawl4AIContext]:
         
         if neo4j_uri and neo4j_user and neo4j_password:
             try:
-                print("Initializing knowledge graph components...")
+                print("Initializing knowledge graph components...", file=sys.stderr)
                 
                 # Initialize knowledge graph validator
                 knowledge_validator = KnowledgeGraphValidator(neo4j_uri, neo4j_user, neo4j_password)
                 await knowledge_validator.initialize()
-                print("✓ Knowledge graph validator initialized")
+                print("✓ Knowledge graph validator initialized", file=sys.stderr)
                 
                 # Initialize repository extractor
                 repo_extractor = DirectNeo4jExtractor(neo4j_uri, neo4j_user, neo4j_password)
                 await repo_extractor.initialize()
-                print("✓ Repository extractor initialized")
+                print("✓ Repository extractor initialized", file=sys.stderr)
                 
             except Exception as e:
-                print(f"Failed to initialize Neo4j components: {format_neo4j_error(e)}")
+                print(f"Failed to initialize Neo4j components: {format_neo4j_error(e)}", file=sys.stderr)
                 knowledge_validator = None
                 repo_extractor = None
         else:
-            print("Neo4j credentials not configured - knowledge graph tools will be unavailable")
+            print("Neo4j credentials not configured - knowledge graph tools will be unavailable", file=sys.stderr)
     else:
-        print("Knowledge graph functionality disabled - set USE_KNOWLEDGE_GRAPH=true to enable")
+        print("Knowledge graph functionality disabled - set USE_KNOWLEDGE_GRAPH=true to enable", file=sys.stderr)
     
     try:
         yield Crawl4AIContext(
@@ -240,15 +240,15 @@ async def crawl4ai_lifespan(server: FastMCP) -> AsyncIterator[Crawl4AIContext]:
         if knowledge_validator:
             try:
                 await knowledge_validator.close()
-                print("✓ Knowledge graph validator closed")
+                print("✓ Knowledge graph validator closed", file=sys.stderr)
             except Exception as e:
-                print(f"Error closing knowledge validator: {e}")
+                print(f"Error closing knowledge validator: {e}", file=sys.stderr)
         if repo_extractor:
             try:
                 await repo_extractor.close()
-                print("✓ Repository extractor closed")
+                print("✓ Repository extractor closed", file=sys.stderr)
             except Exception as e:
-                print(f"Error closing repository extractor: {e}")
+                print(f"Error closing repository extractor: {e}", file=sys.stderr)
 
 # Initialize FastMCP server
 try:
@@ -305,7 +305,7 @@ def rerank_results(model: CrossEncoder, query: str, results: List[Dict[str, Any]
         
         return reranked
     except Exception as e:
-        print(f"Error during reranking: {e}")
+        print(f"Error during reranking: {e}", file=sys.stderr)
         return results
 
 def is_sitemap(url: str) -> bool:
@@ -350,7 +350,7 @@ def parse_sitemap(sitemap_url: str) -> List[str]:
             tree = ElementTree.fromstring(resp.content)
             urls = [loc.text for loc in tree.findall('.//{*}loc')]
         except Exception as e:
-            print(f"Error parsing sitemap XML: {e}")
+            print(f"Error parsing sitemap XML: {e}", file=sys.stderr)
 
     return urls
 
@@ -491,8 +491,8 @@ async def search(ctx: Context, query: str, return_raw_markdown: bool = False, nu
         if default_engines:
             params["engines"] = default_engines
         
-        print(f"Making SearXNG request to: {search_endpoint}")
-        print(f"Parameters: {params}")
+        print(f"Making SearXNG request to: {search_endpoint}", file=sys.stderr)
+        print(f"Parameters: {params}", file=sys.stderr)
         
         # Make the HTTP request to SearXNG
         try:
@@ -557,7 +557,7 @@ async def search(ctx: Context, query: str, return_raw_markdown: bool = False, nu
                 "error": "No valid URLs found in search results"
             }, indent=2)
         
-        print(f"Found {len(valid_urls)} valid URLs to process")
+        print(f"Found {len(valid_urls)} valid URLs to process", file=sys.stderr)
         
         # Step 5: Content processing - use existing scrape_urls function
         try:
@@ -1744,7 +1744,7 @@ async def check_ai_script_hallucinations(ctx: Context, script_path: str) -> str:
         analysis_result = analyzer.analyze_script(script_path)
         
         if analysis_result.errors:
-            print(f"Analysis warnings for {script_path}: {analysis_result.errors}")
+            print(f"Analysis warnings for {script_path}: {analysis_result.errors}", file=sys.stderr)
         
         # Step 2: Validate against knowledge graph
         validation_result = await knowledge_validator.validate_script(analysis_result)
@@ -2290,9 +2290,9 @@ async def parse_github_repository(ctx: Context, repo_url: str) -> str:
         repo_name = validation["repo_name"]
         
         # Parse the repository (this includes cloning, analysis, and Neo4j storage)
-        print(f"Starting repository analysis for: {repo_name}")
+        print(f"Starting repository analysis for: {repo_name}", file=sys.stderr)
         await repo_extractor.analyze_repository(repo_url)
-        print(f"Repository analysis completed for: {repo_name}")
+        print(f"Repository analysis completed for: {repo_name}", file=sys.stderr)
         
         # Query Neo4j for statistics about the parsed repository
         async with repo_extractor.driver.session() as session:
@@ -2384,7 +2384,7 @@ async def crawl_markdown_file(crawler: AsyncWebCrawler, url: str) -> List[Dict[s
     if result.success and result.markdown:
         return [{'url': url, 'markdown': result.markdown}]
     else:
-        print(f"Failed to crawl {url}: {result.error_message}")
+        print(f"Failed to crawl {url}: {result.error_message}", file=sys.stderr)
         return []
 
 async def crawl_batch(crawler: AsyncWebCrawler, urls: List[str], max_concurrent: int = 10) -> List[Dict[str, Any]]:
