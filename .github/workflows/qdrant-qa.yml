@@ -1,0 +1,321 @@
+name: Qdrant QA Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_benchmarks:
+        description: 'Run performance benchmarks'
+        required: false
+        default: 'true'
+        type: boolean
+      run_stress_tests:
+        description: 'Run stress tests'
+        required: false
+        default: 'true'
+        type: boolean
+  pull_request:
+    paths:
+      - 'src/database/qdrant_adapter.py'
+      - 'src/database/factory.py'
+      - 'src/utils_refactored.py'
+      - 'tests/test_qdrant_*.py'
+      - 'tests/benchmark_qdrant.py'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/database/qdrant_adapter.py'
+
+jobs:
+  qdrant-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      matrix:
+        python-version: ['3.12']
+    
+    services:
+      qdrant:
+        image: qdrant/qdrant:latest
+        ports:
+          - 6333:6333
+        options: >-
+          --health-cmd "curl -f http://localhost:6333/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install UV
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/uv
+          .venv
+        key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-uv-
+    
+    - name: Install dependencies
+      run: |
+        uv sync
+    
+    - name: Verify Qdrant is healthy
+      run: |
+        max_attempts=30
+        attempt=0
+        while [ $attempt -lt $max_attempts ]; do
+          if curl -f http://localhost:6333/health; then
+            echo "Qdrant is healthy!"
+            break
+          fi
+          echo "Waiting for Qdrant... (attempt $((attempt + 1))/$max_attempts)"
+          sleep 2
+          attempt=$((attempt + 1))
+        done
+        
+        if [ $attempt -eq $max_attempts ]; then
+          echo "Qdrant failed to start!"
+          exit 1
+        fi
+    
+    - name: Run unit tests
+      env:
+        VECTOR_DATABASE: qdrant
+        QDRANT_URL: http://localhost:6333
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
+      run: |
+        echo "🧪 Running Qdrant adapter unit tests..."
+        uv run pytest tests/test_qdrant_adapter.py -v --tb=short
+    
+    - name: Run integration tests
+      env:
+        VECTOR_DATABASE: qdrant
+        QDRANT_URL: http://localhost:6333
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
+      run: |
+        echo "🔗 Running Qdrant integration tests..."
+        uv run pytest tests/test_qdrant_integration.py -v --tb=short
+    
+    - name: Run performance benchmarks
+      if: ${{ github.event.inputs.run_benchmarks != 'false' }}
+      env:
+        VECTOR_DATABASE: qdrant
+        QDRANT_URL: http://localhost:6333
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
+      run: |
+        echo "📊 Running performance benchmarks..."
+        uv run python tests/benchmark_qdrant.py
+    
+    - name: Run interface contract tests
+      env:
+        VECTOR_DATABASE: qdrant
+        QDRANT_URL: http://localhost:6333
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
+      run: |
+        echo "📋 Running interface contract tests..."
+        uv run pytest tests/test_database_interface.py::TestQdrantInterface -v --tb=short
+    
+    - name: Generate test coverage
+      env:
+        VECTOR_DATABASE: qdrant
+        QDRANT_URL: http://localhost:6333
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
+      run: |
+        echo "📊 Generating test coverage report..."
+        uv run pytest tests/test_qdrant_*.py \
+          --cov=src/database/qdrant_adapter \
+          --cov=src/database/factory \
+          --cov-report=term-missing \
+          --cov-report=xml \
+          --cov-report=html
+    
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-reports
+        path: |
+          coverage.xml
+          htmlcov/
+    
+    - name: Generate test report
+      if: always()
+      run: |
+        echo "# Qdrant QA Test Report" > test_report.md
+        echo "## Test Results Summary" >> test_report.md
+        echo "" >> test_report.md
+        
+        if [ -f "benchmark_results.txt" ]; then
+          echo "### Performance Benchmarks" >> test_report.md
+          echo '```' >> test_report.md
+          cat benchmark_results.txt >> test_report.md
+          echo '```' >> test_report.md
+        fi
+        
+        echo "" >> test_report.md
+        echo "### Test Execution Details" >> test_report.md
+        echo "- Python Version: ${{ matrix.python-version }}" >> test_report.md
+        echo "- Qdrant URL: http://localhost:6333" >> test_report.md
+        echo "- Execution Time: $(date)" >> test_report.md
+        echo "" >> test_report.md
+        
+        # Add test status
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "## ✅ Overall Result: PASSED" >> test_report.md
+        else
+          echo "## ❌ Overall Result: FAILED" >> test_report.md
+        fi
+    
+    - name: Upload test report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: qdrant-qa-report
+        path: |
+          test_report.md
+          benchmark_results.txt
+          qdrant_test_logs.txt
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          let comment = '## 🧪 Qdrant QA Test Results\n\n';
+          
+          if ('${{ job.status }}' === 'success') {
+            comment += '✅ **All tests passed!**\n\n';
+          } else {
+            comment += '❌ **Some tests failed.**\n\n';
+          }
+          
+          // Add benchmark results if available
+          try {
+            const benchmarkResults = fs.readFileSync('benchmark_results.txt', 'utf8');
+            comment += '### Performance Benchmarks\n```\n' + benchmarkResults + '\n```\n';
+          } catch (e) {
+            // No benchmark results
+          }
+          
+          comment += '\n[View full test report](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})';
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+    
+    - name: Check test results
+      if: always()
+      run: |
+        if [ "${{ job.status }}" != "success" ]; then
+          echo "❌ Tests failed!"
+          exit 1
+        fi
+        echo "✅ All tests passed!"
+
+  docker-integration:
+    runs-on: ubuntu-latest
+    needs: qdrant-qa
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Create test environment file
+      run: |
+        cp .env.example .env.test
+        echo "VECTOR_DATABASE=qdrant" >> .env.test
+        echo "QDRANT_URL=http://qdrant:6333" >> .env.test
+        echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY || 'test-key' }}" >> .env.test
+    
+    - name: Create Qdrant compose file
+      run: |
+        cat > docker-compose.qdrant.yml << 'EOF'
+        version: '3.8'
+        
+        services:
+          qdrant:
+            image: qdrant/qdrant:latest
+            container_name: qdrant
+            ports:
+              - "6333:6333"
+            volumes:
+              - qdrant-data:/qdrant/storage
+            networks:
+              - default
+            healthcheck:
+              test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+              interval: 5s
+              timeout: 3s
+              retries: 5
+        
+        volumes:
+          qdrant-data:
+            driver: local
+        EOF
+    
+    - name: Start Docker services
+      run: |
+        docker compose -f docker-compose.yml -f docker-compose.qdrant.yml --env-file .env.test up -d
+    
+    - name: Wait for services
+      run: |
+        echo "Waiting for services to be healthy..."
+        sleep 10
+        
+        # Wait for Qdrant
+        timeout 60 bash -c 'until curl -s http://localhost:6333/health; do sleep 1; done'
+        
+        # Wait for MCP server
+        timeout 60 bash -c 'until curl -s http://localhost:8051/health; do sleep 1; done'
+    
+    - name: Test MCP tools with Qdrant
+      run: |
+        # Test basic connectivity
+        docker compose exec -T mcp-crawl4ai python -c "
+        import asyncio
+        from database.factory import create_database_client
+        
+        async def test():
+            client = create_database_client()
+            print('✅ Successfully connected to Qdrant via Docker!')
+        
+        asyncio.run(test())
+        "
+    
+    - name: Collect Docker logs
+      if: always()
+      run: |
+        docker compose logs > docker_logs.txt
+    
+    - name: Upload Docker logs
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: docker-logs
+        path: docker_logs.txt
+    
+    - name: Cleanup
+      if: always()
+      run: |
+        docker compose -f docker-compose.yml -f docker-compose.qdrant.yml down -v

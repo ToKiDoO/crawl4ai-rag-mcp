@@ -13,4 +13,10 @@ dependencies = [
     "sentence-transformers>=4.1.0",
     "neo4j>=5.28.1",
     "requests>=2.25.0",
+    "qdrant-client>=1.7.0",
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "docker>=6.0.0",
+    "testcontainers>=3.7.0",
 ]

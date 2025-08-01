@@ -1,7 +1,13 @@
 .env
+.env.*
 .venv
 __pycache__
 crawl4ai_mcp.egg-info
 repos
 .claude
 test_script_hallucination*
+.serena/
+.coverage
+coverage.xml
+qa-logs/
+CLAUDE.md

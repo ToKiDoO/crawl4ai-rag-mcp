@@ -1,0 +1,70 @@
+name: Test Coverage
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install UV
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: |
+        uv sync
+    
+    - name: Run unit tests with coverage
+      run: |
+        uv run pytest tests/test_utils_refactored.py tests/test_database_factory.py tests/test_crawl4ai_mcp.py \
+          -v --cov=src --cov-report=xml --cov-report=term-missing
+    
+    - name: Run adapter tests
+      run: |
+        uv run pytest tests/test_supabase_adapter.py tests/test_qdrant_adapter.py \
+          -v --cov=src --cov-append --cov-report=xml --cov-report=term-missing
+    
+    - name: Run interface tests
+      run: |
+        uv run pytest tests/test_database_interface.py tests/test_integration_simple.py \
+          -v --cov=src --cov-append --cov-report=xml --cov-report=term-missing
+    
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+    
+    - name: Generate coverage report
+      run: |
+        uv run coverage report --fail-under=80
+    
+    - name: Archive coverage reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-reports
+        path: |
+          coverage.xml
+          htmlcov/

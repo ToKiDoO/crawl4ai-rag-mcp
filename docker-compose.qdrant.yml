@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Qdrant vector database service
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"  # gRPC port for better performance
+    volumes:
+      - qdrant-data:/qdrant/storage
+      - ./qdrant-config:/qdrant/config:ro  # Optional: custom configuration
+    networks:
+      - default
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=${QDRANT_LOG_LEVEL:-info}
+      # Performance tuning
+      - QDRANT__STORAGE__PERFORMANCE__INDEXING_THRESHOLD=10000
+      - QDRANT__STORAGE__PERFORMANCE__MEMMAP_THRESHOLD=50000
+      - QDRANT__STORAGE__PERFORMANCE__PAYLOAD_INDEXING_THRESHOLD=10000
+      # Security (optional)
+      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 2G  # Adjust based on your needs
+        reservations:
+          memory: 512M
+
+volumes:
+  qdrant-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/qdrant  # Persistent storage location

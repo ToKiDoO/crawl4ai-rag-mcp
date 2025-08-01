@@ -1,0 +1,54 @@
+# Qdrant configuration for optimized performance
+# This configuration is optimized for the MCP Crawl4AI use case
+
+service:
+  http_port: 6333
+  grpc_port: 6334
+  # Enable CORS for web UI access
+  enable_cors: true
+
+storage:
+  # Storage path inside container
+  storage_path: /qdrant/storage
+  
+  # Performance optimizations
+  performance:
+    # Number of parallel workers for indexing
+    indexing_threads: 0  # 0 = auto (number of CPU cores)
+    
+    # Thresholds for switching between in-memory and on-disk storage
+    indexing_threshold: 20000
+    memmap_threshold: 50000
+    payload_indexing_threshold: 10000
+    
+    # Optimize for better search performance
+    search_optimizations:
+      # Enable HNSW index optimization
+      indexing_threshold_kb: 50000
+      
+    # WAL settings for durability vs performance trade-off
+    wal:
+      wal_capacity_mb: 32
+      wal_segments_ahead: 0
+
+# Collection defaults for crawled pages
+collection_defaults:
+  # Vector parameters optimized for OpenAI embeddings
+  vectors:
+    size: 1536  # OpenAI ada-002 embedding size
+    distance: Cosine  # Best for normalized embeddings
+    
+  # Optimized HNSW parameters
+  hnsw_config:
+    m: 16  # Number of bi-directional links
+    ef_construct: 100  # Size of dynamic candidate list
+    
+  # Quantization for memory efficiency (optional)
+  quantization_config:
+    scalar:
+      type: int8
+      quantile: 0.99
+      always_ram: true
+
+# Logging configuration
+log_level: info
