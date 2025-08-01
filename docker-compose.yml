@@ -103,6 +103,26 @@ services:
     depends_on:
       - valkey
 
+  # Qdrant Vector Database (Optional - uncomment if using VECTOR_DATABASE=qdrant)
+  # qdrant:
+  #   container_name: qdrant
+  #   image: qdrant/qdrant:latest
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6333:6333"
+  #     - "6334:6334"  # gRPC port
+  #   volumes:
+  #     - qdrant-data:/qdrant/storage
+  #   environment:
+  #     - QDRANT__LOG_LEVEL=INFO
+  #   networks:
+  #     - searxng
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "1m"
+  #       max-file: "1"
+
 networks:
   searxng:
     driver: bridge
@@ -112,3 +132,4 @@ volumes:
   caddy-config:
   valkey-data:
   searxng-data:
+  qdrant-data:

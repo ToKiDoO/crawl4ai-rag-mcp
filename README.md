@@ -82,8 +82,10 @@ The server provides essential web crawling and search tools:
 
 **Required:**
 - [Docker and Docker Compose](https://www.docker.com/products/docker-desktop/) - This is a Docker-only solution
-- [Supabase account](https://supabase.com/) - For vector database and RAG functionality
 - [OpenAI API key](https://platform.openai.com/api-keys) - For generating embeddings
+- **Vector Database** (choose one):
+  - [Supabase account](https://supabase.com/) - Cloud-hosted PostgreSQL with pgvector (default)
+  - [Qdrant](https://qdrant.tech/) - Self-hosted vector database (runs in Docker)
 
 **Optional:**
 - [Neo4j instance](https://neo4j.com/) - For knowledge graph functionality (see [Knowledge Graph Setup](#knowledge-graph-setup))
@@ -218,9 +220,20 @@ OPENAI_API_KEY=your_openai_api_key
 # LLM for summaries and contextual embeddings
 MODEL_CHOICE=gpt-4.1-nano-2025-04-14
 
-# Required: Supabase for vector database
+# ========================================
+# VECTOR DATABASE CONFIGURATION
+# ========================================
+# Choose your vector database: supabase or qdrant
+VECTOR_DATABASE=supabase
+
+# Option 1: Supabase (cloud-hosted PostgreSQL with pgvector)
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_KEY=your_supabase_service_key
+
+# Option 2: Qdrant (self-hosted, runs in Docker)
+# Uncomment the qdrant service in docker-compose.yml
+QDRANT_URL=http://qdrant:6333
+QDRANT_API_KEY=  # Optional, leave empty for local development
 
 # ========================================
 # RAG ENHANCEMENT STRATEGIES
@@ -245,6 +258,25 @@ NEO4J_PASSWORD=your_neo4j_password
 **🐳 Docker Networking**: The default configuration uses Docker internal networking (`http://searxng:8080`) which works out of the box.
 
 **🔐 Production Setup**: For production, set `SEARXNG_HOSTNAME` to your domain and `SEARXNG_TLS` to your email for automatic HTTPS.
+
+### Choosing a Vector Database
+
+This solution supports two vector database options:
+
+#### Supabase (Default)
+- **Pros**: Cloud-hosted, no infrastructure management, built-in authentication, scales automatically
+- **Cons**: Requires account creation, potential latency for remote queries, usage limits on free tier
+- **Best for**: Production deployments, teams, when you want managed infrastructure
+
+#### Qdrant (Self-hosted)
+- **Pros**: Runs locally in Docker, no external accounts needed, full control over data, no usage limits
+- **Cons**: Requires more memory/CPU, you manage backups and scaling
+- **Best for**: Local development, privacy-sensitive applications, when you want complete control
+
+**To use Qdrant instead of Supabase:**
+1. Set `VECTOR_DATABASE=qdrant` in your `.env` file
+2. Uncomment the Qdrant service in `docker-compose.yml`
+3. Run `docker compose up -d`
 
 ### RAG Strategy Options
 
