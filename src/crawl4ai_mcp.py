@@ -5,34 +5,65 @@ This server provides tools to crawl websites using Crawl4AI, automatically detec
 the appropriate crawl method based on URL type (sitemap, txt file, or regular webpage).
 Also includes AI hallucination detection and repository parsing tools using Neo4j knowledge graphs.
 """
-from mcp.server.fastmcp import FastMCP, Context
-from sentence_transformers import CrossEncoder
-from contextlib import asynccontextmanager
-from collections.abc import AsyncIterator
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Union
-from urllib.parse import urlparse, urldefrag
-from xml.etree import ElementTree
-from dotenv import load_dotenv
-from database.base import VectorDatabase
-from pathlib import Path
-import requests
-import asyncio
-import json
-import os
-import re
-import concurrent.futures
 import sys
-import time
+import traceback
 
-from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, MemoryAdaptiveDispatcher
+# Add early error logging
+try:
+    print("Starting Crawl4AI MCP server...", file=sys.stderr)
+    from mcp.server.fastmcp import FastMCP, Context
+except Exception as e:
+    print(f"Error importing FastMCP: {e}", file=sys.stderr)
+    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    sys.exit(1)
+try:
+    print("Importing dependencies...", file=sys.stderr)
+    from sentence_transformers import CrossEncoder
+    from contextlib import asynccontextmanager
+    from collections.abc import AsyncIterator
+    from dataclasses import dataclass
+    from typing import List, Dict, Any, Optional, Union
+    from urllib.parse import urlparse, urldefrag
+    from xml.etree import ElementTree
+    from dotenv import load_dotenv
+    from database.base import VectorDatabase
+    from pathlib import Path
+    import requests
+    import asyncio
+    import json
+    import os
+    import re
+    import concurrent.futures
+    import time
+    print("Basic imports successful", file=sys.stderr)
+except Exception as e:
+    print(f"Error importing dependencies: {e}", file=sys.stderr)
+    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    sys.exit(1)
+
+try:
+    print("Importing Crawl4AI...", file=sys.stderr)
+    from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, MemoryAdaptiveDispatcher
+    print("Crawl4AI imported successfully", file=sys.stderr)
+except Exception as e:
+    print(f"Error importing Crawl4AI: {e}", file=sys.stderr)
+    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    sys.exit(1)
 
 # Add knowledge_graphs folder to path for importing knowledge graph modules
 knowledge_graphs_path = Path(__file__).resolve().parent.parent / 'knowledge_graphs'
 sys.path.append(str(knowledge_graphs_path))
+print(f"Added knowledge_graphs path: {knowledge_graphs_path}", file=sys.stderr)
 
 # Import database factory and utilities
-from database.factory import create_and_initialize_database
+try:
+    print("Importing database factory...", file=sys.stderr)
+    from database.factory import create_and_initialize_database
+    print("Database factory imported successfully", file=sys.stderr)
+except Exception as e:
+    print(f"Error importing database factory: {e}", file=sys.stderr)
+    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    sys.exit(1)
 from utils_refactored import (
     add_documents_to_database,
     search_documents,
@@ -52,9 +83,13 @@ from hallucination_reporter import HallucinationReporter
 # Load environment variables from the project root .env file
 project_root = Path(__file__).resolve().parent.parent
 dotenv_path = project_root / '.env'
+print(f"Loading .env from: {dotenv_path}", file=sys.stderr)
+print(f".env exists: {dotenv_path.exists()}", file=sys.stderr)
 
 # Force override of existing environment variables
 load_dotenv(dotenv_path, override=True)
+print(f"VECTOR_DATABASE: {os.getenv('VECTOR_DATABASE')}", file=sys.stderr)
+print(f"QDRANT_URL: {os.getenv('QDRANT_URL')}", file=sys.stderr)
 
 # Helper functions for Neo4j validation and error handling
 def validate_neo4j_connection() -> bool:
@@ -216,13 +251,24 @@ async def crawl4ai_lifespan(server: FastMCP) -> AsyncIterator[Crawl4AIContext]:
                 print(f"Error closing repository extractor: {e}")
 
 # Initialize FastMCP server
-mcp = FastMCP(
-    "mcp-crawl4ai-rag",
-    description="MCP server for RAG and web crawling with Crawl4AI",
-    lifespan=crawl4ai_lifespan,
-    host=os.getenv("HOST", "0.0.0.0"),
-    port=os.getenv("PORT", "8051")
-)
+try:
+    print("Initializing FastMCP server...", file=sys.stderr)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = os.getenv("PORT", "8051")
+    print(f"Host: {host}, Port: {port}", file=sys.stderr)
+    
+    mcp = FastMCP(
+        "mcp-crawl4ai-rag",
+        description="MCP server for RAG and web crawling with Crawl4AI",
+        lifespan=crawl4ai_lifespan,
+        host=host,
+        port=port
+    )
+    print("FastMCP server initialized successfully", file=sys.stderr)
+except Exception as e:
+    print(f"Error initializing FastMCP server: {e}", file=sys.stderr)
+    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    sys.exit(1)
 
 def rerank_results(model: CrossEncoder, query: str, results: List[Dict[str, Any]], content_key: str = "content") -> List[Dict[str, Any]]:
     """
@@ -2415,13 +2461,29 @@ async def crawl_recursive_internal_links(crawler: AsyncWebCrawler, start_urls: L
     return results_all
 
 async def main():
-    transport = os.getenv("TRANSPORT", "sse")
-    if transport == 'sse':
-        # Run the MCP server with sse transport
-        await mcp.run_sse_async()
-    else:
-        # Run the MCP server with stdio transport
-        await mcp.run_stdio_async()
+    try:
+        print("Main function started", file=sys.stderr)
+        transport = os.getenv("TRANSPORT", "sse")
+        print(f"Transport mode: {transport}", file=sys.stderr)
+        
+        if transport == 'sse':
+            # Run the MCP server with sse transport
+            print("Running with SSE transport", file=sys.stderr)
+            await mcp.run_sse_async()
+        else:
+            # Run the MCP server with stdio transport
+            print("Running with STDIO transport", file=sys.stderr)
+            await mcp.run_stdio_async()
+    except Exception as e:
+        print(f"Error in main function: {e}", file=sys.stderr)
+        print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+        raise
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        print("Starting main function...", file=sys.stderr)
+        asyncio.run(main())
+    except Exception as e:
+        print(f"Error in main: {e}", file=sys.stderr)
+        print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+        sys.exit(1)
