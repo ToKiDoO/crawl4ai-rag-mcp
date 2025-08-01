@@ -50,10 +50,10 @@ class QdrantAdapter:
         
         for collection_name, vector_size in collections:
             try:
-                await self.client.get_collection(collection_name)
+                self.client.get_collection(collection_name)
             except Exception:
                 # Collection doesn't exist, create it
-                await self.client.create_collection(
+                self.client.create_collection(
                     collection_name=collection_name,
                     vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE)
                 )

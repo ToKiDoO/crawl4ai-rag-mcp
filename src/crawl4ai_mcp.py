@@ -86,8 +86,8 @@ dotenv_path = project_root / '.env'
 print(f"Loading .env from: {dotenv_path}", file=sys.stderr)
 print(f".env exists: {dotenv_path.exists()}", file=sys.stderr)
 
-# Force override of existing environment variables
-load_dotenv(dotenv_path, override=True)
+# Load environment variables from .env file (but don't override existing ones)
+load_dotenv(dotenv_path, override=False)
 print(f"VECTOR_DATABASE: {os.getenv('VECTOR_DATABASE')}", file=sys.stderr)
 print(f"QDRANT_URL: {os.getenv('QDRANT_URL')}", file=sys.stderr)
 
