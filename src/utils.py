@@ -2,6 +2,7 @@
 Utility functions for the Crawl4AI MCP server.
 """
 import os
+import sys
 import concurrent.futures
 from typing import List, Dict, Any, Optional, Tuple
 import json
@@ -54,14 +55,14 @@ def create_embeddings_batch(texts: List[str]) -> List[List[float]]:
             return [item.embedding for item in response.data]
         except Exception as e:
             if retry < max_retries - 1:
-                print(f"Error creating batch embeddings (attempt {retry + 1}/{max_retries}): {e}")
-                print(f"Retrying in {retry_delay} seconds...")
+                print(f"Error creating batch embeddings (attempt {retry + 1}/{max_retries}, file=sys.stderr): {e}")
+                print(f"Retrying in {retry_delay} seconds...", file=sys.stderr)
                 time.sleep(retry_delay)
                 retry_delay *= 2  # Exponential backoff
             else:
-                print(f"Failed to create batch embeddings after {max_retries} attempts: {e}")
+                print(f"Failed to create batch embeddings after {max_retries} attempts: {e}", file=sys.stderr)
                 # Try creating embeddings one by one as fallback
-                print("Attempting to create embeddings individually...")
+                print("Attempting to create embeddings individually...", file=sys.stderr)
                 embeddings = []
                 successful_count = 0
                 
@@ -74,11 +75,11 @@ def create_embeddings_batch(texts: List[str]) -> List[List[float]]:
                         embeddings.append(individual_response.data[0].embedding)
                         successful_count += 1
                     except Exception as individual_error:
-                        print(f"Failed to create embedding for text {i}: {individual_error}")
+                        print(f"Failed to create embedding for text {i}: {individual_error}", file=sys.stderr)
                         # Add zero embedding as fallback
                         embeddings.append([0.0] * 1536)
                 
-                print(f"Successfully created {successful_count}/{len(texts)} embeddings individually")
+                print(f"Successfully created {successful_count}/{len(texts, file=sys.stderr)} embeddings individually")
                 return embeddings
 
 def create_embedding(text: str) -> List[float]:
@@ -95,7 +96,7 @@ def create_embedding(text: str) -> List[float]:
         embeddings = create_embeddings_batch([text])
         return embeddings[0] if embeddings else [0.0] * 1536
     except Exception as e:
-        print(f"Error creating embedding: {e}")
+        print(f"Error creating embedding: {e}", file=sys.stderr)
         # Return empty embedding if there's an error
         return [0.0] * 1536
 
@@ -145,7 +146,7 @@ Please give a short succinct context to situate this chunk within the overall do
         return contextual_text, True
     
     except Exception as e:
-        print(f"Error generating contextual embedding: {e}. Using original chunk instead.")
+        print(f"Error generating contextual embedding: {e}. Using original chunk instead.", file=sys.stderr)
         return chunk, False
 
 def process_chunk_with_context(args):
@@ -195,18 +196,18 @@ def add_documents_to_supabase(
             # Use the .in_() filter to delete all records with matching URLs
             client.table("crawled_pages").delete().in_("url", unique_urls).execute()
     except Exception as e:
-        print(f"Batch delete failed: {e}. Trying one-by-one deletion as fallback.")
+        print(f"Batch delete failed: {e}. Trying one-by-one deletion as fallback.", file=sys.stderr)
         # Fallback: delete records one by one
         for url in unique_urls:
             try:
                 client.table("crawled_pages").delete().eq("url", url).execute()
             except Exception as inner_e:
-                print(f"Error deleting record for URL {url}: {inner_e}")
+                print(f"Error deleting record for URL {url}: {inner_e}", file=sys.stderr)
                 # Continue with the next URL even if one fails
     
     # Check if MODEL_CHOICE is set for contextual embeddings
     use_contextual_embeddings = os.getenv("USE_CONTEXTUAL_EMBEDDINGS", "false") == "true"
-    print(f"\n\nUse contextual embeddings: {use_contextual_embeddings}\n\n")
+    print(f"\n\nUse contextual embeddings: {use_contextual_embeddings}\n\n", file=sys.stderr)
     
     # Process in batches to avoid memory issues
     for i in range(0, len(contents), batch_size):
@@ -243,13 +244,13 @@ def add_documents_to_supabase(
                         if success:
                             batch_metadatas[idx]["contextual_embedding"] = True
                     except Exception as e:
-                        print(f"Error processing chunk {idx}: {e}")
+                        print(f"Error processing chunk {idx}: {e}", file=sys.stderr)
                         # Use original content as fallback
                         contextual_contents.append(batch_contents[idx])
             
             # Sort results back into original order if needed
             if len(contextual_contents) != len(batch_contents):
-                print(f"Warning: Expected {len(batch_contents)} results but got {len(contextual_contents)}")
+                print(f"Warning: Expected {len(batch_contents, file=sys.stderr)} results but got {len(contextual_contents)}")
                 # Use original contents as fallback
                 contextual_contents = batch_contents
         else:
@@ -294,25 +295,25 @@ def add_documents_to_supabase(
                 break
             except Exception as e:
                 if retry < max_retries - 1:
-                    print(f"Error inserting batch into Supabase (attempt {retry + 1}/{max_retries}): {e}")
-                    print(f"Retrying in {retry_delay} seconds...")
+                    print(f"Error inserting batch into Supabase (attempt {retry + 1}/{max_retries}, file=sys.stderr): {e}")
+                    print(f"Retrying in {retry_delay} seconds...", file=sys.stderr)
                     time.sleep(retry_delay)
                     retry_delay *= 2  # Exponential backoff
                 else:
                     # Final attempt failed
-                    print(f"Failed to insert batch after {max_retries} attempts: {e}")
+                    print(f"Failed to insert batch after {max_retries} attempts: {e}", file=sys.stderr)
                     # Optionally, try inserting records one by one as a last resort
-                    print("Attempting to insert records individually...")
+                    print("Attempting to insert records individually...", file=sys.stderr)
                     successful_inserts = 0
                     for record in batch_data:
                         try:
                             client.table("crawled_pages").insert(record).execute()
                             successful_inserts += 1
                         except Exception as individual_error:
-                            print(f"Failed to insert individual record for URL {record['url']}: {individual_error}")
+                            print(f"Failed to insert individual record for URL {record['url']}: {individual_error}", file=sys.stderr)
                     
                     if successful_inserts > 0:
-                        print(f"Successfully inserted {successful_inserts}/{len(batch_data)} records individually")
+                        print(f"Successfully inserted {successful_inserts}/{len(batch_data, file=sys.stderr)} records individually")
 
 def search_documents(
     client: Client, 
@@ -351,7 +352,7 @@ def search_documents(
         
         return result.data
     except Exception as e:
-        print(f"Error searching documents: {e}")
+        print(f"Error searching documents: {e}", file=sys.stderr)
         return []
 
 
@@ -374,7 +375,7 @@ def extract_code_blocks(markdown_content: str, min_length: int = 1000) -> List[D
     if content.startswith('```'):
         # Skip the first triple backticks
         start_offset = 3
-        print("Skipping initial triple backticks")
+        print("Skipping initial triple backticks", file=sys.stderr)
     
     # Find all occurrences of triple backticks
     backtick_positions = []
@@ -481,7 +482,7 @@ Based on the code example and its surrounding context, provide a concise summary
         return response.choices[0].message.content.strip()
     
     except Exception as e:
-        print(f"Error generating code example summary: {e}")
+        print(f"Error generating code example summary: {e}", file=sys.stderr)
         return "Code example for demonstration purposes."
 
 
@@ -515,7 +516,7 @@ def add_code_examples_to_supabase(
         try:
             client.table('code_examples').delete().eq('url', url).execute()
         except Exception as e:
-            print(f"Error deleting existing code examples for {url}: {e}")
+            print(f"Error deleting existing code examples for {url}: {e}", file=sys.stderr)
     
     # Process in batches
     total_items = len(urls)
@@ -537,7 +538,7 @@ def add_code_examples_to_supabase(
             if embedding and not all(v == 0.0 for v in embedding):
                 valid_embeddings.append(embedding)
             else:
-                print(f"Warning: Zero or invalid embedding detected, creating new one...")
+                print(f"Warning: Zero or invalid embedding detected, creating new one...", file=sys.stderr)
                 # Try to create a single embedding as fallback
                 single_embedding = create_embedding(batch_texts[len(valid_embeddings)])
                 valid_embeddings.append(single_embedding)
@@ -572,26 +573,26 @@ def add_code_examples_to_supabase(
                 break
             except Exception as e:
                 if retry < max_retries - 1:
-                    print(f"Error inserting batch into Supabase (attempt {retry + 1}/{max_retries}): {e}")
-                    print(f"Retrying in {retry_delay} seconds...")
+                    print(f"Error inserting batch into Supabase (attempt {retry + 1}/{max_retries}, file=sys.stderr): {e}")
+                    print(f"Retrying in {retry_delay} seconds...", file=sys.stderr)
                     time.sleep(retry_delay)
                     retry_delay *= 2  # Exponential backoff
                 else:
                     # Final attempt failed
-                    print(f"Failed to insert batch after {max_retries} attempts: {e}")
+                    print(f"Failed to insert batch after {max_retries} attempts: {e}", file=sys.stderr)
                     # Optionally, try inserting records one by one as a last resort
-                    print("Attempting to insert records individually...")
+                    print("Attempting to insert records individually...", file=sys.stderr)
                     successful_inserts = 0
                     for record in batch_data:
                         try:
                             client.table('code_examples').insert(record).execute()
                             successful_inserts += 1
                         except Exception as individual_error:
-                            print(f"Failed to insert individual record for URL {record['url']}: {individual_error}")
+                            print(f"Failed to insert individual record for URL {record['url']}: {individual_error}", file=sys.stderr)
                     
                     if successful_inserts > 0:
-                        print(f"Successfully inserted {successful_inserts}/{len(batch_data)} records individually")
-        print(f"Inserted batch {i//batch_size + 1} of {(total_items + batch_size - 1)//batch_size} code examples")
+                        print(f"Successfully inserted {successful_inserts}/{len(batch_data, file=sys.stderr)} records individually")
+        print(f"Inserted batch {i//batch_size + 1} of {(total_items + batch_size - 1, file=sys.stderr)//batch_size} code examples")
 
 
 def update_source_info(client: Client, source_id: str, summary: str, word_count: int):
@@ -619,12 +620,12 @@ def update_source_info(client: Client, source_id: str, summary: str, word_count:
                 'summary': summary,
                 'total_word_count': word_count
             }).execute()
-            print(f"Created new source: {source_id}")
+            print(f"Created new source: {source_id}", file=sys.stderr)
         else:
-            print(f"Updated source: {source_id}")
+            print(f"Updated source: {source_id}", file=sys.stderr)
             
     except Exception as e:
-        print(f"Error updating source {source_id}: {e}")
+        print(f"Error updating source {source_id}: {e}", file=sys.stderr)
 
 
 def extract_source_summary(source_id: str, content: str, max_length: int = 500) -> str:
@@ -683,7 +684,7 @@ The above content is from the documentation for '{source_id}'. Please provide a 
         return summary
     
     except Exception as e:
-        print(f"Error generating summary with LLM for {source_id}: {e}. Using default summary.")
+        print(f"Error generating summary with LLM for {source_id}: {e}. Using default summary.", file=sys.stderr)
         return default_summary
 
 
@@ -734,5 +735,5 @@ def search_code_examples(
         
         return result.data
     except Exception as e:
-        print(f"Error searching code examples: {e}")
+        print(f"Error searching code examples: {e}", file=sys.stderr)
         return []

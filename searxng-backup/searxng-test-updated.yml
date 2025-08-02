@@ -1,0 +1,56 @@
+# Minimal SearXNG configuration for testing
+use_default_settings: true
+
+general:
+  instance_name: "SearXNG Test"
+  debug: true  # Enable debug for testing
+
+search:
+  # Limit search engines for faster test startup
+  safe_search: 0
+  default_lang: "en"
+  ban_time_on_fail: 0
+  max_ban_time_on_fail: 10
+  formats:
+    - html
+    - json  # Enable both HTML and JSON formats
+
+server:
+  limiter: false  # Disable rate limiting for tests
+  public_instance: true  # Enable API access for tests
+  secret_key: "test-secret-key"
+  method: "GET"
+  port: 8081  # Set port to match testing config
+
+# Minimal engines for testing
+engines:
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    disabled: false
+    
+  - name: google
+    engine: google
+    shortcut: g
+    disabled: true  # Disabled to avoid rate limiting in tests
+    
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    disabled: false
+
+# Disable most outgoing requests for faster tests
+outgoing:
+  request_timeout: 5.0
+  max_request_timeout: 10.0
+  pool_connections: 10
+  pool_maxsize: 10
+
+# Disable UI features not needed for API testing
+ui:
+  static_use_hash: false
+  infinite_scroll: false
+  
+# Redis configuration for test environment
+redis:
+  url: valkey://valkey-test:6379/0

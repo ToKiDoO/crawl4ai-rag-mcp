@@ -13,7 +13,7 @@ from unittest.mock import patch, AsyncMock, MagicMock
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from mcp_test_utils import (
+from .mcp_test_utils import (
     create_test_context,
     generate_test_urls,
     generate_test_markdown,
@@ -43,7 +43,7 @@ class TestMCPQdrantIntegration:
     async def mock_dependencies(self):
         """Mock external dependencies"""
         with patch('crawl4ai_mcp.AsyncWebCrawler') as mock_crawler_class, \
-             patch('crawl4ai_mcp.get_embedding') as mock_embedding, \
+             patch('utils_refactored.create_embeddings_batch') as mock_embeddings, \
              patch('crawl4ai_mcp.CrossEncoder') as mock_crossencoder_class:
             
             # Mock crawler
@@ -65,7 +65,7 @@ class TestMCPQdrantIntegration:
             mock_crawler.arun.return_value = mock_result
             
             # Mock embeddings
-            mock_embedding.return_value = generate_test_embedding()
+            mock_embeddings.return_value = [generate_test_embedding()]
             
             # Mock reranking model
             mock_reranker = MagicMock()
@@ -75,7 +75,7 @@ class TestMCPQdrantIntegration:
             yield {
                 'crawler': mock_crawler,
                 'crawler_class': mock_crawler_class,
-                'embedding': mock_embedding,
+                'embeddings': mock_embeddings,
                 'reranker': mock_reranker
             }
     
@@ -180,7 +180,7 @@ class TestMCPQdrantIntegration:
             result = await scrape_urls(ctx, url="https://example.com/fail")
             
             # Should handle error gracefully
-            assert "Failed" in result or "Error" in result
+            assert "error" in result or "false" in result
             # Should not try to store documents
             mock_db.add_documents.assert_not_called()
     
@@ -300,7 +300,7 @@ class TestMCPServerStartup:
             assert mcp is not None
             
             # Tools should be registered
-            tools = mcp._FastMCP__tools
+            tools = mcp._tool_manager._tools
             assert len(tools) > 0
             
             # Check critical tools exist

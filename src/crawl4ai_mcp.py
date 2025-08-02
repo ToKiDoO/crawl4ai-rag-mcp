@@ -26,6 +26,24 @@ if os.getenv('MCP_DEBUG', '').lower() in ('true', '1', 'yes'):
     logger.setLevel(logging.DEBUG)
     logger.debug("Debug mode enabled")
 
+class SuppressStdout:
+    """Context manager to suppress stdout during crawl operations"""
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = sys.stderr
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout = self._stdout
+        return False
+
+class MCPToolError(Exception):
+    """Custom exception for MCP tool errors that should be returned as JSON-RPC errors"""
+    def __init__(self, message: str, code: int = -32000):
+        self.message = message
+        self.code = code
+        super().__init__(message)
+
 # Request tracking decorator
 def track_request(tool_name: str):
     """Decorator to track MCP tool requests with timing and error handling"""
@@ -126,12 +144,23 @@ from hallucination_reporter import HallucinationReporter
 
 # Load environment variables from the project root .env file
 project_root = Path(__file__).resolve().parent.parent
-dotenv_path = project_root / '.env'
+# Check if we should use .env.test instead
+if os.getenv('USE_TEST_ENV', '').lower() in ('true', '1', 'yes'):
+    dotenv_path = project_root / '.env.test'
+    logger.info(f"Using test environment: {dotenv_path}")
+else:
+    dotenv_path = project_root / '.env'
 logger.info(f"Loading .env from: {dotenv_path}")
 logger.debug(f".env exists: {dotenv_path.exists()}")
 
-# Load environment variables from .env file (but don't override existing ones)
-load_dotenv(dotenv_path, override=False)
+# Load environment variables from .env file
+# In test mode, use variables from .env.test as the master configuration
+if os.getenv('USE_TEST_ENV', '').lower() in ('true', '1', 'yes'):
+    # Test mode: .env.test values override everything
+    load_dotenv(dotenv_path, override=True)
+else:
+    # Normal mode: .env file values override environment
+    load_dotenv(dotenv_path, override=True)
 logger.info(f"VECTOR_DATABASE: {os.getenv('VECTOR_DATABASE')}")
 logger.debug(f"QDRANT_URL: {os.getenv('QDRANT_URL')}")
 
@@ -299,6 +328,9 @@ try:
     print("Initializing FastMCP server...", file=sys.stderr)
     host = os.getenv("HOST", "0.0.0.0")
     port = os.getenv("PORT", "8051")
+    # Ensure port has a valid default even if empty string
+    if not port:
+        port = "8051"
     print(f"Host: {host}, Port: {port}", file=sys.stderr)
     
     mcp = FastMCP(
@@ -521,7 +553,9 @@ async def search(ctx: Context, query: str, return_raw_markdown: bool = False, nu
         # Step 2: SearXNG request - make HTTP GET request with parameters
         headers = {
             "User-Agent": user_agent,
-            "Accept": "application/json"
+            "Accept": "text/html,application/json;q=0.9,*/*;q=0.8",
+            "Accept-Encoding": "gzip, deflate",
+            "Accept-Language": "en-US,en;q=0.5"
         }
         
         # Prepare request parameters
@@ -2433,7 +2467,8 @@ async def crawl_markdown_file(crawler: AsyncWebCrawler, url: str) -> List[Dict[s
     """
     crawl_config = CrawlerRunConfig()
 
-    result = await crawler.arun(url=url, config=crawl_config)
+    with SuppressStdout():
+        result = await crawler.arun(url=url, config=crawl_config)
     if result.success and result.markdown:
         return [{'url': url, 'markdown': result.markdown}]
     else:
@@ -2459,7 +2494,8 @@ async def crawl_batch(crawler: AsyncWebCrawler, urls: List[str], max_concurrent:
         max_session_permit=max_concurrent
     )
 
-    results = await crawler.arun_many(urls=urls, config=crawl_config, dispatcher=dispatcher)
+    with SuppressStdout():
+        results = await crawler.arun_many(urls=urls, config=crawl_config, dispatcher=dispatcher)
     return [{'url': r.url, 'markdown': r.markdown, 'links': r.links} for r in results if r.success and r.markdown]
 
 async def crawl_recursive_internal_links(crawler: AsyncWebCrawler, start_urls: List[str], max_depth: int = 3, max_concurrent: int = 10) -> List[Dict[str, Any]]:
@@ -2495,7 +2531,8 @@ async def crawl_recursive_internal_links(crawler: AsyncWebCrawler, start_urls: L
         if not urls_to_crawl:
             break
 
-        results = await crawler.arun_many(urls=urls_to_crawl, config=run_config, dispatcher=dispatcher)
+        with SuppressStdout():
+            results = await crawler.arun_many(urls=urls_to_crawl, config=run_config, dispatcher=dispatcher)
         next_level_urls = set()
 
         for result in results:
@@ -2526,6 +2563,9 @@ async def main():
         else:
             # Run the MCP server with stdio transport
             logger.info("Running with STDIO transport")
+            # Flush any pending output
+            sys.stdout.flush()
+            sys.stderr.flush()
             await mcp.run_stdio_async()
     except Exception as e:
         logger.error(f"Error in main function: {e}")

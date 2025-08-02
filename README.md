@@ -467,6 +467,41 @@ Verify the server is running:
 curl http://localhost:8051/health
 ```
 
+### Claude Desktop Integration (Windows with WSL)
+
+If you're developing in WSL but running Claude Desktop on Windows, you need special configuration since Claude Desktop requires STDIO transport. 
+
+**Step 1: Ensure you have `.env.test` with `TRANSPORT=stdio`** (this is already included in the repo)
+
+**Step 2: Configure Claude Desktop** (`%APPDATA%\Claude\claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "crawl4ai-rag": {
+      "command": "wsl",
+      "args": [
+        "--cd",
+        "/home/YOUR_USERNAME/crawl4aimcp",
+        "--",
+        "bash",
+        "-c",
+        "USE_TEST_ENV=true /home/YOUR_USERNAME/.local/bin/uv run python src/crawl4ai_mcp.py"
+      ]
+    }
+  }
+}
+```
+
+**Important:** Replace `YOUR_USERNAME` with your actual WSL username.
+
+This configuration:
+- Uses `wsl` to bridge Windows → WSL
+- Sets `USE_TEST_ENV=true` to use `.env.test` with STDIO transport
+- Preserves your production `.env` with SSE transport
+
+For detailed setup instructions and troubleshooting, see [docs/CLAUDE_DESKTOP_SETUP.md](docs/CLAUDE_DESKTOP_SETUP.md).
+
 ## Knowledge Graph Architecture
 
 The knowledge graph system stores repository code structure in Neo4j with the following components:
@@ -588,6 +623,70 @@ docker volume ls
 2. **Verify configuration**: `docker compose config`
 3. **Test connectivity**: Use `curl` commands shown above
 4. **Reset everything**: `docker compose down -v && docker compose up -d`
+
+## Testing
+
+The project includes comprehensive unit and integration tests:
+
+### Test Environment Setup
+
+1. **Start test containers**:
+   ```bash
+   docker compose -f docker-compose.test.yml up -d
+   ```
+
+2. **Copy test environment configuration**:
+   ```bash
+   cp .env.test.template .env.test
+   # Edit .env.test with your API keys
+   ```
+
+### Running Tests
+
+**Unit tests only** (no external dependencies):
+```bash
+make test-unit
+# or
+pytest tests/ -v -m "not integration"
+```
+
+**SearXNG integration tests**:
+```bash
+make test-searxng
+# or
+pytest tests/test_searxng_integration.py -v
+```
+
+**All integration tests**:
+```bash
+make test-integration
+# or
+pytest tests/ -v -m integration
+```
+
+**All tests with coverage**:
+```bash
+make test-all
+# or
+pytest tests/ -v --cov=src --cov-report=html
+```
+
+### Test Structure
+
+- **Unit tests**: Mock external dependencies for fast, isolated testing
+- **Integration tests**: Test against real services (Qdrant, SearXNG)
+- **Test markers**: `@pytest.mark.searxng` for SearXNG-specific tests
+- **Test isolation**: Separate test configurations and databases
+
+### Clean Up
+
+```bash
+# Stop test containers and remove volumes
+docker compose -f docker-compose.test.yml down -v
+
+# Clean test artifacts
+make clean
+```
 
 ## Development & Customization
 

@@ -21,9 +21,62 @@ services:
       timeout: 3s
       retries: 5
 
+  # Valkey (Redis Alternative) for SearXNG
+  valkey-test:
+    container_name: valkey_test
+    image: docker.io/valkey/valkey:8-alpine
+    command: valkey-server --save "" --loglevel warning
+    restart: unless-stopped
+    networks:
+      - test-network
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # SearXNG Search Engine for testing
+  searxng-test:
+    container_name: searxng_test
+    image: docker.io/searxng/searxng:latest
+    restart: unless-stopped
+    networks:
+      - test-network
+    ports:
+      - "8081:8080"  # Different port to avoid conflicts
+    logging:
+      driver: "json-file"
+    volumes:
+      - ./searxng-test:/etc/searxng:rw
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8081/
+      - SEARXNG_SECRET_KEY=test-secret-key
+      - SEARXNG_SETTINGS_PATH=/etc/searxng/settings.yml
+    depends_on:
+      - valkey-test
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8081/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   test-network:
     driver: bridge
 
 volumes:
   qdrant-test-data:
+  valkey-test-data:
+  searxng-test-data:

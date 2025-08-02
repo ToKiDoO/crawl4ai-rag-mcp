@@ -42,7 +42,7 @@ class TestQdrantIntegration:
         """Check if Qdrant is healthy"""
         import requests
         try:
-            response = requests.get("http://localhost:6333/health", timeout=5)
+            response = requests.get("http://localhost:6333/healthz", timeout=5)
             return response.status_code == 200
         except:
             return False

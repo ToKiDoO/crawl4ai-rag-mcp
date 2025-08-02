@@ -3,6 +3,7 @@ Refactored utility functions that work with the database abstraction layer.
 These functions are database-agnostic and work with any VectorDatabase implementation.
 """
 import os
+import sys
 import concurrent.futures
 from typing import List, Dict, Any, Optional, Tuple
 import json
@@ -41,14 +42,14 @@ def create_embeddings_batch(texts: List[str]) -> List[List[float]]:
             return [item.embedding for item in response.data]
         except Exception as e:
             if retry < max_retries - 1:
-                print(f"Error creating batch embeddings (attempt {retry + 1}/{max_retries}): {e}")
-                print(f"Retrying in {retry_delay} seconds...")
+                print(f"Error creating batch embeddings (attempt {retry + 1}/{max_retries}, file=sys.stderr): {e}")
+                print(f"Retrying in {retry_delay} seconds...", file=sys.stderr)
                 time.sleep(retry_delay)
                 retry_delay *= 2  # Exponential backoff
             else:
-                print(f"Failed to create batch embeddings after {max_retries} attempts: {e}")
+                print(f"Failed to create batch embeddings after {max_retries} attempts: {e}", file=sys.stderr)
                 # Try creating embeddings one by one as fallback
-                print("Attempting to create embeddings individually...")
+                print("Attempting to create embeddings individually...", file=sys.stderr)
                 embeddings = []
                 successful_count = 0
                 
@@ -61,11 +62,11 @@ def create_embeddings_batch(texts: List[str]) -> List[List[float]]:
                         embeddings.append(individual_response.data[0].embedding)
                         successful_count += 1
                     except Exception as individual_error:
-                        print(f"Failed to create embedding for text {i}: {individual_error}")
+                        print(f"Failed to create embedding for text {i}: {individual_error}", file=sys.stderr)
                         # Add zero embedding as fallback
                         embeddings.append([0.0] * 1536)
                 
-                print(f"Successfully created {successful_count}/{len(texts)} embeddings individually")
+                print(f"Successfully created {successful_count}/{len(texts, file=sys.stderr)} embeddings individually")
                 return embeddings
 
 
@@ -83,7 +84,7 @@ def create_embedding(text: str) -> List[float]:
         embeddings = create_embeddings_batch([text])
         return embeddings[0] if embeddings else [0.0] * 1536
     except Exception as e:
-        print(f"Error creating embedding: {e}")
+        print(f"Error creating embedding: {e}", file=sys.stderr)
         # Return empty embedding if there's an error
         return [0.0] * 1536
 
@@ -134,7 +135,7 @@ Please give a short succinct context to situate this chunk within the overall do
         return contextual_text, True
     
     except Exception as e:
-        print(f"Error generating contextual embedding: {e}. Using original chunk instead.")
+        print(f"Error generating contextual embedding: {e}. Using original chunk instead.", file=sys.stderr)
         return chunk, False
 
 
@@ -179,7 +180,7 @@ async def add_documents_to_database(
     """
     # Check if we should use contextual embeddings
     use_contextual_embeddings = os.getenv("USE_CONTEXTUAL_EMBEDDINGS", "false") == "true"
-    print(f"\n\nUse contextual embeddings: {use_contextual_embeddings}\n\n")
+    print(f"\n\nUse contextual embeddings: {use_contextual_embeddings}\n\n", file=sys.stderr)
     
     # Process all contents to potentially add context
     if use_contextual_embeddings:
@@ -206,12 +207,12 @@ async def add_documents_to_database(
                     if success:
                         metadatas[idx]["contextual_embedding"] = True
                 except Exception as e:
-                    print(f"Error processing chunk {idx}: {e}")
+                    print(f"Error processing chunk {idx}: {e}", file=sys.stderr)
                     contextual_contents.append(contents[idx])
         
         # Sort results back into original order
         if len(contextual_contents) != len(contents):
-            print(f"Warning: Expected {len(contents)} results but got {len(contextual_contents)}")
+            print(f"Warning: Expected {len(contents, file=sys.stderr)} results but got {len(contextual_contents)}")
             contextual_contents = contents
     else:
         contextual_contents = contents
@@ -293,7 +294,7 @@ def extract_code_blocks(markdown_content: str, min_length: int = 1000) -> List[D
     if content.startswith('```'):
         # Skip the first triple backticks
         start_offset = 3
-        print("Skipping initial triple backticks")
+        print("Skipping initial triple backticks", file=sys.stderr)
     
     # Find all occurrences of triple backticks
     backtick_positions = []
@@ -400,7 +401,7 @@ Based on the code example and its surrounding context, provide a concise summary
         return response.choices[0].message.content.strip()
     
     except Exception as e:
-        print(f"Error generating code example summary: {e}")
+        print(f"Error generating code example summary: {e}", file=sys.stderr)
         return "Code example for demonstration purposes."
 
 
@@ -517,7 +518,7 @@ The above content is from the documentation for '{source_id}'. Please provide a 
         return summary
     
     except Exception as e:
-        print(f"Error generating summary with LLM for {source_id}: {e}. Using default summary.")
+        print(f"Error generating summary with LLM for {source_id}: {e}. Using default summary.", file=sys.stderr)
         return default_summary
 
 

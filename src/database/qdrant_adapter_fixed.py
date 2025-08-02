@@ -4,7 +4,6 @@ Uses Qdrant vector database for similarity search.
 Fixed version with proper async/sync handling.
 """
 import os
-import sys
 from typing import List, Dict, Any, Optional
 from urllib.parse import urlparse
 from uuid import uuid4
@@ -179,12 +178,11 @@ class QdrantAdapter:
         loop = asyncio.get_event_loop()
         results = await loop.run_in_executor(
             None,
-            lambda: self.client.search(
-                collection_name=self.CRAWLED_PAGES,
-                query_vector=query_embedding,
-                query_filter=search_filter,
-                limit=match_count
-            )
+            self.client.search,
+            self.CRAWLED_PAGES,
+            query_embedding,
+            search_filter,
+            match_count
         )
         
         # Format results
@@ -229,11 +227,10 @@ class QdrantAdapter:
         loop = asyncio.get_event_loop()
         scroll_result = await loop.run_in_executor(
             None,
-            lambda: self.client.scroll(
-                collection_name=self.CRAWLED_PAGES,
-                scroll_filter=search_filter,
-                limit=match_count
-            )
+            self.client.scroll,
+            self.CRAWLED_PAGES,
+            search_filter,
+            limit=match_count
         )
         
         points, _ = scroll_result
@@ -262,11 +259,10 @@ class QdrantAdapter:
         loop = asyncio.get_event_loop()
         scroll_result = await loop.run_in_executor(
             None,
-            lambda: self.client.scroll(
-                collection_name=self.CRAWLED_PAGES,
-                scroll_filter=filter_condition,
-                limit=1000  # Large limit to get all chunks
-            )
+            self.client.scroll,
+            self.CRAWLED_PAGES,
+            filter_condition,
+            limit=1000  # Large limit to get all chunks
         )
         
         points, _ = scroll_result
@@ -298,11 +294,10 @@ class QdrantAdapter:
         loop = asyncio.get_event_loop()
         scroll_result = await loop.run_in_executor(
             None,
-            lambda: self.client.scroll(
-                collection_name=self.CRAWLED_PAGES,
-                scroll_filter=filter_condition,
-                limit=1000
-            )
+            self.client.scroll,
+            self.CRAWLED_PAGES,
+            filter_condition,
+            limit=1000
         )
         
         points, _ = scroll_result
@@ -392,12 +387,11 @@ class QdrantAdapter:
         loop = asyncio.get_event_loop()
         results = await loop.run_in_executor(
             None,
-            lambda: self.client.search(
-                collection_name=self.CODE_EXAMPLES,
-                query_vector=query_embedding,
-                query_filter=search_filter,
-                limit=match_count
-            )
+            self.client.search,
+            self.CODE_EXAMPLES,
+            query_embedding,
+            search_filter,
+            match_count
         )
         
         # Format results
@@ -452,12 +446,11 @@ class QdrantAdapter:
         loop = asyncio.get_event_loop()
         results = await loop.run_in_executor(
             None,
-            lambda: self.client.search(
-                collection_name=self.SOURCES,
-                query_vector=query_embedding,
-                query_filter=None,
-                limit=match_count
-            )
+            self.client.search,
+            self.SOURCES,
+            query_embedding,
+            None,
+            match_count
         )
         
         # Format results
@@ -506,167 +499,5 @@ class QdrantAdapter:
                 {point_id: updated_payload}
             )
         except Exception as e:
-            print(f"Error updating source: {e}", file=sys.stderr)
-            raise
-    
-    async def get_sources(self) -> List[Dict[str, Any]]:
-        """
-        Get all available sources.
-        
-        Returns:
-            List of sources, each containing:
-            - source_id: Source identifier
-            - summary: Source summary
-            - total_word_count: Total word count
-            - created_at: Creation timestamp
-            - updated_at: Update timestamp
-        """
-        loop = asyncio.get_event_loop()
-        
-        try:
-            # Scroll through all points in the sources collection
-            all_sources = []
-            offset = None
-            limit = 100
-            
-            while True:
-                # Get a batch of sources
-                result = await loop.run_in_executor(
-                    None,
-                    lambda: self.client.scroll(
-                        collection_name=self.SOURCES,
-                        offset=offset,
-                        limit=limit,
-                        with_payload=True
-                    )
-                )
-                
-                points, next_offset = result
-                
-                # Format each source
-                for point in points:
-                    source_data = {
-                        "source_id": point.payload.get("source_id", point.id),  # Get from payload, fallback to ID
-                        "summary": point.payload.get("summary", ""),
-                        "total_word_count": point.payload.get("total_word_count", 0),
-                        "created_at": point.payload.get("created_at", ""),
-                        "updated_at": point.payload.get("updated_at", ""),
-                        "enabled": point.payload.get("enabled", True),
-                        "url_count": point.payload.get("url_count", 0)
-                    }
-                    all_sources.append(source_data)
-                
-                # Check if there are more sources
-                if next_offset is None:
-                    break
-                    
-                offset = next_offset
-            
-            # Sort by source_id for consistency
-            all_sources.sort(key=lambda x: x["source_id"])
-            
-            return all_sources
-            
-        except Exception as e:
-            print(f"Error getting sources: {e}", file=sys.stderr)
-            return []
-    
-    async def update_source_info(
-        self,
-        source_id: str,
-        summary: str,
-        word_count: int
-    ) -> None:
-        """
-        Update or insert source information.
-        
-        Args:
-            source_id: Source identifier
-            summary: Source summary
-            word_count: Word count for this source
-        """
-        from datetime import datetime
-        
-        loop = asyncio.get_event_loop()
-        timestamp = datetime.utcnow().isoformat()
-        
-        try:
-            # Generate a deterministic UUID from source_id
-            point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, source_id))
-            
-            # Try to get existing source
-            existing_points = await loop.run_in_executor(
-                None,
-                self.client.retrieve,
-                self.SOURCES,
-                [point_id]
-            )
-            
-            if existing_points:
-                # Update existing source
-                existing_point = existing_points[0]
-                updated_payload = existing_point.payload.copy()
-                updated_payload.update({
-                    "summary": summary,
-                    "total_word_count": word_count,
-                    "updated_at": timestamp
-                })
-                
-                await loop.run_in_executor(
-                    None,
-                    self.client.set_payload,
-                    self.SOURCES,
-                    {point_id: updated_payload}
-                )
-            else:
-                # Create new source with a deterministic embedding
-                # IMPORTANT: This embedding must be 1536 dimensions to match OpenAI's text-embedding-3-small model
-                # Previously this was creating 384-dimensional embeddings which caused vector dimension errors
-                
-                # Generate a deterministic embedding from the source_id using SHA256 hash
-                import hashlib
-                hash_object = hashlib.sha256(source_id.encode())
-                hash_bytes = hash_object.digest()  # 32 bytes from SHA256
-                
-                # Convert hash bytes to floats between -1 and 1
-                # Each byte (0-255) is normalized to the range [-1, 1]
-                base_embedding = [(b - 128) / 128.0 for b in hash_bytes]
-                
-                # OpenAI embeddings are 1536 dimensions, but SHA256 only gives us 32 values
-                # We repeat the pattern to fill all 1536 dimensions deterministically
-                embedding = []
-                while len(embedding) < 1536:
-                    embedding.extend(base_embedding)
-                
-                # Ensure exactly 1536 dimensions (trim any excess from the last repetition)
-                embedding = embedding[:1536]
-                
-                # Generate a deterministic UUID from source_id
-                point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, source_id))
-                
-                points = [
-                    models.PointStruct(
-                        id=point_id,
-                        vector=embedding,
-                        payload={
-                            "source_id": source_id,
-                            "summary": summary,
-                            "total_word_count": word_count,
-                            "created_at": timestamp,
-                            "updated_at": timestamp,
-                            "enabled": True,
-                            "url_count": 1
-                        }
-                    )
-                ]
-                
-                await loop.run_in_executor(
-                    None,
-                    self.client.upsert,
-                    self.SOURCES,
-                    points
-                )
-                
-        except Exception as e:
-            print(f"Error updating source info: {e}", file=sys.stderr)
+            print(f"Error updating source: {e}")
             raise
