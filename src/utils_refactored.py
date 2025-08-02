@@ -269,7 +269,7 @@ async def search_documents(
     return await database.search_documents(
         query_embedding=query_embedding,
         match_count=match_count,
-        filter_metadata=filter_metadata,
+        metadata_filter=filter_metadata,
         source_filter=source_filter
     )
 

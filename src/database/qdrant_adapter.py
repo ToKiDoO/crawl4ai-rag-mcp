@@ -1,12 +1,14 @@
 """
 Qdrant adapter implementation for VectorDatabase protocol.
 Uses Qdrant vector database for similarity search.
+Fixed version with proper async/sync handling.
 """
 import os
 from typing import List, Dict, Any, Optional
 from urllib.parse import urlparse
 from uuid import uuid4
 import hashlib
+import asyncio
 from qdrant_client import QdrantClient, models
 from qdrant_client.models import (
     VectorParams, Distance, PointStruct, Filter, FieldCondition, 
@@ -18,6 +20,9 @@ class QdrantAdapter:
     """
     Qdrant implementation of the VectorDatabase protocol.
     Uses Qdrant's native vector search capabilities.
+    
+    Note: QdrantClient is synchronous, so we use asyncio.run_in_executor
+    to make it work with async methods.
     """
     
     def __init__(self, url: Optional[str] = None, api_key: Optional[str] = None):
@@ -48,14 +53,18 @@ class QdrantAdapter:
             (self.SOURCES, 1536)  # OpenAI embedding size for consistency
         ]
         
+        loop = asyncio.get_event_loop()
+        
         for collection_name, vector_size in collections:
             try:
-                self.client.get_collection(collection_name)
+                await loop.run_in_executor(None, self.client.get_collection, collection_name)
             except Exception:
                 # Collection doesn't exist, create it
-                self.client.create_collection(
-                    collection_name=collection_name,
-                    vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE)
+                await loop.run_in_executor(
+                    None,
+                    self.client.create_collection,
+                    collection_name,
+                    VectorParams(size=vector_size, distance=Distance.COSINE)
                 )
     
     def _generate_point_id(self, url: str, chunk_number: int) -> str:
@@ -70,55 +79,62 @@ class QdrantAdapter:
         contents: List[str],
         metadatas: List[Dict[str, Any]],
         embeddings: List[List[float]],
-        source_ids: List[str]
+        source_ids: Optional[List[str]] = None
     ) -> None:
         """Add documents to Qdrant"""
-        if not self.client:
-            raise RuntimeError("Database not initialized. Call initialize() first.")
+        if source_ids is None:
+            source_ids = [None] * len(urls)
         
-        # Delete existing documents first
-        await self.delete_documents_by_url(list(set(urls)))
+        # First, delete any existing documents with the same URLs
+        unique_urls = list(set(urls))
+        for url in unique_urls:
+            try:
+                await self.delete_documents_by_url(url)
+            except Exception as e:
+                print(f"Error deleting documents from Qdrant: {e}")
         
-        # Process in batches
-        for i in range(0, len(contents), self.batch_size):
-            batch_end = min(i + self.batch_size, len(contents))
+        # Process documents in batches
+        for i in range(0, len(urls), self.batch_size):
+            batch_slice = slice(i, min(i + self.batch_size, len(urls)))
+            batch_urls = urls[batch_slice]
+            batch_chunks = chunk_numbers[batch_slice]
+            batch_contents = contents[batch_slice]
+            batch_metadatas = metadatas[batch_slice]
+            batch_embeddings = embeddings[batch_slice]
+            batch_source_ids = source_ids[batch_slice]
             
-            # Create points for this batch
+            # Create points for Qdrant
             points = []
-            for j in range(i, batch_end):
-                # Generate deterministic ID
-                point_id = self._generate_point_id(urls[j], chunk_numbers[j])
+            for j, (url, chunk_num, content, metadata, embedding, source_id) in enumerate(
+                zip(batch_urls, batch_chunks, batch_contents, batch_metadatas, batch_embeddings, batch_source_ids)
+            ):
+                point_id = self._generate_point_id(url, chunk_num)
                 
-                # Extract source_id
-                if j < len(source_ids) and source_ids[j]:
-                    source_id = source_ids[j]
-                else:
-                    parsed_url = urlparse(urls[j])
-                    source_id = parsed_url.netloc or parsed_url.path
-                
-                # Create payload
+                # Prepare payload
                 payload = {
-                    "url": urls[j],
-                    "chunk_number": chunk_numbers[j],
-                    "content": contents[j],
-                    "metadata": metadatas[j] if j < len(metadatas) else {},
-                    "source_id": source_id,
-                    "chunk_size": len(contents[j])
+                    "url": url,
+                    "chunk_number": chunk_num,
+                    "content": content,
+                    "metadata": metadata or {}
                 }
+                if source_id:
+                    payload["source_id"] = source_id
                 
-                # Create point
                 point = PointStruct(
                     id=point_id,
-                    vector=embeddings[j],
+                    vector=embedding,
                     payload=payload
                 )
                 points.append(point)
             
             # Upsert batch to Qdrant
             try:
-                await self.client.upsert(
-                    collection_name=self.CRAWLED_PAGES,
-                    points=points
+                loop = asyncio.get_event_loop()
+                await loop.run_in_executor(
+                    None,
+                    self.client.upsert,
+                    self.CRAWLED_PAGES,
+                    points
                 )
             except Exception as e:
                 print(f"Error upserting documents to Qdrant: {e}")
@@ -128,465 +144,359 @@ class QdrantAdapter:
         self,
         query_embedding: List[float],
         match_count: int = 10,
-        filter_metadata: Optional[Dict[str, Any]] = None,
+        metadata_filter: Optional[Dict[str, Any]] = None,
         source_filter: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        """Search documents using vector similarity"""
-        if not self.client:
-            raise RuntimeError("Database not initialized. Call initialize() first.")
+        """Search for similar documents"""
+        # Build filter conditions
+        filter_conditions = []
         
-        # Build query filter
-        query_filter = self._build_filter(filter_metadata, source_filter)
-        
-        try:
-            # Perform search
-            results = await self.client.search(
-                collection_name=self.CRAWLED_PAGES,
-                query_vector=query_embedding,
-                limit=match_count,
-                query_filter=query_filter
-            )
-            
-            # Convert results to expected format
-            output = []
-            for result in results:
-                doc = {
-                    "id": result.id,
-                    "url": result.payload.get("url"),
-                    "chunk_number": result.payload.get("chunk_number"),
-                    "content": result.payload.get("content"),
-                    "metadata": result.payload.get("metadata", {}),
-                    "source_id": result.payload.get("source_id"),
-                    "similarity": result.score  # Qdrant returns cosine similarity
-                }
-                output.append(doc)
-            
-            return output
-        except Exception as e:
-            print(f"Error searching documents in Qdrant: {e}")
-            return []
-    
-    async def delete_documents_by_url(self, urls: List[str]) -> None:
-        """Delete documents by URL"""
-        if not self.client or not urls:
-            return
-        
-        try:
-            # Search for all points with these URLs
-            point_ids = []
-            for url in urls:
-                # Search for all chunks of this URL
-                results = await self.client.search(
-                    collection_name=self.CRAWLED_PAGES,
-                    query_vector=[0.0] * 1536,  # Dummy vector
-                    limit=1000,  # Get all chunks
-                    query_filter=Filter(
-                        must=[
-                            FieldCondition(
-                                key="url",
-                                match=MatchValue(value=url)
-                            )
-                        ]
-                    )
-                )
-                
-                # Collect point IDs
-                for result in results:
-                    point_ids.append(result.id)
-            
-            # Delete all found points
-            if point_ids:
-                await self.client.delete(
-                    collection_name=self.CRAWLED_PAGES,
-                    points_selector=point_ids
-                )
-        except Exception as e:
-            print(f"Error deleting documents from Qdrant: {e}")
-    
-    async def add_code_examples(
-        self,
-        urls: List[str],
-        chunk_numbers: List[int],
-        code_examples: List[str],
-        summaries: List[str],
-        metadatas: List[Dict[str, Any]],
-        embeddings: List[List[float]],
-        source_ids: List[str]
-    ) -> None:
-        """Add code examples to Qdrant"""
-        if not self.client:
-            raise RuntimeError("Database not initialized. Call initialize() first.")
-        
-        # Delete existing code examples first
-        await self.delete_code_examples_by_url(list(set(urls)))
-        
-        # Process in batches
-        for i in range(0, len(code_examples), self.batch_size):
-            batch_end = min(i + self.batch_size, len(code_examples))
-            
-            # Create points for this batch
-            points = []
-            for j in range(i, batch_end):
-                # Generate deterministic ID
-                point_id = self._generate_point_id(urls[j], chunk_numbers[j])
-                
-                # Extract source_id
-                parsed_url = urlparse(urls[j])
-                source_id = parsed_url.netloc or parsed_url.path
-                
-                # Create payload
-                payload = {
-                    "url": urls[j],
-                    "chunk_number": chunk_numbers[j],
-                    "content": code_examples[j],
-                    "summary": summaries[j],
-                    "metadata": metadatas[j] if j < len(metadatas) else {},
-                    "source_id": source_id
-                }
-                
-                # Create point
-                point = PointStruct(
-                    id=point_id,
-                    vector=embeddings[j],
-                    payload=payload
-                )
-                points.append(point)
-            
-            # Upsert batch to Qdrant
-            try:
-                await self.client.upsert(
-                    collection_name=self.CODE_EXAMPLES,
-                    points=points
-                )
-            except Exception as e:
-                print(f"Error upserting code examples to Qdrant: {e}")
-                raise
-    
-    async def search_code_examples(
-        self,
-        query_embedding: List[float],
-        match_count: int = 10,
-        filter_metadata: Optional[Dict[str, Any]] = None,
-        source_filter: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
-        """Search code examples using vector similarity"""
-        if not self.client:
-            raise RuntimeError("Database not initialized. Call initialize() first.")
-        
-        # Build query filter
-        query_filter = self._build_filter(filter_metadata, source_filter)
-        
-        try:
-            # Perform search
-            results = await self.client.search(
-                collection_name=self.CODE_EXAMPLES,
-                query_vector=query_embedding,
-                limit=match_count,
-                query_filter=query_filter
-            )
-            
-            # Convert results to expected format
-            output = []
-            for result in results:
-                example = {
-                    "id": result.id,
-                    "url": result.payload.get("url"),
-                    "chunk_number": result.payload.get("chunk_number"),
-                    "content": result.payload.get("content"),
-                    "summary": result.payload.get("summary"),
-                    "metadata": result.payload.get("metadata", {}),
-                    "source_id": result.payload.get("source_id"),
-                    "similarity": result.score
-                }
-                output.append(example)
-            
-            return output
-        except Exception as e:
-            print(f"Error searching code examples in Qdrant: {e}")
-            return []
-    
-    async def delete_code_examples_by_url(self, urls: List[str]) -> None:
-        """Delete code examples by URL"""
-        if not self.client or not urls:
-            return
-        
-        try:
-            # Similar to delete_documents_by_url but for code_examples collection
-            point_ids = []
-            for url in urls:
-                results = await self.client.search(
-                    collection_name=self.CODE_EXAMPLES,
-                    query_vector=[0.0] * 1536,
-                    limit=1000,
-                    query_filter=Filter(
-                        must=[
-                            FieldCondition(
-                                key="url",
-                                match=MatchValue(value=url)
-                            )
-                        ]
-                    )
-                )
-                
-                for result in results:
-                    point_ids.append(result.id)
-            
-            if point_ids:
-                await self.client.delete(
-                    collection_name=self.CODE_EXAMPLES,
-                    points_selector=point_ids
-                )
-        except Exception as e:
-            print(f"Error deleting code examples from Qdrant: {e}")
-    
-    async def update_source_info(
-        self,
-        source_id: str,
-        summary: str,
-        word_count: int
-    ) -> None:
-        """Update or create source information"""
-        if not self.client:
-            raise RuntimeError("Database not initialized. Call initialize() first.")
-        
-        try:
-            # Use source_id as the point ID
-            point = PointStruct(
-                id=source_id,
-                vector=[0.0, 0.0, 0.0, 0.0],  # Dummy vector for metadata storage
-                payload={
-                    "source_id": source_id,
-                    "summary": summary,
-                    "total_word_count": word_count,
-                    "updated_at": "now()"  # This is just for compatibility
-                }
-            )
-            
-            await self.client.upsert(
-                collection_name=self.SOURCES,
-                points=[point]
-            )
-        except Exception as e:
-            print(f"Error updating source info in Qdrant: {e}")
-    
-    async def get_documents_by_url(self, url: str) -> List[Dict[str, Any]]:
-        """Get all document chunks for a specific URL"""
-        if not self.client:
-            raise RuntimeError("Database not initialized. Call initialize() first.")
-        
-        try:
-            # Search for all documents with matching URL
-            results = await self.client.scroll(
-                collection_name=self.CRAWLED_PAGES,
-                scroll_filter=models.Filter(
-                    must=[
-                        models.FieldCondition(
-                            key="url",
-                            match=models.MatchValue(value=url)
-                        )
-                    ]
-                ),
-                limit=1000,  # Get all chunks for the URL
-                with_payload=True,
-                with_vectors=False
-            )
-            
-            documents = []
-            for point in results[0]:  # results is a tuple (points, next_offset)
-                doc = point.payload
-                doc["id"] = point.id
-                documents.append(doc)
-            
-            # Sort by chunk_number for consistency
-            documents.sort(key=lambda x: x.get("chunk_number", 0))
-            return documents
-        except Exception as e:
-            print(f"Error getting documents by URL from Qdrant: {e}")
-            return []
-    
-    async def search_documents_by_keyword(
-        self,
-        keyword: str,
-        match_count: int = 10,
-        source_filter: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
-        """Search for documents containing a keyword"""
-        if not self.client:
-            raise RuntimeError("Database not initialized. Call initialize() first.")
-        
-        try:
-            # Create filter conditions
-            filter_conditions = []
-            
-            # Add keyword filter (case-insensitive search in content)
-            # Note: Qdrant doesn't have native ILIKE, so we search for exact matches
-            # In production, you might want to use a full-text search solution
-            filter_conditions.append(
-                models.FieldCondition(
-                    key="content",
-                    match=models.MatchText(text=keyword.lower())
-                )
-            )
-            
-            # Add source filter if provided
-            if source_filter:
+        if metadata_filter:
+            for key, value in metadata_filter.items():
                 filter_conditions.append(
-                    models.FieldCondition(
-                        key="source_id",
-                        match=models.MatchValue(value=source_filter)
-                    )
-                )
-            
-            # Perform scroll search
-            results = await self.client.scroll(
-                collection_name=self.CRAWLED_PAGES,
-                scroll_filter=models.Filter(must=filter_conditions) if filter_conditions else None,
-                limit=match_count,
-                with_payload=True,
-                with_vectors=False
-            )
-            
-            documents = []
-            for point in results[0]:  # results is a tuple (points, next_offset)
-                doc = point.payload
-                doc["id"] = point.id
-                documents.append(doc)
-            
-            return documents
-        except Exception as e:
-            print(f"Error searching documents by keyword in Qdrant: {e}")
-            return []
-    
-    async def search_code_examples_by_keyword(
-        self,
-        keyword: str,
-        match_count: int = 10,
-        source_filter: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
-        """Search for code examples containing a keyword"""
-        if not self.client:
-            raise RuntimeError("Database not initialized. Call initialize() first.")
-        
-        try:
-            # Create filter conditions
-            filter_conditions = []
-            
-            # Search in both content and summary
-            # Note: This is a simplified implementation
-            # In production, consider using Qdrant's full-text search capabilities
-            keyword_conditions = [
-                models.FieldCondition(
-                    key="content",
-                    match=models.MatchText(text=keyword.lower())
-                ),
-                models.FieldCondition(
-                    key="summary", 
-                    match=models.MatchText(text=keyword.lower())
-                )
-            ]
-            
-            # Combine keyword conditions with OR
-            if source_filter:
-                filter_conditions = [
-                    models.Filter(
-                        should=keyword_conditions,
-                        must=[
-                            models.FieldCondition(
-                                key="source_id",
-                                match=models.MatchValue(value=source_filter)
-                            )
-                        ]
-                    )
-                ]
-            else:
-                filter_conditions = [models.Filter(should=keyword_conditions)]
-            
-            # Perform scroll search
-            results = await self.client.scroll(
-                collection_name=self.CODE_EXAMPLES,
-                scroll_filter=filter_conditions[0] if filter_conditions else None,
-                limit=match_count,
-                with_payload=True,
-                with_vectors=False
-            )
-            
-            examples = []
-            for point in results[0]:  # results is a tuple (points, next_offset)
-                example = point.payload
-                example["id"] = point.id
-                examples.append(example)
-            
-            return examples
-        except Exception as e:
-            print(f"Error searching code examples by keyword in Qdrant: {e}")
-            return []
-
-    async def get_sources(self) -> List[Dict[str, Any]]:
-        """Get all available sources"""
-        if not self.client:
-            raise RuntimeError("Database not initialized. Call initialize() first.")
-        
-        try:
-            # Scroll through all points in sources collection
-            sources = []
-            offset = None
-            
-            while True:
-                results, next_offset = await self.client.scroll(
-                    collection_name=self.SOURCES,
-                    limit=100,
-                    offset=offset
-                )
-                
-                for point in results:
-                    source = {
-                        "source_id": point.payload.get("source_id"),
-                        "summary": point.payload.get("summary"),
-                        "total_word_count": point.payload.get("total_word_count"),
-                        "created_at": point.payload.get("created_at", ""),
-                        "updated_at": point.payload.get("updated_at", "")
-                    }
-                    sources.append(source)
-                
-                if next_offset is None:
-                    break
-                offset = next_offset
-            
-            # Sort by source_id for consistency
-            sources.sort(key=lambda x: x["source_id"])
-            return sources
-        except Exception as e:
-            print(f"Error getting sources from Qdrant: {e}")
-            return []
-    
-    def _build_filter(
-        self, 
-        filter_metadata: Optional[Dict[str, Any]] = None,
-        source_filter: Optional[str] = None
-    ) -> Optional[Filter]:
-        """Build Qdrant filter from metadata and source filters"""
-        conditions = []
-        
-        # Add metadata filters
-        if filter_metadata:
-            for key, value in filter_metadata.items():
-                conditions.append(
                     FieldCondition(
                         key=f"metadata.{key}",
                         match=MatchValue(value=value)
                     )
                 )
         
-        # Add source filter
         if source_filter:
-            conditions.append(
+            filter_conditions.append(
                 FieldCondition(
-                    key="source_id",
+                    key="metadata.source",
                     match=MatchValue(value=source_filter)
                 )
             )
         
-        # Return filter if conditions exist
-        if conditions:
-            return Filter(must=conditions)
-        return None
+        # Create filter if conditions exist
+        search_filter = None
+        if filter_conditions:
+            search_filter = Filter(must=filter_conditions)
+        
+        # Perform search
+        loop = asyncio.get_event_loop()
+        results = await loop.run_in_executor(
+            None,
+            lambda: self.client.search(
+                collection_name=self.CRAWLED_PAGES,
+                query_vector=query_embedding,
+                query_filter=search_filter,
+                limit=match_count
+            )
+        )
+        
+        # Format results
+        formatted_results = []
+        for result in results:
+            doc = result.payload.copy()
+            doc["score"] = result.score
+            doc["id"] = result.id
+            formatted_results.append(doc)
+        
+        return formatted_results
+    
+    async def search_documents_by_keyword(
+        self,
+        keyword: str,
+        match_count: int = 10,
+        metadata_filter: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, Any]]:
+        """Search documents by keyword using scroll API"""
+        filter_conditions = []
+        
+        # Add keyword filter - search in content
+        filter_conditions.append(
+            FieldCondition(
+                key="content",
+                match=MatchValue(value=keyword)
+            )
+        )
+        
+        if metadata_filter:
+            for key, value in metadata_filter.items():
+                filter_conditions.append(
+                    FieldCondition(
+                        key=f"metadata.{key}",
+                        match=MatchValue(value=value)
+                    )
+                )
+        
+        search_filter = Filter(must=filter_conditions)
+        
+        # Use scroll to find matching documents
+        loop = asyncio.get_event_loop()
+        scroll_result = await loop.run_in_executor(
+            None,
+            lambda: self.client.scroll(
+                collection_name=self.CRAWLED_PAGES,
+                scroll_filter=search_filter,
+                limit=match_count
+            )
+        )
+        
+        points, _ = scroll_result
+        
+        # Format results
+        formatted_results = []
+        for point in points[:match_count]:
+            doc = point.payload.copy()
+            doc["id"] = point.id
+            formatted_results.append(doc)
+        
+        return formatted_results
+    
+    async def get_documents_by_url(self, url: str) -> List[Dict[str, Any]]:
+        """Get all document chunks for a specific URL"""
+        filter_condition = Filter(
+            must=[
+                FieldCondition(
+                    key="url",
+                    match=MatchValue(value=url)
+                )
+            ]
+        )
+        
+        # Use scroll to get all chunks
+        loop = asyncio.get_event_loop()
+        scroll_result = await loop.run_in_executor(
+            None,
+            lambda: self.client.scroll(
+                collection_name=self.CRAWLED_PAGES,
+                scroll_filter=filter_condition,
+                limit=1000  # Large limit to get all chunks
+            )
+        )
+        
+        points, _ = scroll_result
+        
+        # Format and sort by chunk number
+        results = []
+        for point in points:
+            doc = point.payload.copy()
+            doc["id"] = point.id
+            results.append(doc)
+        
+        # Sort by chunk number
+        results.sort(key=lambda x: x.get("chunk_number", 0))
+        
+        return results
+    
+    async def delete_documents_by_url(self, url: str) -> None:
+        """Delete all document chunks for a specific URL"""
+        # First, find all points with this URL
+        filter_condition = Filter(
+            must=[
+                FieldCondition(
+                    key="url",
+                    match=MatchValue(value=url)
+                )
+            ]
+        )
+        
+        loop = asyncio.get_event_loop()
+        scroll_result = await loop.run_in_executor(
+            None,
+            lambda: self.client.scroll(
+                collection_name=self.CRAWLED_PAGES,
+                scroll_filter=filter_condition,
+                limit=1000
+            )
+        )
+        
+        points, _ = scroll_result
+        
+        if points:
+            # Extract point IDs
+            point_ids = [point.id for point in points]
+            
+            # Delete the points
+            await loop.run_in_executor(
+                None,
+                self.client.delete,
+                self.CRAWLED_PAGES,
+                PointIdsList(points=point_ids)
+            )
+    
+    async def add_code_examples(
+        self,
+        urls: List[str],
+        chunk_numbers: List[int],
+        codes: List[str],
+        summaries: List[str],
+        metadatas: List[Dict[str, Any]],
+        embeddings: List[List[float]]
+    ) -> None:
+        """Add code examples to Qdrant"""
+        # Process in batches
+        for i in range(0, len(urls), self.batch_size):
+            batch_slice = slice(i, min(i + self.batch_size, len(urls)))
+            batch_urls = urls[batch_slice]
+            batch_chunks = chunk_numbers[batch_slice]
+            batch_codes = codes[batch_slice]
+            batch_summaries = summaries[batch_slice]
+            batch_metadatas = metadatas[batch_slice]
+            batch_embeddings = embeddings[batch_slice]
+            
+            # Create points
+            points = []
+            for url, chunk_num, code, summary, metadata, embedding in zip(
+                batch_urls, batch_chunks, batch_codes, batch_summaries, batch_metadatas, batch_embeddings
+            ):
+                point_id = f"code_{self._generate_point_id(url, chunk_num)}"
+                
+                point = PointStruct(
+                    id=point_id,
+                    vector=embedding,
+                    payload={
+                        "url": url,
+                        "chunk_number": chunk_num,
+                        "code": code,
+                        "summary": summary,
+                        "metadata": metadata or {}
+                    }
+                )
+                points.append(point)
+            
+            # Upsert to Qdrant
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(
+                None,
+                self.client.upsert,
+                self.CODE_EXAMPLES,
+                points
+            )
+    
+    async def search_code_examples(
+        self,
+        query_embedding: List[float],
+        match_count: int = 10,
+        metadata_filter: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, Any]]:
+        """Search for similar code examples"""
+        # Build filter if needed
+        search_filter = None
+        if metadata_filter:
+            filter_conditions = []
+            for key, value in metadata_filter.items():
+                filter_conditions.append(
+                    FieldCondition(
+                        key=f"metadata.{key}",
+                        match=MatchValue(value=value)
+                    )
+                )
+            search_filter = Filter(must=filter_conditions)
+        
+        # Perform search
+        loop = asyncio.get_event_loop()
+        results = await loop.run_in_executor(
+            None,
+            lambda: self.client.search(
+                collection_name=self.CODE_EXAMPLES,
+                query_vector=query_embedding,
+                query_filter=search_filter,
+                limit=match_count
+            )
+        )
+        
+        # Format results
+        formatted_results = []
+        for result in results:
+            doc = result.payload.copy()
+            doc["score"] = result.score
+            doc["id"] = result.id
+            formatted_results.append(doc)
+        
+        return formatted_results
+    
+    async def add_source(
+        self,
+        source_id: str,
+        url: str,
+        title: str,
+        description: str,
+        metadata: Dict[str, Any],
+        embedding: List[float]
+    ) -> None:
+        """Add a source to Qdrant"""
+        point = PointStruct(
+            id=source_id,
+            vector=embedding,
+            payload={
+                "source_id": source_id,
+                "url": url,
+                "title": title,
+                "description": description,
+                "metadata": metadata or {}
+            }
+        )
+        
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(
+            None,
+            self.client.upsert,
+            self.SOURCES,
+            [point]
+        )
+    
+    async def search_sources(
+        self,
+        query_embedding: List[float],
+        match_count: int = 10
+    ) -> List[Dict[str, Any]]:
+        """Search for similar sources"""
+        loop = asyncio.get_event_loop()
+        results = await loop.run_in_executor(
+            None,
+            lambda: self.client.search(
+                collection_name=self.SOURCES,
+                query_vector=query_embedding,
+                query_filter=None,
+                limit=match_count
+            )
+        )
+        
+        # Format results
+        formatted_results = []
+        for result in results:
+            doc = result.payload.copy()
+            doc["score"] = result.score
+            doc["id"] = result.id
+            formatted_results.append(doc)
+        
+        return formatted_results
+    
+    async def update_source(
+        self,
+        source_id: str,
+        updates: Dict[str, Any]
+    ) -> None:
+        """Update a source's metadata"""
+        # Get existing source
+        loop = asyncio.get_event_loop()
+        
+        try:
+            existing_points = await loop.run_in_executor(
+                None,
+                self.client.retrieve,
+                self.SOURCES,
+                [source_id]
+            )
+            
+            if not existing_points:
+                raise ValueError(f"Source {source_id} not found")
+            
+            # Update payload
+            existing_point = existing_points[0]
+            updated_payload = existing_point.payload.copy()
+            updated_payload.update(updates)
+            
+            # Update the point
+            await loop.run_in_executor(
+                None,
+                self.client.set_payload,
+                self.SOURCES,
+                {source_id: updated_payload}
+            )
+        except Exception as e:
+            print(f"Error updating source: {e}")
+            raise
