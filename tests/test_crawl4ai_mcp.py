@@ -6,6 +6,7 @@ import asyncio
 from unittest.mock import patch, MagicMock, AsyncMock, call
 import os
 import sys
+import json
 from typing import List, Dict, Any
 
 # Add src to path
@@ -40,30 +41,40 @@ class TestScrapeUrls:
     """Test scrape_urls MCP tool"""
     
     @pytest.mark.asyncio
+    @patch('utils_refactored.extract_source_summary', return_value="Test summary")
     @patch('crawl4ai_mcp.add_documents_to_database')
-    async def test_scrape_single_url_success(self, mock_add_docs):
+    @patch('crawl4ai_mcp.crawl_batch')
+    async def test_scrape_single_url_success(self, mock_crawl_batch, mock_add_docs, mock_summary):
         """Test scraping a single URL successfully"""
         # Setup
         mock_crawler = AsyncMock()
-        mock_result = MagicMock()
-        mock_result.success = True
-        mock_result.markdown = "# Test Content\n\nThis is test content."
-        mock_result.cleaned_html = "<h1>Test Content</h1><p>This is test content.</p>"
-        mock_result.metadata = {"title": "Test Page"}
-        mock_crawler.arun.return_value = mock_result
+        # We don't need to mock crawler.arun since crawl_batch is mocked
+        
+        # Mock crawl_batch to return crawl results
+        mock_crawl_batch.return_value = [{
+            "url": "https://example.com",
+            "success": True,
+            "markdown": "# Test Content\n\nThis is test content.",
+            "cleaned_html": "<h1>Test Content</h1><p>This is test content.</p>",
+            "metadata": {"title": "Test Page"}
+        }]
         
         ctx = MockContext(crawler=mock_crawler)
         
         # Test
-        result = await scrape_urls(ctx, urls="https://example.com", return_raw_markdown=False)
+        result = await scrape_urls(ctx, url="https://example.com", return_raw_markdown=False)
         
         # Verify
-        assert "Successfully scraped 1 URLs" in result
-        mock_crawler.arun.assert_called_once()
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert "url" in result_json or "mode" in result_json
+        mock_crawl_batch.assert_called_once()
         mock_add_docs.assert_called_once()
     
     @pytest.mark.asyncio
-    async def test_scrape_multiple_urls(self):
+    @patch('crawl4ai_mcp.add_documents_to_database')
+    @patch('crawl4ai_mcp.crawl_batch')
+    async def test_scrape_multiple_urls(self, mock_crawl_batch, mock_add_docs):
         """Test scraping multiple URLs"""
         # Setup
         mock_crawler = AsyncMock()
@@ -74,19 +85,28 @@ class TestScrapeUrls:
         mock_result.metadata = {}
         mock_crawler.arun.return_value = mock_result
         
+        # Mock crawl_batch to return multiple results
+        mock_crawl_batch.return_value = [
+            {"url": "https://example.com/1", "success": True, "markdown": "Content 1", "cleaned_html": "<p>Content 1</p>", "metadata": {}},
+            {"url": "https://example.com/2", "success": True, "markdown": "Content 2", "cleaned_html": "<p>Content 2</p>", "metadata": {}}
+        ]
+        
         ctx = MockContext(crawler=mock_crawler)
         
         # Test
-        with patch('crawl4ai_mcp._process_multiple_urls') as mock_process:
-            mock_process.return_value = (["url1", "url2"], [], 2, 0)
-            result = await scrape_urls(ctx, urls=["https://example.com/1", "https://example.com/2"])
+        result = await scrape_urls(ctx, url=["https://example.com/1", "https://example.com/2"])
         
         # Verify
-        assert "Successfully scraped 2 URLs" in result
-        mock_process.assert_called_once()
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json.get("mode") == "multi_url"
+        assert result_json["summary"]["total_urls"] == 2
+        # Should be called once with batch of URLs
+        assert mock_crawl_batch.call_count == 1
     
     @pytest.mark.asyncio
-    async def test_scrape_with_raw_markdown(self):
+    @patch('crawl4ai_mcp.crawl_batch')
+    async def test_scrape_with_raw_markdown(self, mock_crawl_batch):
         """Test scraping with raw markdown output"""
         # Setup
         mock_crawler = AsyncMock()
@@ -95,14 +115,25 @@ class TestScrapeUrls:
         mock_result.markdown = "# Test Content"
         mock_crawler.arun.return_value = mock_result
         
+        # Mock crawl_batch to return results
+        mock_crawl_batch.return_value = [{
+            "url": "https://example.com",
+            "success": True,
+            "markdown": "# Test Content",
+            "cleaned_html": "<h1>Test Content</h1>",
+            "metadata": {}
+        }]
+        
         ctx = MockContext(crawler=mock_crawler)
         
         # Test
-        result = await scrape_urls(ctx, urls="https://example.com", return_raw_markdown=True)
+        result = await scrape_urls(ctx, url="https://example.com", return_raw_markdown=True)
         
         # Verify
-        assert "# Test Content" in result
-        assert "Successfully scraped" not in result  # Raw mode doesn't add summary
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json.get("mode") == "raw_markdown"
+        assert "# Test Content" in str(result_json.get("results", {}))
     
     @pytest.mark.asyncio
     async def test_scrape_url_failure(self):
@@ -116,66 +147,88 @@ class TestScrapeUrls:
         ctx = MockContext(crawler=mock_crawler)
         
         # Test
-        result = await scrape_urls(ctx, urls="https://example.com")
+        result = await scrape_urls(ctx, url="https://example.com")
         
         # Verify
-        assert "Failed URLs: https://example.com" in result
+        result_json = json.loads(result)
+        assert result_json["success"] is False
+        assert "error" in result_json
 
 
 class TestSmartCrawlUrl:
     """Test smart_crawl_url MCP tool"""
     
     @pytest.mark.asyncio
-    @patch('crawl4ai_mcp.scrape_urls')
-    async def test_smart_crawl_sitemap(self, mock_scrape):
+    @patch('crawl4ai_mcp.parse_sitemap')
+    @patch('crawl4ai_mcp.crawl_batch')
+    async def test_smart_crawl_sitemap(self, mock_crawl_batch, mock_parse_sitemap):
         """Test smart crawling of sitemap URL"""
         # Setup
-        mock_scrape.return_value = "Scraped sitemap results"
+        mock_parse_sitemap.return_value = ["https://example.com/page1", "https://example.com/page2"]
+        mock_crawl_batch.return_value = [
+            {"url": "https://example.com/page1", "markdown": "Page 1 content"},
+            {"url": "https://example.com/page2", "markdown": "Page 2 content"}
+        ]
         ctx = MockContext()
         
         # Test
-        result = await smart_crawl_url(ctx, url="https://example.com/sitemap.xml")
+        result = await smart_crawl_url(ctx, url="https://example.com/sitemap.xml", return_raw_markdown=True)
         
         # Verify
-        assert result == "Scraped sitemap results"
-        mock_scrape.assert_called_once_with(ctx, urls="https://example.com/sitemap.xml")
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json["crawl_type"] == "sitemap"
+        assert len(result_json["results"]) == 2
+        mock_parse_sitemap.assert_called_once_with("https://example.com/sitemap.xml")
+        mock_crawl_batch.assert_called_once()
     
     @pytest.mark.asyncio
-    @patch('crawl4ai_mcp.scrape_urls')
-    async def test_smart_crawl_llms_txt(self, mock_scrape):
+    @patch('crawl4ai_mcp.crawl_markdown_file')
+    async def test_smart_crawl_llms_txt(self, mock_crawl_markdown):
         """Test smart crawling of llms.txt file"""
         # Setup
-        mock_scrape.return_value = "Scraped llms.txt results"
+        mock_crawl_markdown.return_value = [
+            {"url": "https://example.com/llms-full.txt", "markdown": "# LLMs Documentation\n\nContent here"}
+        ]
         ctx = MockContext()
         
         # Test
-        result = await smart_crawl_url(ctx, url="https://example.com/llms-full.txt", max_depth=3)
+        result = await smart_crawl_url(ctx, url="https://example.com/llms-full.txt", max_depth=3, return_raw_markdown=True)
         
         # Verify
-        assert result == "Scraped llms.txt results"
-        mock_scrape.assert_called_once()
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json["crawl_type"] == "text_file"
+        assert "https://example.com/llms-full.txt" in result_json["results"]
+        mock_crawl_markdown.assert_called_once()
     
     @pytest.mark.asyncio
-    @patch('crawl4ai_mcp.requests.get')
-    @patch('crawl4ai_mcp.scrape_urls')
-    async def test_smart_crawl_recursive(self, mock_scrape, mock_get):
+    @patch('crawl4ai_mcp.crawl_recursive_internal_links')
+    async def test_smart_crawl_recursive(self, mock_crawl_recursive):
         """Test recursive crawling of regular webpage"""
         # Setup
-        mock_response = MagicMock()
-        mock_response.text = '<html><body><a href="/page1">Link 1</a></body></html>'
-        mock_response.raise_for_status = MagicMock()
-        mock_get.return_value = mock_response
-        
-        mock_scrape.return_value = "Scraped results"
+        mock_crawl_recursive.return_value = [
+            {"url": "https://example.com", "markdown": "Main page content"},
+            {"url": "https://example.com/page1", "markdown": "Page 1 content"}
+        ]
         ctx = MockContext()
         
         # Test
-        result = await smart_crawl_url(ctx, url="https://example.com", max_pages=5)
+        result = await smart_crawl_url(ctx, url="https://example.com", max_depth=2, return_raw_markdown=True)
         
         # Verify
-        assert "Scraped results" in result
-        mock_get.assert_called_once()
-        mock_scrape.assert_called()
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json["crawl_type"] == "webpage"
+        assert len(result_json["results"]) == 2
+        assert "https://example.com" in result_json["results"]
+        assert "https://example.com/page1" in result_json["results"]
+        mock_crawl_recursive.assert_called_once_with(
+            ctx.request_context.lifespan_context.crawler,
+            ["https://example.com"],
+            max_depth=2,
+            max_concurrent=10
+        )
 
 
 class TestGetAvailableSources:
@@ -202,10 +255,12 @@ class TestGetAvailableSources:
         result = await get_available_sources(ctx)
         
         # Verify
-        assert "Available sources (1):" in result
-        assert "example.com" in result
-        assert "Example website" in result
-        assert "Words: 1,500" in result
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json["count"] == 1
+        assert len(result_json["sources"]) == 1
+        assert result_json["sources"][0]["source_id"] == "example.com"
+        assert result_json["sources"][0]["summary"] == "Example website"
     
     @pytest.mark.asyncio
     async def test_get_sources_empty(self):
@@ -220,7 +275,10 @@ class TestGetAvailableSources:
         result = await get_available_sources(ctx)
         
         # Verify
-        assert "No sources found" in result
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json["count"] == 0
+        assert len(result_json["sources"]) == 0
 
 
 class TestPerformRagQuery:
@@ -231,6 +289,7 @@ class TestPerformRagQuery:
     async def test_rag_query_basic(self, mock_search):
         """Test basic RAG query"""
         # Setup
+        # Since search_documents is called without await in the code, return a direct value
         mock_search.return_value = [
             {
                 "content": "Test content about Python",
@@ -246,9 +305,12 @@ class TestPerformRagQuery:
         result = await perform_rag_query(ctx, query="Python programming")
         
         # Verify
-        assert "Found 1 relevant results" in result
-        assert "Test content about Python" in result
-        assert "Source: https://example.com/python" in result
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json["count"] == 1
+        assert len(result_json["results"]) == 1
+        assert result_json["results"][0]["content"] == "Test content about Python"
+        assert result_json["results"][0]["url"] == "https://example.com/python"
         mock_search.assert_called_once()
     
     @pytest.mark.asyncio
@@ -257,10 +319,10 @@ class TestPerformRagQuery:
     async def test_rag_query_hybrid_search(self, mock_search):
         """Test RAG query with hybrid search enabled"""
         # Setup
-        mock_search.return_value = [{"content": "Result", "url": "https://example.com", "similarity": 0.8}]
+        mock_search.return_value = [{"id": "1", "content": "Result", "url": "https://example.com", "similarity": 0.8, "chunk_number": 1, "metadata": {}, "source_id": "src1"}]
         mock_db = AsyncMock()
         mock_db.search_documents_by_keyword.return_value = [
-            {"id": "2", "content": "Keyword result", "url": "https://example.com/2"}
+            {"id": "2", "content": "Keyword result", "url": "https://example.com/2", "chunk_number": 2, "metadata": {}, "source_id": "src2"}
         ]
         
         ctx = MockContext(database_client=mock_db)
@@ -269,7 +331,10 @@ class TestPerformRagQuery:
         result = await perform_rag_query(ctx, query="test query")
         
         # Verify
-        assert "results" in result
+        result_json = json.loads(result)
+        print(f"Hybrid search result JSON: {result_json}")
+        assert result_json["success"] is True
+        assert "results" in result_json
         mock_search.assert_called_once()
         mock_db.search_documents_by_keyword.assert_called_once()
     
@@ -293,7 +358,10 @@ class TestPerformRagQuery:
         result = await perform_rag_query(ctx, query="test query")
         
         # Verify
-        assert "Found 2 relevant results" in result
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json["count"] == 2
+        assert result_json["reranking_applied"] is True
         mock_reranker.predict.assert_called_once()
 
 
@@ -318,7 +386,7 @@ class TestSearch:
         }
         mock_get.return_value = mock_response
         
-        mock_scrape.return_value = "Scraped content"
+        mock_scrape.return_value = json.dumps({"success": True, "mode": "multi_url", "summary": {"successful_urls": 1}})
         
         ctx = MockContext()
         
@@ -326,8 +394,10 @@ class TestSearch:
         result = await search(ctx, query="test search", num_results=1)
         
         # Verify
-        assert "Found 1 search results" in result
-        assert "https://example.com/result1" in result
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert "searxng_results" in result_json
+        assert "https://example.com/result1" in result_json["searxng_results"]
         mock_get.assert_called_once()
         mock_scrape.assert_called_once()
     
@@ -346,7 +416,10 @@ class TestSearch:
         result = await search(ctx, query="no results query")
         
         # Verify
-        assert "No search results found" in result
+        result_json = json.loads(result)
+        assert result_json["success"] is False
+        assert "error" in result_json
+        assert "No search results" in result_json["error"]
     
     @pytest.mark.asyncio
     @patch('crawl4ai_mcp.requests.get')
@@ -360,7 +433,7 @@ class TestSearch:
         }
         mock_get.return_value = mock_response
         
-        mock_scrape.return_value = "# Raw Markdown Content"
+        mock_scrape.return_value = json.dumps({"success": True, "mode": "raw_markdown", "results": {"https://example.com": "# Raw Markdown Content"}})
         
         ctx = MockContext()
         
@@ -368,14 +441,20 @@ class TestSearch:
         result = await search(ctx, query="test", return_raw_markdown=True)
         
         # Verify
-        assert "# Raw Markdown Content" in result
-        mock_scrape.assert_called_with(
-            ctx, 
-            urls=["https://example.com"], 
-            return_raw_markdown=True,
-            batch_size=20,
-            max_concurrent=5
-        )
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json.get("mode") == "raw_markdown"
+        # Check that scrape_urls was called with the correct arguments
+        # The search function calls it with positional arguments
+        call_args = mock_scrape.call_args
+        assert call_args is not None
+        # First argument is ctx
+        assert call_args[0][0] == ctx
+        # Second argument is the list of URLs
+        assert call_args[0][1] == ["https://example.com"]
+        # Third and fourth are max_concurrent and batch_size
+        assert call_args[0][2] == 10  # max_concurrent
+        assert call_args[0][3] == 20  # batch_size
 
 
 class TestSearchCodeExamples:
@@ -383,10 +462,11 @@ class TestSearchCodeExamples:
     
     @pytest.mark.asyncio
     @patch.dict(os.environ, {"USE_AGENTIC_RAG": "true"})
-    @patch('crawl4ai_mcp.search_code_examples')
+    @patch('utils.search_code_examples')
     async def test_search_code_examples_success(self, mock_search):
         """Test searching code examples"""
         # Setup
+        # Mock the async search_code_examples function to return results
         mock_search.return_value = [
             {
                 "content": "def hello():\n    return 'world'",
@@ -404,9 +484,11 @@ class TestSearchCodeExamples:
         result = await search_code_tool(ctx, query="hello world function")
         
         # Verify
-        assert "Found 1 code examples" in result
-        assert "def hello():" in result
-        assert "Hello world function" in result
+        result_json = json.loads(result)
+        assert result_json["success"] is True
+        assert result_json["count"] == 1
+        assert "def hello():" in result_json["results"][0]["code"]
+        assert "Hello world function" in result_json["results"][0]["summary"]
         mock_search.assert_called_once()
     
     @pytest.mark.asyncio

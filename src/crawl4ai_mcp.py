@@ -7,17 +7,61 @@ Also includes AI hallucination detection and repository parsing tools using Neo4
 """
 import sys
 import traceback
+import logging
+from datetime import datetime
+import uuid
+import os
+import functools
+
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
+    handlers=[logging.StreamHandler(sys.stderr)]
+)
+logger = logging.getLogger('crawl4ai-mcp')
+
+# Enable debug mode from environment
+if os.getenv('MCP_DEBUG', '').lower() in ('true', '1', 'yes'):
+    logger.setLevel(logging.DEBUG)
+    logger.debug("Debug mode enabled")
+
+# Request tracking decorator
+def track_request(tool_name: str):
+    """Decorator to track MCP tool requests with timing and error handling"""
+    def decorator(func):
+        @functools.wraps(func)
+        async def wrapper(ctx: Context, *args, **kwargs):
+            request_id = str(uuid.uuid4())[:8]
+            start_time = datetime.now().timestamp()
+            
+            logger.info(f"[{request_id}] Starting {tool_name} request")
+            logger.debug(f"[{request_id}] Arguments: {kwargs}")
+            
+            try:
+                result = await func(ctx, *args, **kwargs)
+                duration = datetime.now().timestamp() - start_time
+                logger.info(f"[{request_id}] Completed {tool_name} in {duration:.2f}s")
+                return result
+            except Exception as e:
+                duration = datetime.now().timestamp() - start_time
+                logger.error(f"[{request_id}] Failed {tool_name} after {duration:.2f}s: {str(e)}")
+                logger.debug(f"[{request_id}] Traceback: {traceback.format_exc()}")
+                raise
+        
+        return wrapper
+    return decorator
 
 # Add early error logging
 try:
-    print("Starting Crawl4AI MCP server...", file=sys.stderr)
+    logger.info("Starting Crawl4AI MCP server...")
     from mcp.server.fastmcp import FastMCP, Context
 except Exception as e:
-    print(f"Error importing FastMCP: {e}", file=sys.stderr)
-    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    logger.error(f"Error importing FastMCP: {e}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
     sys.exit(1)
 try:
-    print("Importing dependencies...", file=sys.stderr)
+    logger.info("Importing dependencies...")
     from sentence_transformers import CrossEncoder
     from contextlib import asynccontextmanager
     from collections.abc import AsyncIterator
@@ -35,34 +79,34 @@ try:
     import re
     import concurrent.futures
     import time
-    print("Basic imports successful", file=sys.stderr)
+    logger.info("Basic imports successful")
 except Exception as e:
-    print(f"Error importing dependencies: {e}", file=sys.stderr)
-    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    logger.error(f"Error importing dependencies: {e}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
     sys.exit(1)
 
 try:
-    print("Importing Crawl4AI...", file=sys.stderr)
+    logger.info("Importing Crawl4AI...")
     from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, MemoryAdaptiveDispatcher
-    print("Crawl4AI imported successfully", file=sys.stderr)
+    logger.info("Crawl4AI imported successfully")
 except Exception as e:
-    print(f"Error importing Crawl4AI: {e}", file=sys.stderr)
-    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    logger.error(f"Error importing Crawl4AI: {e}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
     sys.exit(1)
 
 # Add knowledge_graphs folder to path for importing knowledge graph modules
 knowledge_graphs_path = Path(__file__).resolve().parent.parent / 'knowledge_graphs'
 sys.path.append(str(knowledge_graphs_path))
-print(f"Added knowledge_graphs path: {knowledge_graphs_path}", file=sys.stderr)
+logger.debug(f"Added knowledge_graphs path: {knowledge_graphs_path}")
 
 # Import database factory and utilities
 try:
-    print("Importing database factory...", file=sys.stderr)
+    logger.info("Importing database factory...")
     from database.factory import create_and_initialize_database
-    print("Database factory imported successfully", file=sys.stderr)
+    logger.info("Database factory imported successfully")
 except Exception as e:
-    print(f"Error importing database factory: {e}", file=sys.stderr)
-    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    logger.error(f"Error importing database factory: {e}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
     sys.exit(1)
 from utils_refactored import (
     add_documents_to_database,
@@ -83,13 +127,13 @@ from hallucination_reporter import HallucinationReporter
 # Load environment variables from the project root .env file
 project_root = Path(__file__).resolve().parent.parent
 dotenv_path = project_root / '.env'
-print(f"Loading .env from: {dotenv_path}", file=sys.stderr)
-print(f".env exists: {dotenv_path.exists()}", file=sys.stderr)
+logger.info(f"Loading .env from: {dotenv_path}")
+logger.debug(f".env exists: {dotenv_path.exists()}")
 
 # Load environment variables from .env file (but don't override existing ones)
 load_dotenv(dotenv_path, override=False)
-print(f"VECTOR_DATABASE: {os.getenv('VECTOR_DATABASE')}", file=sys.stderr)
-print(f"QDRANT_URL: {os.getenv('QDRANT_URL')}", file=sys.stderr)
+logger.info(f"VECTOR_DATABASE: {os.getenv('VECTOR_DATABASE')}")
+logger.debug(f"QDRANT_URL: {os.getenv('QDRANT_URL')}")
 
 # Helper functions for Neo4j validation and error handling
 def validate_neo4j_connection() -> bool:
@@ -267,7 +311,7 @@ try:
     print("FastMCP server initialized successfully", file=sys.stderr)
 except Exception as e:
     print(f"Error initializing FastMCP server: {e}", file=sys.stderr)
-    print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+    logger.error(f"Traceback: {traceback.format_exc()}")
     sys.exit(1)
 
 def rerank_results(model: CrossEncoder, query: str, results: List[Dict[str, Any]], content_key: str = "content") -> List[Dict[str, Any]]:
@@ -305,7 +349,7 @@ def rerank_results(model: CrossEncoder, query: str, results: List[Dict[str, Any]
         
         return reranked
     except Exception as e:
-        print(f"Error during reranking: {e}", file=sys.stderr)
+        logger.error(f"Error during reranking: {e}")
         return results
 
 def is_sitemap(url: str) -> bool:
@@ -350,7 +394,7 @@ def parse_sitemap(sitemap_url: str) -> List[str]:
             tree = ElementTree.fromstring(resp.content)
             urls = [loc.text for loc in tree.findall('.//{*}loc')]
         except Exception as e:
-            print(f"Error parsing sitemap XML: {e}", file=sys.stderr)
+            logger.error(f"Error parsing sitemap XML: {e}")
 
     return urls
 
@@ -433,6 +477,7 @@ def process_code_example(args):
     return generate_code_example_summary(code, context_before, context_after)
 
 @mcp.tool()
+@track_request("search")
 async def search(ctx: Context, query: str, return_raw_markdown: bool = False, num_results: int = 6, batch_size: int = 20, max_concurrent: int = 10) -> str:
     """
     Comprehensive search tool that integrates SearXNG search with scraping and RAG functionality.
@@ -491,8 +536,8 @@ async def search(ctx: Context, query: str, return_raw_markdown: bool = False, nu
         if default_engines:
             params["engines"] = default_engines
         
-        print(f"Making SearXNG request to: {search_endpoint}", file=sys.stderr)
-        print(f"Parameters: {params}", file=sys.stderr)
+        logger.debug(f"Making SearXNG request to: {search_endpoint}")
+        logger.debug(f"Parameters: {params}")
         
         # Make the HTTP request to SearXNG
         try:
@@ -557,7 +602,7 @@ async def search(ctx: Context, query: str, return_raw_markdown: bool = False, nu
                 "error": "No valid URLs found in search results"
             }, indent=2)
         
-        print(f"Found {len(valid_urls)} valid URLs to process", file=sys.stderr)
+        logger.info(f"Found {len(valid_urls)} valid URLs to process")
         
         # Step 5: Content processing - use existing scrape_urls function
         try:
@@ -670,6 +715,7 @@ async def search(ctx: Context, query: str, return_raw_markdown: bool = False, nu
         }, indent=2)
 
 @mcp.tool()
+@track_request("scrape_urls")
 async def scrape_urls(ctx: Context, url: Union[str, List[str]], max_concurrent: int = 10, batch_size: int = 20, return_raw_markdown: bool = False) -> str:
     """
     Scrape **one or more URLs** and store their contents as embedding chunks in Supabase.
@@ -1093,6 +1139,7 @@ async def _process_multiple_urls(
             }, indent=2)
 
 @mcp.tool()
+@track_request("smart_crawl_url")
 async def smart_crawl_url(ctx: Context, url: str, max_depth: int = 3, max_concurrent: int = 10, chunk_size: int = 5000, return_raw_markdown: bool = False, query: List[str] = None) -> str:
     """
     Intelligently crawl a URL based on its type and store content in Supabase.
@@ -1361,6 +1408,7 @@ async def smart_crawl_url(ctx: Context, url: str, max_depth: int = 3, max_concur
         }, indent=2)
 
 @mcp.tool()
+@track_request("get_available_sources")
 async def get_available_sources(ctx: Context) -> str:
     """
     Get all available sources from the sources table.
@@ -1409,6 +1457,7 @@ async def get_available_sources(ctx: Context) -> str:
         }, indent=2)
 
 @mcp.tool()
+@track_request("perform_rag_query")
 async def perform_rag_query(ctx: Context, query: str, source: str = None, match_count: int = 5) -> str:
     """
     Perform a RAG (Retrieval Augmented Generation) query on the stored content.
@@ -1498,7 +1547,7 @@ async def perform_rag_query(ctx: Context, query: str, source: str = None, match_
             
         else:
             # Standard vector search only
-            results = search_documents(
+            results = await search_documents(
                 database=database_client,
                 query=query,
                 match_count=match_count,
@@ -1541,6 +1590,7 @@ async def perform_rag_query(ctx: Context, query: str, source: str = None, match_
         }, indent=2)
 
 @mcp.tool()
+@track_request("search_code_examples")
 async def search_code_examples(ctx: Context, query: str, source_id: str = None, match_count: int = 5) -> str:
     """
     Search for code examples relevant to the query.
@@ -1691,6 +1741,7 @@ async def search_code_examples(ctx: Context, query: str, source_id: str = None, 
         }, indent=2)
 
 @mcp.tool()
+@track_request("check_ai_script_hallucinations")
 async def check_ai_script_hallucinations(ctx: Context, script_path: str) -> str:
     """
     Check an AI-generated Python script for hallucinations using the knowledge graph.
@@ -1744,7 +1795,7 @@ async def check_ai_script_hallucinations(ctx: Context, script_path: str) -> str:
         analysis_result = analyzer.analyze_script(script_path)
         
         if analysis_result.errors:
-            print(f"Analysis warnings for {script_path}: {analysis_result.errors}", file=sys.stderr)
+            logger.warning(f"Analysis warnings for {script_path}: {analysis_result.errors}")
         
         # Step 2: Validate against knowledge graph
         validation_result = await knowledge_validator.validate_script(analysis_result)
@@ -1786,6 +1837,7 @@ async def check_ai_script_hallucinations(ctx: Context, script_path: str) -> str:
         }, indent=2)
 
 @mcp.tool()
+@track_request("query_knowledge_graph")
 async def query_knowledge_graph(ctx: Context, command: str) -> str:
     """
     Query and explore the Neo4j knowledge graph containing repository data.
@@ -2240,6 +2292,7 @@ async def _handle_query_command(session, command: str, cypher_query: str) -> str
 
 
 @mcp.tool()
+@track_request("parse_github_repository")
 async def parse_github_repository(ctx: Context, repo_url: str) -> str:
     """
     Parse a GitHub repository into the Neo4j knowledge graph.
@@ -2290,9 +2343,9 @@ async def parse_github_repository(ctx: Context, repo_url: str) -> str:
         repo_name = validation["repo_name"]
         
         # Parse the repository (this includes cloning, analysis, and Neo4j storage)
-        print(f"Starting repository analysis for: {repo_name}", file=sys.stderr)
+        logger.info(f"Starting repository analysis for: {repo_name}")
         await repo_extractor.analyze_repository(repo_url)
-        print(f"Repository analysis completed for: {repo_name}", file=sys.stderr)
+        logger.info(f"Repository analysis completed for: {repo_name}")
         
         # Query Neo4j for statistics about the parsed repository
         async with repo_extractor.driver.session() as session:
@@ -2384,7 +2437,7 @@ async def crawl_markdown_file(crawler: AsyncWebCrawler, url: str) -> List[Dict[s
     if result.success and result.markdown:
         return [{'url': url, 'markdown': result.markdown}]
     else:
-        print(f"Failed to crawl {url}: {result.error_message}", file=sys.stderr)
+        logger.error(f"Failed to crawl {url}: {result.error_message}")
         return []
 
 async def crawl_batch(crawler: AsyncWebCrawler, urls: List[str], max_concurrent: int = 10) -> List[Dict[str, Any]]:
@@ -2462,28 +2515,28 @@ async def crawl_recursive_internal_links(crawler: AsyncWebCrawler, start_urls: L
 
 async def main():
     try:
-        print("Main function started", file=sys.stderr)
+        logger.info("Main function started")
         transport = os.getenv("TRANSPORT", "sse")
-        print(f"Transport mode: {transport}", file=sys.stderr)
+        logger.info(f"Transport mode: {transport}")
         
         if transport == 'sse':
             # Run the MCP server with sse transport
-            print("Running with SSE transport", file=sys.stderr)
+            logger.info("Running with SSE transport")
             await mcp.run_sse_async()
         else:
             # Run the MCP server with stdio transport
-            print("Running with STDIO transport", file=sys.stderr)
+            logger.info("Running with STDIO transport")
             await mcp.run_stdio_async()
     except Exception as e:
-        print(f"Error in main function: {e}", file=sys.stderr)
-        print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+        logger.error(f"Error in main function: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         raise
 
 if __name__ == "__main__":
     try:
-        print("Starting main function...", file=sys.stderr)
+        logger.info("Starting main function...")
         asyncio.run(main())
     except Exception as e:
-        print(f"Error in main: {e}", file=sys.stderr)
-        print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
+        logger.error(f"Error in main: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         sys.exit(1)
