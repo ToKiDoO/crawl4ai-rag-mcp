@@ -22,16 +22,36 @@ sys.modules['ai_script_analyzer'] = MagicMock()
 sys.modules['hallucination_reporter'] = MagicMock()
 
 # Import MCP tools - we'll test the tool functions directly
+import crawl4ai_mcp
+
+# Extract the actual functions from FunctionTool wrappers
+def get_tool_function(tool_name):
+    """Extract the actual function from a FunctionTool wrapper."""
+    tool = getattr(crawl4ai_mcp, tool_name)
+    # Check if it's a FunctionTool and extract the underlying function
+    if hasattr(tool, 'fn'):
+        return tool.fn
+    elif hasattr(tool, 'func'):
+        return tool.func
+    elif hasattr(tool, '__wrapped__'):
+        return tool.__wrapped__
+    else:
+        # It's likely a regular function or class
+        return tool
+
+# Extract the tool functions
+scrape_urls = get_tool_function('scrape_urls')
+smart_crawl_url = get_tool_function('smart_crawl_url')
+get_available_sources = get_tool_function('get_available_sources')
+perform_rag_query = get_tool_function('perform_rag_query')
+search = get_tool_function('search')
+search_code_examples = get_tool_function('search_code_examples')
+check_ai_script_hallucinations = get_tool_function('check_ai_script_hallucinations')
+query_knowledge_graph = get_tool_function('query_knowledge_graph')
+parse_github_repository = get_tool_function('parse_github_repository')
+
+# Import helper functions and classes directly
 from crawl4ai_mcp import (
-    scrape_urls,
-    smart_crawl_url,
-    get_available_sources,
-    perform_rag_query,
-    search,
-    search_code_examples,
-    check_ai_script_hallucinations,
-    query_knowledge_graph,
-    parse_github_repository,
     Crawl4AIContext,
     # Helper functions
     track_request,
