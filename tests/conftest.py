@@ -11,6 +11,11 @@ import sys
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
+# Set test environment variables BEFORE any imports
+os.environ["OPENAI_API_KEY"] = "test-key-for-mocks"
+os.environ["VECTOR_DATABASE"] = "qdrant"
+os.environ["QDRANT_URL"] = "http://localhost:6333"
+
 # Load test environment
 from . import test_env  # This will auto-load test environment
 
@@ -511,13 +516,16 @@ def event_loop():
 @pytest.fixture
 def mock_openai_embeddings():
     """Mock OpenAI embeddings for testing"""
-    import openai
+    # Ensure OPENAI_API_KEY is set before importing
+    os.environ["OPENAI_API_KEY"] = "test-key-for-mocks"
+    
+    from unittest.mock import patch, MagicMock
     
     mock_response = MagicMock()
     mock_response.data = [MagicMock(embedding=[0.1] * 1536)]
     
-    openai.embeddings.create = MagicMock(return_value=mock_response)
-    yield openai.embeddings.create
+    with patch('openai.embeddings.create', return_value=mock_response) as mock_create:
+        yield mock_create
 
 
 @pytest.fixture

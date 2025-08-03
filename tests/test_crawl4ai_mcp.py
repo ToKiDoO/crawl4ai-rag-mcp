@@ -1,6 +1,9 @@
 """
 Unit tests for main MCP application functions.
 """
+# Import test setup FIRST to configure environment
+from . import test_setup
+
 import pytest
 import asyncio
 from unittest.mock import patch, MagicMock, AsyncMock, call, mock_open

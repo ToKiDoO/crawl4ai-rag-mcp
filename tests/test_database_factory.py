@@ -1,6 +1,9 @@
 """
 Unit tests for database factory.
 """
+# Import test setup FIRST to configure environment
+from . import test_setup
+
 import pytest
 import os
 import sys
