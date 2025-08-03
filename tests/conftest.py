@@ -226,18 +226,18 @@ async def get_adapter():
             # Import will be available after we create the adapter
             from database.qdrant_adapter import QdrantAdapter
             adapter = QdrantAdapter(url="http://localhost:6333")
-            # Mock the Qdrant client for testing
-            adapter.client = AsyncMock()
+            # Mock the Qdrant client for testing - Qdrant client is SYNCHRONOUS
+            adapter.client = MagicMock()
             
             # Simple state tracking for deleted URLs
             deleted_urls = set()
             
             # Mock collection operations
-            adapter.client.get_collection = AsyncMock(return_value=MagicMock())
-            adapter.client.create_collection = AsyncMock()
+            adapter.client.get_collection = MagicMock(return_value=MagicMock())
+            adapter.client.create_collection = MagicMock()
             
             # Mock delete to track deleted URLs
-            async def mock_delete(collection_name, points_selector):
+            def mock_delete(collection_name, points_selector):
                 # In the delete test, this gets called with point IDs
                 # We'll just track that deletion happened
                 if collection_name == "crawled_pages" and isinstance(points_selector, list):
@@ -258,8 +258,8 @@ async def get_adapter():
                 await original_delete_by_url(urls)
             adapter.delete_documents_by_url = tracked_delete_by_url
             
-            # Mock upsert to check embedding sizes
-            async def mock_upsert(collection_name, points):
+            # Mock upsert to check embedding sizes - Qdrant client is SYNCHRONOUS
+            def mock_upsert(collection_name, points):
                 # Check embedding sizes in points
                 for point in points:
                     if hasattr(point, 'vector') and len(point.vector) != 1536:
@@ -278,8 +278,8 @@ async def get_adapter():
                 return await original_search_documents(query_embedding, match_count, filter_metadata, source_filter)
             adapter.search_documents = search_with_validation
             
-            # Mock search operations
-            async def mock_search(collection_name, query_vector, limit=10, with_payload=True, query_filter=None):
+            # Mock search operations - Qdrant client is SYNCHRONOUS
+            def mock_search(collection_name, query_vector, limit=10, with_payload=True, query_filter=None):
                 # Check embedding size (but don't raise here, let search_documents handle it)
                 if query_vector and len(query_vector) != 1536:
                     # Return empty results to trigger search_documents to handle it
@@ -447,6 +447,10 @@ async def get_adapter():
             
             adapter.client.search = mock_search
             
+            # Mock other Qdrant client operations - all are SYNCHRONOUS
+            adapter.client.retrieve = MagicMock(return_value=[])
+            adapter.client.set_payload = MagicMock()
+            
             # Track sources for Qdrant
             adapter._test_sources_qdrant = {}
             
@@ -474,14 +478,12 @@ async def get_adapter():
                     }]
             adapter.get_sources = mock_get_sources
             
-            # Mock scroll operations for get_all_payloads
-            adapter.client.scroll = AsyncMock(return_value=([
-                MagicMock(payload={
-                    "source_id": "test-source.com",
-                    "summary": "A test source for unit tests",
-                    "total_word_count": 1000
-                })
-            ], None))
+            # Mock scroll operations for get_all_payloads - Qdrant client is SYNCHRONOUS  
+            def mock_scroll(collection_name, scroll_filter=None, offset=None, limit=100, with_payload=True):
+                # Default empty response for most cases
+                return ([], None)
+            
+            adapter.client.scroll = MagicMock(side_effect=mock_scroll)
             
         else:
             raise ValueError(f"Unknown adapter: {adapter_name}")
