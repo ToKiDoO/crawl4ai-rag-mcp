@@ -1,5 +1,11 @@
 name: Qdrant QA Automation
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -42,10 +48,11 @@ jobs:
         ports:
           - 6333:6333
         options: >-
-          --health-cmd "curl -f http://localhost:6333/health"
+          --health-cmd "/usr/bin/bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333 && echo -e \"GET /readyz HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\" >&3 && grep -q \"HTTP/1.1 200\" <&3'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --health-start-period 30s
     
     steps:
     - name: Checkout code
@@ -75,12 +82,22 @@ jobs:
       run: |
         uv sync
     
+    - name: Debug environment
+      run: |
+        echo "🔍 Environment information:"
+        echo "Python version: $(python --version)"
+        echo "Current directory: $(pwd)"
+        echo "Docker containers:"
+        docker ps -a || true
+        echo "Network services:"
+        netstat -tuln | grep -E "(6333|8051)" || true
+    
     - name: Verify Qdrant is healthy
       run: |
         max_attempts=30
         attempt=0
         while [ $attempt -lt $max_attempts ]; do
-          if curl -f http://localhost:6333/health; then
+          if curl -s http://localhost:6333/readyz | grep -q "All systems operational"; then
             echo "Qdrant is healthy!"
             break
           fi
@@ -91,6 +108,7 @@ jobs:
         
         if [ $attempt -eq $max_attempts ]; then
           echo "Qdrant failed to start!"
+          docker logs $(docker ps -q --filter "name=qdrant") || true
           exit 1
         fi
     
@@ -101,7 +119,7 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
       run: |
         echo "🧪 Running Qdrant adapter unit tests..."
-        uv run pytest tests/test_qdrant_adapter.py -v --tb=short
+        uv run pytest tests/test_qdrant_adapter.py -vv --tb=short
     
     - name: Run integration tests
       env:
@@ -110,7 +128,7 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
       run: |
         echo "🔗 Running Qdrant integration tests..."
-        uv run pytest tests/test_qdrant_integration.py -v --tb=short
+        uv run pytest tests/test_qdrant_integration.py -vv --tb=short
     
     - name: Run performance benchmarks
       if: ${{ github.event.inputs.run_benchmarks != 'false' }}
@@ -129,7 +147,7 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
       run: |
         echo "📋 Running interface contract tests..."
-        uv run pytest tests/test_database_interface.py::TestQdrantInterface -v --tb=short
+        uv run pytest tests/test_database_interface.py::TestQdrantInterface -vv --tb=short
     
     - name: Generate test coverage
       env:
@@ -147,12 +165,13 @@ jobs:
     
     - name: Upload coverage reports
       uses: actions/upload-artifact@v4
-      if: always()
+      if: always() && (success() || failure())
       with:
         name: coverage-reports
         path: |
           coverage.xml
           htmlcov/
+        if-no-files-found: warn
     
     - name: Generate test report
       if: always()
@@ -264,10 +283,11 @@ jobs:
             networks:
               - default
             healthcheck:
-              test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
-              interval: 5s
-              timeout: 3s
+              test: ["CMD", "/usr/bin/bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6333 && echo -e 'GET /readyz HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q 'HTTP/1.1 200' <&3"]
+              interval: 10s
+              timeout: 5s
               retries: 5
+              start_period: 30s
         
         volumes:
           qdrant-data:
@@ -284,7 +304,7 @@ jobs:
         sleep 10
         
         # Wait for Qdrant
-        timeout 60 bash -c 'until curl -s http://localhost:6333/health; do sleep 1; done'
+        timeout 60 bash -c 'until curl -s http://localhost:6333/readyz | grep -q "All systems operational"; do sleep 1; done'
         
         # Wait for MCP server
         timeout 60 bash -c 'until curl -s http://localhost:8051/health; do sleep 1; done'

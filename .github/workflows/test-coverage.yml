@@ -1,5 +1,11 @@
 name: Test Coverage
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
 on:
   push:
     branches: [ main, develop ]
@@ -31,20 +37,45 @@ jobs:
       run: |
         uv sync
     
-    - name: Run unit tests with coverage
+    - name: Debug environment
       run: |
+        echo "🔍 Environment information:"
+        echo "Python version: $(python --version)"
+        echo "Current directory: $(pwd)"
+        echo "Environment variables:"
+        env | grep -E "(VECTOR_DATABASE|QDRANT|OPENAI)" || echo "No relevant env vars set"
+        echo "Installed packages:"
+        uv pip list | grep -E "(qdrant|pytest|openai)" || true
+    
+    - name: Run unit tests with coverage
+      env:
+        VECTOR_DATABASE: qdrant
+        QDRANT_URL: http://localhost:6333
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
+      run: |
+        echo "🧪 Running unit tests with coverage..."
         uv run pytest tests/test_utils_refactored.py tests/test_database_factory.py tests/test_crawl4ai_mcp.py \
-          -v --cov=src --cov-report=xml --cov-report=term-missing
+          -vv --tb=short --cov=src --cov-report=xml --cov-report=html:htmlcov --cov-report=term-missing
     
     - name: Run adapter tests
+      env:
+        VECTOR_DATABASE: qdrant
+        QDRANT_URL: http://localhost:6333
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
       run: |
+        echo "🔗 Running adapter tests..."
         uv run pytest tests/test_supabase_adapter.py tests/test_qdrant_adapter.py \
-          -v --cov=src --cov-append --cov-report=xml --cov-report=term-missing
+          -vv --tb=short --cov=src --cov-append --cov-report=xml --cov-report=html:htmlcov --cov-report=term-missing
     
     - name: Run interface tests
+      env:
+        VECTOR_DATABASE: qdrant
+        QDRANT_URL: http://localhost:6333
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key-for-mocks' }}
       run: |
+        echo "📋 Running interface tests..."
         uv run pytest tests/test_database_interface.py tests/test_integration_simple.py \
-          -v --cov=src --cov-append --cov-report=xml --cov-report=term-missing
+          -vv --tb=short --cov=src --cov-append --cov-report=xml --cov-report=html:htmlcov --cov-report=term-missing
     
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
@@ -62,9 +93,10 @@ jobs:
     
     - name: Archive coverage reports
       uses: actions/upload-artifact@v4
-      if: always()
+      if: always() && (success() || failure())
       with:
         name: coverage-reports
         path: |
           coverage.xml
           htmlcov/
+        if-no-files-found: warn
