@@ -1,0 +1,333 @@
+"""
+Tests for utility functions in crawl4ai_mcp.py to improve coverage.
+"""
+import pytest
+import asyncio
+from unittest.mock import patch, MagicMock, AsyncMock, Mock
+import os
+import sys
+import json
+import xml.etree.ElementTree as ET
+from typing import List, Dict, Any
+import requests
+
+# Add src to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+from crawl4ai_mcp import (
+    parse_sitemap,
+    smart_chunk_markdown,
+    searxng_search,
+    add_documents_to_database,
+    add_code_examples_to_database,
+    crawl_batch,
+    Crawl4AIContext
+)
+
+
+class TestUtilityFunctions:
+    """Test utility functions in crawl4ai_mcp"""
+    
+    def test_parse_sitemap_success(self):
+        """Test successful sitemap parsing"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.content = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url><loc>https://example.com/page1</loc></url>
+            <url><loc>https://example.com/page2</loc></url>
+            <url><loc>https://example.com/page3</loc></url>
+        </urlset>"""
+        
+        with patch('requests.get', return_value=mock_response):
+            urls = parse_sitemap("https://example.com/sitemap.xml")
+            
+            assert len(urls) == 3
+            assert "https://example.com/page1" in urls
+            assert "https://example.com/page2" in urls
+            assert "https://example.com/page3" in urls
+    
+    def test_parse_sitemap_failure(self):
+        """Test sitemap parsing with HTTP error"""
+        mock_response = Mock()
+        mock_response.status_code = 404
+        
+        with patch('requests.get', return_value=mock_response):
+            urls = parse_sitemap("https://example.com/sitemap.xml")
+            assert urls == []
+    
+    def test_parse_sitemap_invalid_xml(self):
+        """Test sitemap parsing with invalid XML"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.content = b"<invalid>xml</not-closed>"
+        
+        with patch('requests.get', return_value=mock_response):
+            urls = parse_sitemap("https://example.com/sitemap.xml")
+            assert urls == []
+    
+    def test_smart_chunk_markdown_code_blocks(self):
+        """Test markdown chunking with code blocks"""
+        text = """# Title
+        
+        Some introduction text.
+        
+        ```python
+        def long_function():
+            # This is a very long function
+            print("Line 1")
+            print("Line 2")
+            print("Line 3")
+        ```
+        
+        More text after code.
+        """
+        
+        chunks = smart_chunk_markdown(text, chunk_size=100)
+        assert len(chunks) > 1
+        # Should break before code block
+        assert "```python" in chunks[1]
+    
+    def test_smart_chunk_markdown_paragraphs(self):
+        """Test markdown chunking with paragraphs"""
+        text = """First paragraph with some content.
+        
+        Second paragraph with more content that is quite long and detailed.
+        
+        Third paragraph that continues the discussion."""
+        
+        chunks = smart_chunk_markdown(text, chunk_size=80)
+        assert len(chunks) >= 2
+        # Should break at paragraph boundaries
+        assert chunks[0].endswith("content.")
+    
+    def test_smart_chunk_markdown_sentences(self):
+        """Test markdown chunking with sentences"""
+        text = "First sentence here. Second sentence is longer. Third sentence continues. Fourth sentence ends."
+        
+        chunks = smart_chunk_markdown(text, chunk_size=50)
+        assert len(chunks) >= 2
+        # Should break at sentence boundaries
+        assert chunks[0].endswith(".")
+    
+    def test_smart_chunk_markdown_basic_alt(self):
+        """Test basic markdown chunking function"""
+        text = "Short text that fits in one chunk"
+        chunks = smart_chunk_markdown(text, chunk_size=100)
+        assert len(chunks) >= 1
+        assert all(isinstance(chunk, str) for chunk in chunks)
+        
+        # Test longer text
+        long_text = "A" * 500
+        chunks = smart_chunk_markdown(long_text, chunk_size=100)
+        assert len(chunks) > 1
+        assert all(isinstance(chunk, str) for chunk in chunks)
+    
+    @pytest.mark.asyncio
+    async def test_searxng_search_success(self):
+        """Test successful SearXNG search"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "results": [
+                {
+                    "url": "https://example.com/result1",
+                    "title": "Result 1",
+                    "content": "Description of result 1"
+                },
+                {
+                    "url": "https://example.com/result2",
+                    "title": "Result 2",
+                    "content": "Description of result 2"
+                }
+            ]
+        }
+        
+        with patch('requests.get', return_value=mock_response):
+            results = await searxng_search("test query", num_results=2)
+            
+            assert results["success"] is True
+            assert len(results["results"]) == 2
+            assert results["results"][0]["url"] == "https://example.com/result1"
+    
+    @pytest.mark.asyncio
+    async def test_searxng_search_failure(self):
+        """Test SearXNG search with connection error"""
+        with patch('requests.get', side_effect=requests.ConnectionError("Connection failed")):
+            results = await searxng_search("test query", num_results=5)
+            
+            assert results["success"] is False
+            assert "error" in results
+            assert results["results"] == []
+    
+    @pytest.mark.asyncio
+    async def test_add_documents_to_database(self):
+        """Test adding documents to database"""
+        mock_db_client = AsyncMock()
+        mock_db_client.add_documents_batch.return_value = {"success": True, "processed": 2}
+        
+        urls = ["https://example.com/1", "https://example.com/2"]
+        chunk_numbers = [1, 1]
+        contents = ["Content 1", "Content 2"]
+        metadatas = [{"title": "Page 1"}, {"title": "Page 2"}]
+        url_to_full = {
+            "https://example.com/1": "Full content 1",
+            "https://example.com/2": "Full content 2"
+        }
+        
+        await add_documents_to_database(
+            mock_db_client,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            url_to_full,
+            batch_size=10
+        )
+        
+        # Should have been called once with all documents
+        mock_db_client.add_documents_batch.assert_called_once()
+        call_args = mock_db_client.add_documents_batch.call_args[0][0]
+        assert len(call_args) == 2
+    
+    @pytest.mark.asyncio
+    async def test_add_code_examples_to_database(self):
+        """Test adding code examples to database"""
+        mock_db_client = AsyncMock()
+        mock_db_client.add_code_examples.return_value = {"success": True}
+        
+        urls = ["https://example.com/code"]
+        chunk_numbers = [1]
+        code_examples = ["def test(): pass"]
+        summaries = ["Test function"]
+        metadatas = [{"language": "python"}]
+        
+        await add_code_examples_to_database(
+            mock_db_client,
+            urls,
+            chunk_numbers,
+            code_examples,
+            summaries,
+            metadatas,
+            batch_size=10
+        )
+        
+        mock_db_client.add_code_examples.assert_called_once()
+    
+    @pytest.mark.asyncio
+    async def test_crawl_batch_success(self):
+        """Test batch crawling with mixed results"""
+        mock_crawler = AsyncMock()
+        
+        # Mock different responses
+        result1 = MagicMock()
+        result1.success = True
+        result1.markdown = "# Page 1\nContent"
+        result1.cleaned_html = "<h1>Page 1</h1><p>Content</p>"
+        result1.metadata = {"title": "Page 1"}
+        result1.media = {"images": [], "videos": []}
+        result1.links = {"internal": [], "external": []}
+        result1.screenshot = None
+        result1.pdf = None
+        result1.failed_before = False
+        
+        result2 = MagicMock()
+        result2.success = False
+        result2.error_message = "404 Not Found"
+        
+        mock_crawler.arun.side_effect = [result1, result2]
+        
+        urls = ["https://example.com/1", "https://example.com/404"]
+        results = await crawl_batch(mock_crawler, urls, max_concurrent=2)
+        
+        assert len(results) == 2
+        assert results[0]["success"] is True
+        assert results[0]["url"] == "https://example.com/1"
+        assert results[0]["markdown"] == "# Page 1\nContent"
+        
+        assert results[1]["success"] is False
+        assert results[1]["url"] == "https://example.com/404"
+        assert "error" in results[1]
+    
+    @pytest.mark.asyncio
+    async def test_crawl_batch_exception_handling(self):
+        """Test batch crawling with exceptions"""
+        mock_crawler = AsyncMock()
+        mock_crawler.arun.side_effect = Exception("Network error")
+        
+        urls = ["https://example.com/error"]
+        results = await crawl_batch(mock_crawler, urls)
+        
+        assert len(results) == 1
+        assert results[0]["success"] is False
+        assert "Network error" in results[0]["error"]
+
+
+class TestChunkingEdgeCases:
+    """Test edge cases for text chunking functions"""
+    
+    def test_smart_chunk_empty_text(self):
+        """Test chunking empty text"""
+        chunks = smart_chunk_markdown("", chunk_size=100)
+        assert chunks == []
+    
+    def test_smart_chunk_exact_size(self):
+        """Test text exactly matching chunk size"""
+        text = "A" * 100
+        chunks = smart_chunk_markdown(text, chunk_size=100)
+        assert len(chunks) == 1
+        assert chunks[0] == text
+    
+    def test_smart_chunk_no_break_points(self):
+        """Test text with no natural break points"""
+        text = "A" * 200  # No spaces, periods, or newlines
+        chunks = smart_chunk_markdown(text, chunk_size=100)
+        assert len(chunks) == 2
+        assert len(chunks[0]) == 100
+        assert len(chunks[1]) == 100
+    
+    def test_smart_chunk_markdown_unicode(self):
+        """Test chunking with unicode characters"""
+        text = "Hello 世界 " * 50  # Mix of ASCII and Unicode
+        chunks = smart_chunk_markdown(text, chunk_size=100)
+        assert len(chunks) > 1
+        assert all(chunk for chunk in chunks)  # No empty chunks
+
+
+class TestErrorScenarios:
+    """Test error handling scenarios"""
+    
+    @pytest.mark.asyncio
+    async def test_searxng_search_invalid_json(self):
+        """Test SearXNG with invalid JSON response"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.side_effect = json.JSONDecodeError("Invalid", "", 0)
+        
+        with patch('requests.get', return_value=mock_response):
+            results = await searxng_search("test", num_results=1)
+            assert results["success"] is False
+            assert "error" in results
+    
+    @pytest.mark.asyncio
+    async def test_add_documents_database_error(self):
+        """Test database error during document addition"""
+        mock_db_client = AsyncMock()
+        mock_db_client.add_documents_batch.side_effect = Exception("Database unavailable")
+        
+        # Should not raise exception, but handle gracefully
+        await add_documents_to_database(
+            mock_db_client,
+            ["https://example.com"],
+            [1],
+            ["Content"],
+            [{}],
+            {"https://example.com": "Full content"}
+        )
+        
+        # Verify it was attempted
+        mock_db_client.add_documents_batch.assert_called_once()
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

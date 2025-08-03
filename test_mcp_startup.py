@@ -9,7 +9,7 @@ print("VECTOR_DATABASE:", os.getenv('VECTOR_DATABASE'), file=sys.stderr)
 
 try:
     print("Importing mcp...", file=sys.stderr)
-    from mcp.server.fastmcp import FastMCP
+    from fastmcp import FastMCP
     print("FastMCP imported successfully", file=sys.stderr)
     
     print("Creating minimal MCP server...", file=sys.stderr)

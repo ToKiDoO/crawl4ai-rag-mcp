@@ -591,8 +591,8 @@ def add_code_examples_to_supabase(
                             print(f"Failed to insert individual record for URL {record['url']}: {individual_error}", file=sys.stderr)
                     
                     if successful_inserts > 0:
-                        print(f"Successfully inserted {successful_inserts}/{len(batch_data, file=sys.stderr)} records individually")
-        print(f"Inserted batch {i//batch_size + 1} of {(total_items + batch_size - 1, file=sys.stderr)//batch_size} code examples")
+                        print(f"Successfully inserted {successful_inserts}/{len(batch_data)} records individually", file=sys.stderr)
+        print(f"Inserted batch {i//batch_size + 1} of {(total_items + batch_size - 1)//batch_size} code examples", file=sys.stderr)
 
 
 def update_source_info(client: Client, source_id: str, summary: str, word_count: int):

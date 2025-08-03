@@ -9,7 +9,6 @@ import os
 import time
 import json
 import sys
-import os
 from typing import List, Dict, Any
 from testcontainers.compose import DockerCompose
 

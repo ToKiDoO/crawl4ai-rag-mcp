@@ -88,7 +88,7 @@ echo -e "${BOLD}2. Dependencies Check${NC}"
 echo "--------------------"
 
 # Check critical Python imports
-run_python_test "MCP imports" "from mcp.server.fastmcp import FastMCP"
+run_python_test "MCP imports" "from fastmcp import FastMCP"
 run_python_test "Crawl4AI imports" "from crawl4ai import AsyncWebCrawler"
 run_python_test "Database factory" "import sys; sys.path.insert(0, 'src'); from database.factory import create_and_initialize_database"
 

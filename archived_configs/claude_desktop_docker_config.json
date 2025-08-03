@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "crawl4ai-docker": {
+      "transport": "sse",
+      "url": "http://localhost:8051/sse"
+    }
+  }
+}

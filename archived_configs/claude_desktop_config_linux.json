@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "crawl4ai-rag": {
+      "command": "/home/krashnicov/.local/bin/uv",
+      "args": [
+        "run",
+        "python",
+        "src/crawl4ai_mcp.py"
+      ],
+      "cwd": "/home/krashnicov/crawl4aimcp",
+      "env": {
+        "USE_TEST_ENV": "true"
+      }
+    }
+  }
+}

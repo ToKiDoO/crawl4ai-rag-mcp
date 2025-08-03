@@ -1,9 +1,12 @@
 """
-MCP server for web crawling with Crawl4AI.
+FastMCP server for web crawling with Crawl4AI.
 
-This server provides tools to crawl websites using Crawl4AI, automatically detecting
-the appropriate crawl method based on URL type (sitemap, txt file, or regular webpage).
-Also includes AI hallucination detection and repository parsing tools using Neo4j knowledge graphs.
+This server implements the Model Context Protocol using FastMCP to provide tools
+for crawling websites with Crawl4AI, automatically detecting the appropriate crawl
+method based on URL type (sitemap, txt file, or regular webpage). Also includes
+AI hallucination detection and repository parsing tools using Neo4j knowledge graphs.
+
+Supports multiple transport modes: stdio (default for Claude Desktop), HTTP, and SSE.
 """
 import sys
 import traceback
@@ -73,7 +76,7 @@ def track_request(tool_name: str):
 # Add early error logging
 try:
     logger.info("Starting Crawl4AI MCP server...")
-    from mcp.server.fastmcp import FastMCP, Context
+    from fastmcp import FastMCP, Context
 except Exception as e:
     logger.error(f"Error importing FastMCP: {e}")
     logger.error(f"Traceback: {traceback.format_exc()}")
@@ -323,9 +326,10 @@ async def crawl4ai_lifespan(server: FastMCP) -> AsyncIterator[Crawl4AIContext]:
             except Exception as e:
                 print(f"Error closing repository extractor: {e}", file=sys.stderr)
 
-# Initialize FastMCP server
+# Initialize FastMCP server with lifespan management
 try:
     print("Initializing FastMCP server...", file=sys.stderr)
+    # Get host and port for HTTP transport (not used for stdio)
     host = os.getenv("HOST", "0.0.0.0")
     port = os.getenv("PORT", "8051")
     # Ensure port has a valid default even if empty string
@@ -335,10 +339,7 @@ try:
     
     mcp = FastMCP(
         "mcp-crawl4ai-rag",
-        description="MCP server for RAG and web crawling with Crawl4AI",
-        lifespan=crawl4ai_lifespan,
-        host=host,
-        port=port
+        lifespan=crawl4ai_lifespan
     )
     print("FastMCP server initialized successfully", file=sys.stderr)
 except Exception as e:
@@ -1670,8 +1671,8 @@ async def search_code_examples(ctx: Context, query: str, source_id: str = None, 
             from utils import search_code_examples as search_code_examples_impl
             
             # 1. Get vector search results (get more to account for filtering)
-            vector_results = await search_code_examples(
-                database=database_client,
+            vector_results = search_code_examples_impl(
+                client=database_client,
                 query=query,
                 match_count=match_count * 2,  # Get double to have room for filtering
                 filter_metadata=filter_metadata
@@ -1731,7 +1732,7 @@ async def search_code_examples(ctx: Context, query: str, source_id: str = None, 
             from utils import search_code_examples as search_code_examples_impl
             
             results = search_code_examples_impl(
-                database=database_client,
+                client=database_client,
                 query=query,
                 match_count=match_count,
                 filter_metadata=filter_metadata
@@ -2551,22 +2552,24 @@ async def crawl_recursive_internal_links(crawler: AsyncWebCrawler, start_urls: L
     return results_all
 
 async def main():
+    """Main function to run the MCP server with appropriate transport."""
     try:
         logger.info("Main function started")
-        transport = os.getenv("TRANSPORT", "sse")
+        transport = os.getenv("TRANSPORT", "http").lower()
         logger.info(f"Transport mode: {transport}")
         
-        if transport == 'sse':
-            # Run the MCP server with sse transport
-            logger.info("Running with SSE transport")
+        # Flush output before starting server
+        sys.stdout.flush()
+        sys.stderr.flush()
+        
+        # Run server with appropriate transport
+        if transport == 'http':
+            await mcp.run_async(transport="http", host=host, port=int(port))
+        elif transport == 'sse':
             await mcp.run_sse_async()
-        else:
-            # Run the MCP server with stdio transport
-            logger.info("Running with STDIO transport")
-            # Flush any pending output
-            sys.stdout.flush()
-            sys.stderr.flush()
+        else:  # Default to stdio for Claude Desktop compatibility
             await mcp.run_stdio_async()
+            
     except Exception as e:
         logger.error(f"Error in main function: {e}")
         logger.error(f"Traceback: {traceback.format_exc()}")

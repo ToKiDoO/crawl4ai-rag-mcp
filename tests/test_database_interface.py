@@ -3,7 +3,7 @@ Test suite for VectorDatabase interface contract.
 Both Supabase and Qdrant adapters must pass these tests.
 """
 import pytest
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import asyncio
 
 

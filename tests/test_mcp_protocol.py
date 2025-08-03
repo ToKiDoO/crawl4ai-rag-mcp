@@ -13,7 +13,7 @@ from unittest.mock import Mock, AsyncMock, patch
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from crawl4ai_mcp import mcp, Crawl4AIContext
 
 

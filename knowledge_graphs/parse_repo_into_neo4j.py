@@ -581,12 +581,12 @@ class DirectNeo4jExtractor:
             total_functions = sum(len(mod['functions']) for mod in modules_data)
             total_imports = sum(len(mod['imports']) for mod in modules_data)
             
-            print(f"\\n=== Direct Neo4j Repository Analysis for {repo_name} ===")
-            print(f"Files processed: {len(modules_data)}")
-            print(f"Classes created: {total_classes}")
-            print(f"Methods created: {total_methods}")
-            print(f"Functions created: {total_functions}")
-            print(f"Import relationships: {total_imports}")
+            logger.info(f"\n=== Direct Neo4j Repository Analysis for {repo_name} ===")
+            logger.info(f"Files processed: {len(modules_data)}")
+            logger.info(f"Classes created: {total_classes}")
+            logger.info(f"Methods created: {total_methods}")
+            logger.info(f"Functions created: {total_functions}")
+            logger.info(f"Import relationships: {total_imports}")
             
             logger.info(f"Successfully created Neo4j graph for {repo_name}")
             

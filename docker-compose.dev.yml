@@ -1,0 +1,192 @@
+# Development-specific overrides for docker-compose.yml
+# This file extends the base docker-compose.yml with development features
+
+services:
+  # MCP Crawl4AI Server - Development Configuration
+  mcp-crawl4ai:
+    # Development-specific build args
+    image: mcp-crawl4ai:dev
+    build:
+      args:
+        - DEVELOPMENT=true
+    
+    # Development environment variables
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      # Enable hot-reload for FastMCP
+      - FASTMCP_DEV_MODE=true
+      
+    # Mount source code for hot-reloading
+    volumes:
+      # - ./src:/app/src:rw
+      # - ./tests:/app/tests:rw
+      - ./pyproject.toml:/app/pyproject.toml:ro
+      - ./pytest.ini:/app/pytest.ini:ro
+      # Persist Python cache for faster startup
+      - python-cache:/root/.cache
+      
+    # Development watch configuration
+    develop:
+      watch:
+        # Watch src directory with sync+restart action
+        - action: sync+restart
+          path: ./src
+          target: /app/src
+          ignore:
+            - __pycache__/
+            - "*.pyc"
+            - "*.pyo"
+            - "*.pyd"
+            - .Python
+            - "*.so"
+            - .pytest_cache/
+            - .mypy_cache/
+            - .ruff_cache/
+            - .coverage
+            - "*.egg-info/"
+            - .git/
+            - .venv/
+            - venv/
+            - .DS_Store
+            - "*.swp"
+            - "*.swo"
+            - "*~"
+        # Watch pyproject.toml for dependency changes
+        - action: rebuild
+          path: ./pyproject.toml
+        # Watch tests directory for test development
+        - action: sync
+          path: ./tests
+          target: /app/tests
+          ignore:
+            - __pycache__/
+            - "*.pyc"
+            - .pytest_cache/
+            - .coverage
+            - htmlcov/
+            - "*.swp"
+      
+    # Development-specific resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+          
+    # Enhanced health check for development
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; s = socket.socket(); s.settimeout(1); s.connect(('localhost', ${PORT:-8051})); s.close()\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+      
+    # Development logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "service=mcp-crawl4ai,env=dev"
+        
+    # Enable stdin/tty for debugging
+    stdin_open: true
+    tty: true
+    
+    # Development-specific labels
+    labels:
+      - "com.crawl4ai.environment=development"
+      - "com.crawl4ai.hot-reload=enabled"
+
+  # Valkey - Development Configuration
+  valkey:
+    # Enable verbose logging in development
+    command: valkey-server --save 30 1 --loglevel debug
+    
+    # Development resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+          
+    # Expose port for local debugging
+    ports:
+      - "127.0.0.1:6379:6379"
+      
+    # Development logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # SearXNG - Development Configuration
+  searxng:
+    # Development environment
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+      - SEARXNG_DEBUG=true
+      
+    # Mount config for hot-reloading
+    volumes:
+      - ./searxng:/etc/searxng:rw
+      - searxng-data:/var/cache/searxng:rw
+      # Development-specific settings override
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
+      
+    # Development resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+          
+    # Development logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # Qdrant - Development Configuration (when enabled)
+  qdrant:
+    # Development environment
+    environment:
+      - QDRANT__LOG_LEVEL=DEBUG
+      - QDRANT__TELEMETRY_DISABLED=true
+      
+    # Development resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+      
+    # No profiles - service is always enabled in dev
+
+  # Neo4j - Development Configuration (when enabled)
+  neo4j:
+    # Development environment
+    environment:
+      - NEO4J_dbms_logs_debug_level=DEBUG
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      
+    # Development resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+          
+    # No profiles - service is always enabled in dev
+
+# Additional development volumes
+volumes:
+  python-cache:

@@ -66,7 +66,7 @@ def create_embeddings_batch(texts: List[str]) -> List[List[float]]:
                         # Add zero embedding as fallback
                         embeddings.append([0.0] * 1536)
                 
-                print(f"Successfully created {successful_count}/{len(texts, file=sys.stderr)} embeddings individually")
+                print(f"Successfully created {successful_count}/{len(texts)} embeddings individually", file=sys.stderr)
                 return embeddings
 
 
@@ -212,7 +212,7 @@ async def add_documents_to_database(
         
         # Sort results back into original order
         if len(contextual_contents) != len(contents):
-            print(f"Warning: Expected {len(contents, file=sys.stderr)} results but got {len(contextual_contents)}")
+            print(f"Warning: Expected {len(contents)} results but got {len(contextual_contents)}", file=sys.stderr)
             contextual_contents = contents
     else:
         contextual_contents = contents
@@ -289,16 +289,9 @@ def extract_code_blocks(markdown_content: str, min_length: int = 1000) -> List[D
     code_blocks = []
     
     # Skip if content starts with triple backticks (edge case for files wrapped in backticks)
-    content = markdown_content.strip()
-    start_offset = 0
-    if content.startswith('```'):
-        # Skip the first triple backticks
-        start_offset = 3
-        print("Skipping initial triple backticks", file=sys.stderr)
-    
     # Find all occurrences of triple backticks
     backtick_positions = []
-    pos = start_offset
+    pos = 0
     while True:
         pos = markdown_content.find('```', pos)
         if pos == -1:
@@ -322,13 +315,13 @@ def extract_code_blocks(markdown_content: str, min_length: int = 1000) -> List[D
             first_line = lines[0].strip()
             if first_line and not ' ' in first_line and len(first_line) < 20:
                 language = first_line
-                code_content = lines[1].strip() if len(lines) > 1 else ""
+                code_content = lines[1] if len(lines) > 1 else ""
             else:
                 language = ""
-                code_content = code_section.strip()
+                code_content = code_section
         else:
             language = ""
-            code_content = code_section.strip()
+            code_content = code_section
         
         # Skip if code block is too short
         if len(code_content) < min_length:

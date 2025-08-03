@@ -406,17 +406,17 @@ The MCP server will be available at `http://localhost:8051` for SSE connections.
 
 After starting the Docker stack with `docker compose up -d`, your MCP server will be available for integration.
 
-### SSE Configuration (Recommended)
+### HTTP Configuration (Docker Default)
 
-The Docker stack runs with SSE transport by default. Connect using:
+The Docker stack runs with HTTP transport by default. For complete configuration instructions, see [MCP_CLIENT_CONFIG.md](MCP_CLIENT_CONFIG.md).
 
-**Claude Desktop/Windsurf:**
+**Quick Claude Desktop Config:**
 ```json
 {
   "mcpServers": {
-    "crawl4ai-rag": {
-      "transport": "sse",
-      "url": "http://localhost:8051/sse"
+    "crawl4ai-docker": {
+      "url": "http://localhost:8051",
+      "transport": "http"
     }
   }
 }
@@ -467,40 +467,6 @@ Verify the server is running:
 curl http://localhost:8051/health
 ```
 
-### Claude Desktop Integration (Windows with WSL)
-
-If you're developing in WSL but running Claude Desktop on Windows, you need special configuration since Claude Desktop requires STDIO transport. 
-
-**Step 1: Ensure you have `.env.test` with `TRANSPORT=stdio`** (this is already included in the repo)
-
-**Step 2: Configure Claude Desktop** (`%APPDATA%\Claude\claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "crawl4ai-rag": {
-      "command": "wsl",
-      "args": [
-        "--cd",
-        "/home/YOUR_USERNAME/crawl4aimcp",
-        "--",
-        "bash",
-        "-c",
-        "USE_TEST_ENV=true /home/YOUR_USERNAME/.local/bin/uv run python src/crawl4ai_mcp.py"
-      ]
-    }
-  }
-}
-```
-
-**Important:** Replace `YOUR_USERNAME` with your actual WSL username.
-
-This configuration:
-- Uses `wsl` to bridge Windows → WSL
-- Sets `USE_TEST_ENV=true` to use `.env.test` with STDIO transport
-- Preserves your production `.env` with SSE transport
-
-For detailed setup instructions and troubleshooting, see [docs/CLAUDE_DESKTOP_SETUP.md](docs/CLAUDE_DESKTOP_SETUP.md).
 
 ## Knowledge Graph Architecture
 

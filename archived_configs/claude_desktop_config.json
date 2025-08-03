@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "crawl4ai-rag": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "src/crawl4ai_mcp.py"
+      ],
+      "cwd": "/home/krashnicov/crawl4aimcp",
+      "env": {
+        "TRANSPORT": "stdio",
+        "VECTOR_DATABASE": "qdrant",
+        "QDRANT_URL": "http://localhost:6333"
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "sample_documents": [
+    {
+      "url": "https://example.com/doc1",
+      "content": "Introduction to machine learning basics",
+      "metadata": {"category": "ML", "difficulty": "beginner"}
+    },
+    {
+      "url": "https://example.com/doc2", 
+      "content": "Advanced neural network architectures",
+      "metadata": {"category": "ML", "difficulty": "advanced"}
+    },
+    {
+      "url": "https://example.com/doc3",
+      "content": "Python programming best practices",
+      "metadata": {"category": "Programming", "difficulty": "intermediate"}
+    }
+  ],
+  "sample_queries": [
+    "What is machine learning?",
+    "How do neural networks work?",
+    "Python coding standards"
+  ],
+  "sample_code_blocks": [
+    {
+      "language": "python",
+      "code": "def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n-1)"
+    },
+    {
+      "language": "javascript",
+      "code": "const sum = (a, b) => a + b;"
+    }
+  ]
+}

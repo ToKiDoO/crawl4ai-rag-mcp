@@ -71,6 +71,25 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  # neo4j
+  neo4j-test:
+    container_name: neo4j_test
+    image: neo4j:latest
+    restart: unless-stopped
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/testpassword123
+    volumes:
+      - neo4j-test-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7474/browser/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
 
 networks:
   test-network:
@@ -80,3 +99,4 @@ volumes:
   qdrant-test-data:
   valkey-test-data:
   searxng-test-data:
+  neo4j-test-data:
