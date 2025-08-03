@@ -10,9 +10,6 @@ import json
 from typing import Dict, Any
 from unittest.mock import patch, AsyncMock, MagicMock
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 from .mcp_test_utils import (
     create_test_context,
     generate_test_urls,

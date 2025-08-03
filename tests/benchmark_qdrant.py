@@ -12,9 +12,6 @@ import random
 import string
 from typing import List, Dict, Any, Tuple
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 from database.factory import create_database_client, create_and_initialize_database
 from database.qdrant_adapter import QdrantAdapter
 

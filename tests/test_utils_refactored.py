@@ -8,9 +8,6 @@ import os
 import sys
 from typing import List, Dict, Any
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 from utils_refactored import (
     create_embedding,
     create_embeddings_batch,
