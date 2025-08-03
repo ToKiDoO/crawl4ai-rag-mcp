@@ -1231,11 +1231,10 @@ class TestSearchCodeExamplesFixed:
         
         ctx = MockContext()
         
-        # Import the actual tool function
-        from crawl4ai_mcp import search_code_examples as search_code_tool
+        # Use the already extracted function
         
         # Test
-        result = await search_code_tool(ctx, query="hello world function")
+        result = await search_code_examples(ctx, query="hello world function")
         
         # Verify
         result_json = json.loads(result)
