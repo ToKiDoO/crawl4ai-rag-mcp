@@ -28,13 +28,9 @@ import crawl4ai_mcp
 def get_tool_function(tool_name):
     """Extract the actual function from a FunctionTool wrapper."""
     tool = getattr(crawl4ai_mcp, tool_name)
-    # Check if it's a FunctionTool and extract the underlying function
+    # FastMCP FunctionTool objects have an 'fn' attribute
     if hasattr(tool, 'fn'):
         return tool.fn
-    elif hasattr(tool, 'func'):
-        return tool.func
-    elif hasattr(tool, '__wrapped__'):
-        return tool.__wrapped__
     else:
         # It's likely a regular function or class
         return tool
