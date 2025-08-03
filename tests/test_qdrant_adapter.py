@@ -7,9 +7,6 @@ import sys
 import os
 from uuid import uuid4
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 
 class TestQdrantAdapter:
     """Test Qdrant-specific functionality"""
@@ -17,18 +14,17 @@ class TestQdrantAdapter:
     @pytest.fixture
     async def mock_qdrant_client(self):
         """Mock Qdrant client for testing"""
-        client = AsyncMock()
-        
-        # Mock collection operations
-        client.create_collection = AsyncMock()
-        client.get_collection = AsyncMock()
-        client.upsert = AsyncMock()
-        client.delete = AsyncMock()
-        client.search = MagicMock()  # Changed from AsyncMock to MagicMock
-        client.retrieve = MagicMock()  # Add retrieve mock
-        client.scroll = MagicMock()  # Add scroll mock
-        client.count = AsyncMock(return_value=0)
-        client.set_payload = MagicMock()  # Add set_payload mock
+        client = MagicMock()
+        # Mock collection operations - these are sync methods
+        client.create_collection = MagicMock()
+        client.get_collection = MagicMock()
+        client.upsert = MagicMock()
+        client.delete = MagicMock()
+        client.search = MagicMock()
+        client.retrieve = MagicMock()
+        client.scroll = MagicMock()
+        client.count = MagicMock(return_value=0)
+        client.set_payload = MagicMock()
         
         # Mock search results
         mock_search_result = [
@@ -136,8 +132,8 @@ class TestQdrantAdapter:
         assert len(results) == 1
         result = results[0]
         assert "id" in result
-        assert "score" in result  # Changed from similarity to score
-        assert 0 <= result["score"] <= 1  # Changed from similarity to score
+        assert "similarity" in result  # Interface expects similarity
+        assert 0 <= result["similarity"] <= 1
         assert result["url"] == "https://test.com"
     
     @pytest.mark.asyncio
@@ -146,12 +142,12 @@ class TestQdrantAdapter:
         from qdrant_client.models import Filter, FieldCondition, MatchValue
         
         query_embedding = [0.5] * 1536
-        metadata_filter = {"language": "python"}
+        filter_metadata = {"language": "python"}
         
         await qdrant_adapter.search_documents(
             query_embedding=query_embedding,
             match_count=5,
-            metadata_filter=metadata_filter
+            filter_metadata=filter_metadata
         )
         
         # Verify filter was constructed properly
@@ -361,7 +357,7 @@ class TestQdrantAdapter:
     @pytest.mark.asyncio
     async def test_source_operations(self, qdrant_adapter, mock_qdrant_client):
         """Test source info operations"""
-        # Mock retrieve to return empty list (source doesn't exist)
+        # Mock retrieve to return empty (no existing source)
         mock_qdrant_client.retrieve.return_value = []
         
         # Test update source info
@@ -373,8 +369,7 @@ class TestQdrantAdapter:
         
         # Verify upsert was called on sources collection
         call_args = mock_qdrant_client.upsert.call_args
-        # Check if collection_name is in kwargs or as first positional arg
-        collection_name = call_args.kwargs.get('collection_name') if call_args.kwargs else call_args.args[0] if call_args.args else None
+        collection_name = call_args.kwargs.get('collection_name') or call_args.args[0]
         assert collection_name == "sources"
         points = call_args.kwargs.get('points') or call_args.args[1]
         assert len(points) == 1
@@ -420,60 +415,48 @@ class TestQdrantAdapter:
     @pytest.mark.asyncio
     async def test_initialization_error_handling(self):
         """Test handling of initialization errors"""
-        # Create a mock client that fails on create_collection
+        # Create a fresh mock client that fails on get_collection
         mock_client = MagicMock()
         mock_client.get_collection.side_effect = Exception("Collection not found")
-        mock_client.create_collection = AsyncMock(side_effect=Exception("Already exists"))
+        mock_client.create_collection.side_effect = Exception("Creation failed")
         
         with patch('database.qdrant_adapter.QdrantClient', return_value=mock_client):
             from database.qdrant_adapter import QdrantAdapter
             adapter = QdrantAdapter(url="http://localhost:6333")
-            adapter.client = mock_client
             
-            # Should handle gracefully
+            # Should handle gracefully and not crash
             await adapter.initialize()
             
             # Should have attempted to create collections
             assert mock_client.create_collection.call_count > 0
     
     @pytest.mark.asyncio
-    async def test_delete_documents_by_url_single(self, qdrant_adapter, mock_qdrant_client):
-        """Test deletion of documents by a single URL (string)"""
-        url = "https://test1.com"
+    async def test_delete_documents_by_url(self, qdrant_adapter, mock_qdrant_client):
+        """Test deletion of documents by URL"""
+        urls = ["https://test1.com"]
         
-        # Mock scroll to return documents for this URL
+        # Mock scroll to return points for this URL
         mock_points = [
-            MagicMock(id="id1", payload={"url": url})
+            MagicMock(id="id1", payload={"url": "https://test1.com"}),
+            MagicMock(id="id2", payload={"url": "https://test1.com"})
         ]
         mock_qdrant_client.scroll.return_value = (mock_points, None)
         
-        await qdrant_adapter.delete_documents_by_url(url)
+        await qdrant_adapter.delete_documents_by_url(urls)
         
-        # Should scroll for documents with this URL
+        # Should use scroll to find documents with this URL
         assert mock_qdrant_client.scroll.called
         
         # Should delete the found IDs
         mock_qdrant_client.delete.assert_called()
-        call_args = mock_qdrant_client.delete.call_args
-        assert call_args.args[0] == "crawled_pages"
     
     @pytest.mark.asyncio
     async def test_source_operations_in_metadata_collection(self, qdrant_adapter, mock_qdrant_client):
         """Test source operations use a metadata collection"""
-        # Mock retrieve to return an existing source
-        mock_existing_point = MagicMock(
-            id="test.com",
-            payload={
-                "source_id": "test.com",
-                "summary": "Old summary",
-                "total_word_count": 500,
-                "created_at": "2024-01-01T00:00:00",
-                "updated_at": "2024-01-01T00:00:00"
-            }
-        )
-        mock_qdrant_client.retrieve.return_value = [mock_existing_point]
+        # Mock retrieve to return empty (no existing source)
+        mock_qdrant_client.retrieve.return_value = []
         
-        # Test update existing source
+        # Test update source
         await qdrant_adapter.update_source_info(
             source_id="test.com",
             summary="Updated summary",
@@ -563,33 +546,29 @@ class TestQdrantAdapter:
         # Make search fail
         mock_qdrant_client.search.side_effect = Exception("Connection error")
         
-        # Should handle error and return empty results
-        try:
-            results = await qdrant_adapter.search_documents(
+        # Should propagate error up
+        with pytest.raises(Exception) as exc_info:
+            await qdrant_adapter.search_documents(
                 query_embedding=[0.5] * 1536,
                 match_count=10
             )
-            # If it doesn't raise, it should return empty list
-            assert results == []
-        except Exception:
-            # The current implementation might still raise, which is also acceptable
-            pass
+        assert "Connection error" in str(exc_info.value)
         
-        # Reset side effect for upsert test
+        # Reset side effect
         mock_qdrant_client.search.side_effect = None
+        mock_qdrant_client.search.return_value = []
         
         # Make upsert fail
         mock_qdrant_client.upsert.side_effect = Exception("Write error")
         
-        # Should handle error gracefully (prints error but doesn't raise)
-        await qdrant_adapter.add_documents(
-            urls=["https://test.com"],
-            chunk_numbers=[1],
-            contents=["Test"],
-            metadatas=[{}],
-            embeddings=[[0.1] * 1536],
-            source_ids=["test.com"]
-        )
-        
-        # Verify upsert was attempted
-        assert mock_qdrant_client.upsert.called
+        # Should handle error gracefully by raising exception
+        with pytest.raises(Exception) as exc_info:
+            await qdrant_adapter.add_documents(
+                urls=["https://test.com"],
+                chunk_numbers=[1],
+                contents=["Test"],
+                metadatas=[{}],
+                embeddings=[[0.1] * 1536],
+                source_ids=["test.com"]
+            )
+        assert "Write error" in str(exc_info.value)

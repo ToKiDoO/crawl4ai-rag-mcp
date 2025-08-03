@@ -12,9 +12,6 @@ from pathlib import Path
 from typing import Dict, Tuple, List
 import importlib.util
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 
 class Colors:
     """Terminal colors for output"""

@@ -62,12 +62,16 @@ class QdrantAdapter:
                 await loop.run_in_executor(None, self.client.get_collection, collection_name)
             except Exception:
                 # Collection doesn't exist, create it
-                await loop.run_in_executor(
-                    None,
-                    self.client.create_collection,
-                    collection_name,
-                    VectorParams(size=vector_size, distance=Distance.COSINE)
-                )
+                try:
+                    await loop.run_in_executor(
+                        None,
+                        self.client.create_collection,
+                        collection_name,
+                        VectorParams(size=vector_size, distance=Distance.COSINE)
+                    )
+                except Exception as create_error:
+                    # Log error but continue - collection might already exist
+                    print(f"Warning: Could not create collection {collection_name}: {create_error}", file=sys.stderr)
     
     def _generate_point_id(self, url: str, chunk_number: int) -> str:
         """Generate a deterministic ID for a document point"""
@@ -146,15 +150,15 @@ class QdrantAdapter:
         self,
         query_embedding: List[float],
         match_count: int = 10,
-        metadata_filter: Optional[Dict[str, Any]] = None,
+        filter_metadata: Optional[Dict[str, Any]] = None,
         source_filter: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Search for similar documents"""
         # Build filter conditions
         filter_conditions = []
         
-        if metadata_filter:
-            for key, value in metadata_filter.items():
+        if filter_metadata:
+            for key, value in filter_metadata.items():
                 filter_conditions.append(
                     FieldCondition(
                         key=f"metadata.{key}",
@@ -191,7 +195,7 @@ class QdrantAdapter:
         formatted_results = []
         for result in results:
             doc = result.payload.copy()
-            doc["score"] = result.score
+            doc["similarity"] = result.score  # Interface expects "similarity"
             doc["id"] = result.id
             formatted_results.append(doc)
         
@@ -201,7 +205,7 @@ class QdrantAdapter:
         self,
         keyword: str,
         match_count: int = 10,
-        metadata_filter: Optional[Dict[str, Any]] = None
+        source_filter: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Search documents by keyword using scroll API"""
         filter_conditions = []
@@ -214,27 +218,27 @@ class QdrantAdapter:
             )
         )
         
-        if metadata_filter:
-            for key, value in metadata_filter.items():
-                filter_conditions.append(
-                    FieldCondition(
-                        key=f"metadata.{key}",
-                        match=MatchValue(value=value)
-                    )
+        if source_filter:
+            filter_conditions.append(
+                FieldCondition(
+                    key="metadata.source",
+                    match=MatchValue(value=source_filter)
                 )
+            )
         
         search_filter = Filter(must=filter_conditions)
         
         # Use scroll to find matching documents
         loop = asyncio.get_event_loop()
-        scroll_result = await loop.run_in_executor(
-            None,
-            lambda: self.client.scroll(
+        
+        def scroll_keyword_search():
+            return self.client.scroll(
                 collection_name=self.CRAWLED_PAGES,
                 scroll_filter=search_filter,
                 limit=match_count
             )
-        )
+        
+        scroll_result = await loop.run_in_executor(None, scroll_keyword_search)
         
         points, _ = scroll_result
         
@@ -260,14 +264,15 @@ class QdrantAdapter:
         
         # Use scroll to get all chunks
         loop = asyncio.get_event_loop()
-        scroll_result = await loop.run_in_executor(
-            None,
-            lambda: self.client.scroll(
+        
+        def scroll_for_url():
+            return self.client.scroll(
                 collection_name=self.CRAWLED_PAGES,
                 scroll_filter=filter_condition,
                 limit=1000  # Large limit to get all chunks
             )
-        )
+        
+        scroll_result = await loop.run_in_executor(None, scroll_for_url)
         
         points, _ = scroll_result
         
@@ -283,79 +288,90 @@ class QdrantAdapter:
         
         return results
     
-    async def delete_documents_by_url(self, url: str) -> None:
-        """Delete all document chunks for a specific URL"""
-        # First, find all points with this URL
-        filter_condition = Filter(
-            must=[
-                FieldCondition(
-                    key="url",
-                    match=MatchValue(value=url)
-                )
-            ]
-        )
-        
+    async def delete_documents_by_url(self, urls: List[str]) -> None:
+        """Delete all document chunks for the given URLs"""
         loop = asyncio.get_event_loop()
-        scroll_result = await loop.run_in_executor(
-            None,
-            lambda: self.client.scroll(
-                collection_name=self.CRAWLED_PAGES,
-                scroll_filter=filter_condition,
-                limit=1000
+        
+        for url in urls:
+            # First, find all points with this URL
+            filter_condition = Filter(
+                must=[
+                    FieldCondition(
+                        key="url",
+                        match=MatchValue(value=url)
+                    )
+                ]
             )
-        )
-        
-        points, _ = scroll_result
-        
-        if points:
-            # Extract point IDs
-            point_ids = [point.id for point in points]
             
-            # Delete the points
-            await loop.run_in_executor(
-                None,
-                self.client.delete,
-                self.CRAWLED_PAGES,
-                PointIdsList(points=point_ids)
-            )
+            def scroll_with_filter():
+                return self.client.scroll(
+                    collection_name=self.CRAWLED_PAGES,
+                    scroll_filter=filter_condition,
+                    limit=1000
+                )
+            
+            scroll_result = await loop.run_in_executor(None, scroll_with_filter)
+            
+            points, _ = scroll_result
+            
+            if points:
+                # Extract point IDs
+                point_ids = [point.id for point in points]
+                
+                # Delete the points
+                await loop.run_in_executor(
+                    None,
+                    self.client.delete,
+                    self.CRAWLED_PAGES,
+                    PointIdsList(points=point_ids)
+                )
     
     async def add_code_examples(
         self,
         urls: List[str],
         chunk_numbers: List[int],
-        codes: List[str],
+        code_examples: List[str],
         summaries: List[str],
         metadatas: List[Dict[str, Any]],
-        embeddings: List[List[float]]
+        embeddings: List[List[float]],
+        source_ids: Optional[List[str]] = None
     ) -> None:
         """Add code examples to Qdrant"""
+        if source_ids is None:
+            source_ids = [None] * len(urls)
+            
         # Process in batches
         for i in range(0, len(urls), self.batch_size):
             batch_slice = slice(i, min(i + self.batch_size, len(urls)))
             batch_urls = urls[batch_slice]
             batch_chunks = chunk_numbers[batch_slice]
-            batch_codes = codes[batch_slice]
+            batch_code_examples = code_examples[batch_slice]
             batch_summaries = summaries[batch_slice]
             batch_metadatas = metadatas[batch_slice]
             batch_embeddings = embeddings[batch_slice]
+            batch_source_ids = source_ids[batch_slice]
             
             # Create points
             points = []
-            for url, chunk_num, code, summary, metadata, embedding in zip(
-                batch_urls, batch_chunks, batch_codes, batch_summaries, batch_metadatas, batch_embeddings
+            for url, chunk_num, code_example, summary, metadata, embedding, source_id in zip(
+                batch_urls, batch_chunks, batch_code_examples, batch_summaries, batch_metadatas, batch_embeddings, batch_source_ids
             ):
                 point_id = f"code_{self._generate_point_id(url, chunk_num)}"
+                
+                payload = {
+                    "url": url,
+                    "chunk_number": chunk_num,
+                    "code": code_example,
+                    "summary": summary,
+                    "metadata": metadata or {}
+                }
+                if source_id:
+                    payload["source_id"] = source_id
                 
                 point = PointStruct(
                     id=point_id,
                     vector=embedding,
-                    payload={
-                        "url": url,
-                        "chunk_number": chunk_num,
-                        "code": code,
-                        "summary": summary,
-                        "metadata": metadata or {}
-                    }
+                    payload=payload
                 )
                 points.append(point)
             
@@ -372,20 +388,33 @@ class QdrantAdapter:
         self,
         query_embedding: List[float],
         match_count: int = 10,
-        metadata_filter: Optional[Dict[str, Any]] = None
+        filter_metadata: Optional[Dict[str, Any]] = None,
+        source_filter: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Search for similar code examples"""
         # Build filter if needed
-        search_filter = None
-        if metadata_filter:
-            filter_conditions = []
-            for key, value in metadata_filter.items():
+        filter_conditions = []
+        
+        if filter_metadata:
+            for key, value in filter_metadata.items():
                 filter_conditions.append(
                     FieldCondition(
                         key=f"metadata.{key}",
                         match=MatchValue(value=value)
                     )
                 )
+        
+        if source_filter:
+            filter_conditions.append(
+                FieldCondition(
+                    key="metadata.source",
+                    match=MatchValue(value=source_filter)
+                )
+            )
+        
+        # Create filter if conditions exist
+        search_filter = None
+        if filter_conditions:
             search_filter = Filter(must=filter_conditions)
         
         # Perform search
@@ -404,8 +433,96 @@ class QdrantAdapter:
         formatted_results = []
         for result in results:
             doc = result.payload.copy()
-            doc["score"] = result.score
+            doc["similarity"] = result.score  # Interface expects "similarity"
             doc["id"] = result.id
+            formatted_results.append(doc)
+        
+        return formatted_results
+    
+    async def delete_code_examples_by_url(self, urls: List[str]) -> None:
+        """Delete all code examples with the given URLs"""
+        loop = asyncio.get_event_loop()
+        
+        for url in urls:
+            # First, find all points with this URL
+            filter_condition = Filter(
+                must=[
+                    FieldCondition(
+                        key="url",
+                        match=MatchValue(value=url)
+                    )
+                ]
+            )
+            
+            def scroll_code_for_deletion():
+                return self.client.scroll(
+                    collection_name=self.CODE_EXAMPLES,
+                    scroll_filter=filter_condition,
+                    limit=1000
+                )
+            
+            scroll_result = await loop.run_in_executor(None, scroll_code_for_deletion)
+            
+            points, _ = scroll_result
+            
+            if points:
+                # Extract point IDs
+                point_ids = [point.id for point in points]
+                
+                # Delete the points
+                await loop.run_in_executor(
+                    None,
+                    self.client.delete,
+                    self.CODE_EXAMPLES,
+                    PointIdsList(points=point_ids)
+                )
+    
+    async def search_code_examples_by_keyword(
+        self,
+        keyword: str,
+        match_count: int = 10,
+        source_filter: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Search code examples by keyword using scroll API"""
+        filter_conditions = []
+        
+        # Add keyword filter - search in code content
+        filter_conditions.append(
+            FieldCondition(
+                key="code",
+                match=MatchValue(value=keyword)
+            )
+        )
+        
+        if source_filter:
+            filter_conditions.append(
+                FieldCondition(
+                    key="metadata.source",
+                    match=MatchValue(value=source_filter)
+                )
+            )
+        
+        search_filter = Filter(must=filter_conditions)
+        
+        # Use scroll to find matching code examples
+        loop = asyncio.get_event_loop()
+        
+        def scroll_code_keyword_search():
+            return self.client.scroll(
+                collection_name=self.CODE_EXAMPLES,
+                scroll_filter=search_filter,
+                limit=match_count
+            )
+        
+        scroll_result = await loop.run_in_executor(None, scroll_code_keyword_search)
+        
+        points, _ = scroll_result
+        
+        # Format results
+        formatted_results = []
+        for point in points[:match_count]:
+            doc = point.payload.copy()
+            doc["id"] = point.id
             formatted_results.append(doc)
         
         return formatted_results
@@ -464,7 +581,7 @@ class QdrantAdapter:
         formatted_results = []
         for result in results:
             doc = result.payload.copy()
-            doc["score"] = result.score
+            doc["similarity"] = result.score  # Interface expects "similarity"
             doc["id"] = result.id
             formatted_results.append(doc)
         
@@ -531,15 +648,15 @@ class QdrantAdapter:
             
             while True:
                 # Get a batch of sources
-                result = await loop.run_in_executor(
-                    None,
-                    lambda: self.client.scroll(
+                def scroll_sources():
+                    return self.client.scroll(
                         collection_name=self.SOURCES,
                         offset=offset,
                         limit=limit,
                         with_payload=True
                     )
-                )
+                
+                result = await loop.run_in_executor(None, scroll_sources)
                 
                 points, next_offset = result
                 
@@ -585,88 +702,99 @@ class QdrantAdapter:
             summary: Source summary
             word_count: Word count for this source
         """
-        from datetime import datetime
+        from datetime import datetime, timezone
         
         loop = asyncio.get_event_loop()
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         
         try:
             # Generate a deterministic UUID from source_id
             point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, source_id))
             
             # Try to get existing source
-            existing_points = await loop.run_in_executor(
-                None,
-                self.client.retrieve,
-                self.SOURCES,
-                [point_id]
-            )
-            
-            if existing_points:
-                # Update existing source
-                existing_point = existing_points[0]
-                updated_payload = existing_point.payload.copy()
-                updated_payload.update({
-                    "summary": summary,
-                    "total_word_count": word_count,
-                    "updated_at": timestamp
-                })
-                
-                await loop.run_in_executor(
+            try:
+                existing_points = await loop.run_in_executor(
                     None,
-                    self.client.set_payload,
+                    self.client.retrieve,
                     self.SOURCES,
-                    {point_id: updated_payload}
+                    [point_id]
                 )
-            else:
-                # Create new source with a deterministic embedding
-                # IMPORTANT: This embedding must be 1536 dimensions to match OpenAI's text-embedding-3-small model
-                # Previously this was creating 384-dimensional embeddings which caused vector dimension errors
                 
-                # Generate a deterministic embedding from the source_id using SHA256 hash
-                import hashlib
-                hash_object = hashlib.sha256(source_id.encode())
-                hash_bytes = hash_object.digest()  # 32 bytes from SHA256
-                
-                # Convert hash bytes to floats between -1 and 1
-                # Each byte (0-255) is normalized to the range [-1, 1]
-                base_embedding = [(b - 128) / 128.0 for b in hash_bytes]
-                
-                # OpenAI embeddings are 1536 dimensions, but SHA256 only gives us 32 values
-                # We repeat the pattern to fill all 1536 dimensions deterministically
-                embedding = []
-                while len(embedding) < 1536:
-                    embedding.extend(base_embedding)
-                
-                # Ensure exactly 1536 dimensions (trim any excess from the last repetition)
-                embedding = embedding[:1536]
-                
-                # Generate a deterministic UUID from source_id
-                point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, source_id))
-                
-                points = [
-                    models.PointStruct(
-                        id=point_id,
-                        vector=embedding,
-                        payload={
-                            "source_id": source_id,
-                            "summary": summary,
-                            "total_word_count": word_count,
-                            "created_at": timestamp,
-                            "updated_at": timestamp,
-                            "enabled": True,
-                            "url_count": 1
-                        }
+                if existing_points:
+                    # Update existing source
+                    existing_point = existing_points[0]
+                    updated_payload = existing_point.payload.copy()
+                    updated_payload.update({
+                        "summary": summary,
+                        "total_word_count": word_count,
+                        "updated_at": timestamp
+                    })
+                    
+                    await loop.run_in_executor(
+                        None,
+                        self.client.set_payload,
+                        self.SOURCES,
+                        {point_id: updated_payload}
                     )
-                ]
-                
-                await loop.run_in_executor(
-                    None,
-                    self.client.upsert,
-                    self.SOURCES,
-                    points
-                )
+                else:
+                    # Create new source
+                    await self._create_new_source(source_id, summary, word_count, timestamp, point_id)
+            except Exception as retrieve_error:
+                # Source doesn't exist, create new one
+                await self._create_new_source(source_id, summary, word_count, timestamp, point_id)
                 
         except Exception as e:
             print(f"Error updating source info: {e}", file=sys.stderr)
+            raise
+            
+    async def _create_new_source(self, source_id: str, summary: str, word_count: int, timestamp: str, point_id: str) -> None:
+        """Helper method to create a new source"""
+        try:
+            loop = asyncio.get_event_loop()
+            # Create new source with a deterministic embedding
+            # IMPORTANT: This embedding must be 1536 dimensions to match OpenAI's text-embedding-3-small model
+            # Previously this was creating 384-dimensional embeddings which caused vector dimension errors
+            
+            # Generate a deterministic embedding from the source_id using SHA256 hash
+            import hashlib
+            hash_object = hashlib.sha256(source_id.encode())
+            hash_bytes = hash_object.digest()  # 32 bytes from SHA256
+            
+            # Convert hash bytes to floats between -1 and 1
+            # Each byte (0-255) is normalized to the range [-1, 1]
+            base_embedding = [(b - 128) / 128.0 for b in hash_bytes]
+            
+            # OpenAI embeddings are 1536 dimensions, but SHA256 only gives us 32 values
+            # We repeat the pattern to fill all 1536 dimensions deterministically
+            embedding = []
+            while len(embedding) < 1536:
+                embedding.extend(base_embedding)
+            
+            # Ensure exactly 1536 dimensions (trim any excess from the last repetition)
+            embedding = embedding[:1536]
+            
+            points = [
+                models.PointStruct(
+                    id=point_id,
+                    vector=embedding,
+                    payload={
+                        "source_id": source_id,
+                        "summary": summary,
+                        "total_word_count": word_count,
+                        "created_at": timestamp,
+                        "updated_at": timestamp,
+                        "enabled": True,
+                        "url_count": 1
+                    }
+                )
+            ]
+            
+            await loop.run_in_executor(
+                None,
+                self.client.upsert,
+                self.SOURCES,
+                points
+            )
+        except Exception as e:
+            print(f"Error creating new source: {e}", file=sys.stderr)
             raise

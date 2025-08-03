@@ -6,9 +6,6 @@ from unittest.mock import MagicMock, AsyncMock, patch
 import sys
 import os
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 
 class TestSupabaseAdapter:
     """Test Supabase-specific functionality"""

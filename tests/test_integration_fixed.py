@@ -13,11 +13,6 @@ from typing import List, Dict, Any
 import docker
 from dotenv import load_dotenv
 
-# Add parent directory to path to import modules
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent / "src"))
-
 from database.factory import create_database_client
 from database.base import VectorDatabase
 from utils_refactored import (
