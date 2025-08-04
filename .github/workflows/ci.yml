@@ -1,0 +1,64 @@
+name: CI/Performance Monitoring
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install UV
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: |
+        uv sync
+    
+    - name: Run Tests with Performance Reporting
+      env:
+        # Core test environment configuration
+        OPENAI_API_KEY: test-key-for-mocks
+        VECTOR_DATABASE: qdrant
+        DATABASE_PROVIDER: qdrant
+        QDRANT_URL: http://localhost:6333
+        QDRANT_API_KEY: ""
+        QDRANT_COLLECTION_NAME: test_crawled_pages
+        QDRANT_EMBEDDING_MODEL: text-embedding-3-small
+        SEARXNG_URL: http://localhost:8081
+        SEARXNG_TEST_URL: http://localhost:8081
+        USE_RERANKING: "false"
+        RERANKER_MODEL: BAAI/bge-reranker-v2-m3
+        CHUNK_SIZE: "2000"
+        CHUNK_OVERLAP: "200"
+        TEST_TIMEOUT: "30"
+        TEST_PARALLEL_WORKERS: "4"
+        PYTEST_VERBOSE: "true"
+        PYTHONPATH: ${{ github.workspace }}/src
+        TESTING: "true"
+        CI: "true"
+      run: |
+        uv run pytest --json-report --json-report-file=performance_metrics.json
+    
+    - name: Generate Performance Dashboard
+      run: |
+        uv run python scripts/generate_performance_dashboard.py performance_metrics.json
+    
+    - name: Upload Performance Dashboard
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-dashboard
+        path: performance_dashboard.html
+        retention-days: 14

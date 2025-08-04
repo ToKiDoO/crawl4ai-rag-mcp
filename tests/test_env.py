@@ -16,11 +16,10 @@ def load_test_env(override: bool = True):
     if env_file.exists():
         load_dotenv(env_file, override=override)
         print(f"✅ Loaded test environment from {env_file}")
-    else:
-        print(f"❌ Test environment file not found: {env_file}")
+    # In CI, environment variables are set directly, so missing .env.test is OK
     
-    # Verify critical variables
-    if not os.getenv("OPENAI_API_KEY"):
+    # Only warn about missing OPENAI_API_KEY if we're not in CI
+    if not os.getenv("OPENAI_API_KEY") and not os.getenv("CI"):
         print("⚠️ OPENAI_API_KEY not set after loading .env.test")
     
     # Force test database
