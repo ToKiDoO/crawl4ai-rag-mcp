@@ -642,7 +642,7 @@ async def search(ctx: Context, query: str, return_raw_markdown: bool = False, nu
         # Step 5: Content processing - use existing scrape_urls function
         try:
             # Use the existing scrape_urls function to scrape all URLs
-            scrape_result_str = await scrape_urls(ctx, valid_urls, max_concurrent, batch_size)
+            scrape_result_str = await scrape_urls.fn(ctx, valid_urls, max_concurrent, batch_size)
             scrape_result = json.loads(scrape_result_str)
             
             if not scrape_result.get("success", False):
@@ -696,7 +696,7 @@ async def search(ctx: Context, query: str, return_raw_markdown: bool = False, nu
                     source_id = parsed_url.netloc or parsed_url.path
                     
                     # Perform RAG query using existing function
-                    rag_result_str = await perform_rag_query(ctx, query, source_id, match_count=5)
+                    rag_result_str = await perform_rag_query.fn(ctx, query, source_id, match_count=5)
                     rag_result = json.loads(rag_result_str)
                     
                     if rag_result.get("success", False) and rag_result.get("results"):
@@ -1391,7 +1391,7 @@ async def smart_crawl_url(ctx: Context, url: str, max_depth: int = 3, max_concur
                 for q in query:
                     try:
                         # Perform RAG query using existing function
-                        rag_result_str = await perform_rag_query(ctx, q, source_id, match_count=5)
+                        rag_result_str = await perform_rag_query.fn(ctx, q, source_id, match_count=5)
                         rag_result = json.loads(rag_result_str)
                         
                         if rag_result.get("success", False) and rag_result.get("results"):

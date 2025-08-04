@@ -19,10 +19,16 @@ os.environ["QDRANT_URL"] = "http://localhost:6333"
 # Load test environment
 from . import test_env  # This will auto-load test environment
 
+# Import Neo4j fixtures to make them available to all tests
+from .fixtures.neo4j_fixtures import *
 
-@pytest.fixture
+# Register the performance monitoring plugin
+pytest_plugins = ["tests.performance_plugin"]
+
+
+@pytest.fixture(scope="session")
 async def get_adapter():
-    """Factory fixture to get database adapters by name"""
+    """Factory fixture to get database adapters by name - session scoped for performance"""
     adapters = {}
     
     async def _get_adapter(adapter_name: str):
@@ -513,18 +519,25 @@ def event_loop():
     loop.close()
 
 
+# Cache for expensive mock objects
+_MOCK_CACHE = {}
+
+
 @pytest.fixture
 def mock_openai_embeddings():
-    """Mock OpenAI embeddings for testing"""
+    """Mock OpenAI embeddings for testing - with caching"""
     # Ensure OPENAI_API_KEY is set before importing
     os.environ["OPENAI_API_KEY"] = "test-key-for-mocks"
     
     from unittest.mock import patch, MagicMock
     
-    mock_response = MagicMock()
-    mock_response.data = [MagicMock(embedding=[0.1] * 1536)]
+    # Use cached mock if available
+    if 'openai_embeddings' not in _MOCK_CACHE:
+        mock_response = MagicMock()
+        mock_response.data = [MagicMock(embedding=[0.1] * 1536)]
+        _MOCK_CACHE['openai_embeddings'] = mock_response
     
-    with patch('openai.embeddings.create', return_value=mock_response) as mock_create:
+    with patch('openai.embeddings.create', return_value=_MOCK_CACHE['openai_embeddings']) as mock_create:
         yield mock_create
 
 

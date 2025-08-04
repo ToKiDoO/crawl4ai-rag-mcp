@@ -398,17 +398,18 @@ class TestQdrantAdapter:
         # Simulate connection error
         mock_qdrant_client.upsert.side_effect = Exception("Connection refused")
         
-        # Should not raise exception to the caller
-        # The adapter prints error and returns gracefully
-        await qdrant_adapter.add_documents(
-            urls=["https://test.com"],
-            chunk_numbers=[0],
-            contents=["Test"],
-            metadatas=[{}],
-            embeddings=[[0.1] * 1536],
-            source_ids=["test.com"]
-        )
+        # Should raise exception for connection errors
+        with pytest.raises(Exception) as exc_info:
+            await qdrant_adapter.add_documents(
+                urls=["https://test.com"],
+                chunk_numbers=[0],
+                contents=["Test"],
+                metadatas=[{}],
+                embeddings=[[0.1] * 1536],
+                source_ids=["test.com"]
+            )
         
+        assert "Connection refused" in str(exc_info.value)
         # Verify upsert was attempted
         assert mock_qdrant_client.upsert.called
     
@@ -463,9 +464,9 @@ class TestQdrantAdapter:
             word_count=1000
         )
         
-        # Should use set_payload to update existing source
-        assert mock_qdrant_client.set_payload.called
-        call_args = mock_qdrant_client.set_payload.call_args
+        # Should create a new source using upsert (since retrieve returned empty)
+        assert mock_qdrant_client.upsert.called
+        call_args = mock_qdrant_client.upsert.call_args
         assert call_args.args[0] == 'sources'
         
         # Test get sources
@@ -488,11 +489,11 @@ class TestQdrantAdapter:
     @pytest.mark.asyncio
     async def test_code_examples_operations(self, qdrant_adapter, mock_qdrant_client):
         """Test code example specific operations"""
-        # Test add code examples with correct parameter name 'codes'
+        # Test add code examples with correct parameter name 'code_examples'
         await qdrant_adapter.add_code_examples(
             urls=["https://test.com/docs"],
             chunk_numbers=[1],
-            codes=["def hello(): pass"],  # Changed from 'code_examples' to 'codes'
+            code_examples=["def hello(): pass"],  # Correct parameter name
             summaries=["Hello function"],
             metadatas=[{"language": "python"}],
             embeddings=[[0.3] * 1536]
@@ -561,7 +562,7 @@ class TestQdrantAdapter:
         # Make upsert fail
         mock_qdrant_client.upsert.side_effect = Exception("Write error")
         
-        # Should handle error gracefully by raising exception
+        # Should handle error by raising exception
         with pytest.raises(Exception) as exc_info:
             await qdrant_adapter.add_documents(
                 urls=["https://test.com"],
