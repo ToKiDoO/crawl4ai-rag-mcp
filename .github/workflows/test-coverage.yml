@@ -193,9 +193,6 @@ jobs:
     timeout-minutes: 20
     needs: unit-tests
     
-    services:
-      # We'll use docker-compose instead of services for better control
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
