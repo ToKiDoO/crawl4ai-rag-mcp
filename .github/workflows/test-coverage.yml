@@ -165,15 +165,16 @@ jobs:
               ;;
           esac
 
-      - name: Upload coverage for ${{ matrix.test-group }}
-        uses: codecov/codecov-action@v4
+      - name: Upload coverage artifacts for ${{ matrix.test-group }}
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
-          flags: unittests,${{ matrix.test-group }}
-          name: ${{ matrix.test-group }}-${{ matrix.python-version }}
-          fail_ci_if_error: false
-          verbose: true
+          name: coverage-${{ matrix.test-group }}-py${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            coverage.json
+            .coverage
+          retention-days: 7
       
       - name: Upload performance metrics
         uses: actions/upload-artifact@v4
@@ -341,16 +342,16 @@ jobs:
           echo "🛑 Stopping test services..."
           docker compose -f docker-compose.test.yml down -v
 
-      - name: Upload integration test coverage
-        uses: codecov/codecov-action@v4
+      - name: Upload integration test coverage artifacts
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
-          flags: integration
-          name: integration-tests
-          fail_ci_if_error: false
-          verbose: true
+          name: coverage-integration
+          path: |
+            coverage.xml
+            coverage.json
+            .coverage
+          retention-days: 7
       
       - name: Upload integration performance metrics
         uses: actions/upload-artifact@v4

@@ -3,7 +3,6 @@
 <em>Web Crawling, Search and RAG Capabilities for AI Agents and AI Coding Assistants</em>
 
 [![CI/CD Pipeline](https://github.com/krashnicov/crawl4aimcp/workflows/CI%2FCD%20Pipeline%20-%20Test%20%26%20Coverage/badge.svg)](https://github.com/krashnicov/crawl4aimcp/actions)
-[![codecov](https://codecov.io/gh/krashnicov/crawl4aimcp/graph/badge.svg)](https://codecov.io/gh/krashnicov/crawl4aimcp)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -704,8 +703,8 @@ make test-coverage-ci        # CI-style coverage with XML output
 - **Multi-Python**: Tests run on Python 3.12 and 3.13
 - **Matrix Testing**: Unit tests grouped by component
 - **Integration Testing**: Full service stack testing
-- **Coverage Threshold**: 80% minimum required (enforced by codecov.yml)
-- **Codecov Integration**: Automatic coverage reporting with PR comments
+- **Coverage Threshold**: 80% minimum required (enforced in GitHub Actions)
+- **Coverage Reporting**: Automatic coverage reports generated as artifacts with PR comments
 - **Security Scanning**: Trivy vulnerability scanning
 
 ### 🏗️ Test Structure
