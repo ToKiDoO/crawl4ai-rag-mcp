@@ -7,6 +7,7 @@ DOCKER_COMPOSE_DEV := $(DOCKER_COMPOSE) -f docker-compose.dev.yml
 DOCKER_COMPOSE_TEST := $(DOCKER_COMPOSE) -f docker-compose.test.yml
 PYTHON := uv run python
 PYTEST := uv run pytest
+RUFF := uv run ruff
 
 # Colors for output
 COLOR_GREEN := \033[0;32m
@@ -444,8 +445,21 @@ test-neo4j: docker-test-up-wait
 	@$(MAKE) docker-test-down
 
 # Comprehensive test suite (mimics CI)
-test-ci: 
-	@echo "$(COLOR_GREEN)Running comprehensive CI test suite...$(COLOR_RESET)"
+test-ci: lint
+	@echo "$(COLOR_GREEN)Running CI test suite...$(COLOR_RESET)"
+	@echo "$(COLOR_YELLOW)Step 1: Linting and formatting check$(COLOR_RESET)"
+	$(RUFF) format src/ tests/ --check
+	@echo "$(COLOR_YELLOW)Step 2: Running unit tests with coverage$(COLOR_RESET)"
+	$(PYTEST) tests/ -v --tb=short --cov=src --cov-report=json --cov-report=term-missing -m "not integration" --maxfail=10
+	@echo "$(COLOR_YELLOW)Step 3: Checking coverage threshold (80%)$(COLOR_RESET)"
+	@python -c "import json; cov=json.load(open('coverage.json'))['totals']['percent_covered']; print(f'Coverage: {cov:.2f}%'); exit(0 if cov >= 80 else 1)"
+	@echo "$(COLOR_GREEN)CI test suite completed successfully!$(COLOR_RESET)"
+
+# CI lint command (matches GitHub Actions)
+ci-lint:
+	@echo "$(COLOR_GREEN)Running CI linting checks...$(COLOR_RESET)"
+	$(RUFF) check src/ tests/ --output-format=github
+	$(RUFF) format src/ tests/ --check
 	@$(MAKE) test-unit
 	@$(MAKE) test-coverage-ci
 	@echo "$(COLOR_GREEN)✅ All tests completed successfully!$(COLOR_RESET)"

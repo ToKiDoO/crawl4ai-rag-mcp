@@ -22,6 +22,7 @@ dependencies = [
     "docker>=6.0.0",
     "testcontainers>=3.7.0",
     "psutil>=5.9.0",
+    "ruff>=0.8.0",
 ]
 
 [build-system]

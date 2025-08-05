@@ -1,86 +1,195 @@
-name: CI/Performance Monitoring
+name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.12"
+  COVERAGE_THRESHOLD: 80
 
 jobs:
   test:
+    name: Test & Coverage
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    
-    - name: Install UV
-      run: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-    
-    - name: Install dependencies
-      run: |
-        uv sync
-    
-    - name: Run Tests with Performance Reporting
-      env:
-        # Core test environment configuration
-        OPENAI_API_KEY: test-key-for-mocks
-        VECTOR_DATABASE: qdrant
-        DATABASE_PROVIDER: qdrant
-        QDRANT_URL: http://localhost:6333
-        QDRANT_API_KEY: ""
-        QDRANT_COLLECTION_NAME: test_crawled_pages
-        QDRANT_EMBEDDING_MODEL: text-embedding-3-small
-        SEARXNG_URL: http://localhost:8081
-        SEARXNG_TEST_URL: http://localhost:8081
-        USE_RERANKING: "false"
-        RERANKER_MODEL: BAAI/bge-reranker-v2-m3
-        CHUNK_SIZE: "2000"
-        CHUNK_OVERLAP: "200"
-        TEST_TIMEOUT: "30"
-        TEST_PARALLEL_WORKERS: "4"
-        PYTEST_VERBOSE: "true"
-        PYTHONPATH: ${{ github.workspace }}/src
-        TESTING: "true"
-        CI: "true"
-      run: |
-        # Run tests with both performance monitoring and json report
-        uv run pytest --json-report --json-report-file=test_report.json --perf-monitor --perf-output=performance_metrics.json || true
-        
-        # Check if test report was generated
-        if [ -f "test_report.json" ]; then
-          echo "Test report generated successfully"
-        else
-          echo "Warning: test_report.json not found"
-        fi
-        
-        # Check if performance metrics were generated
-        if [ -f "performance_metrics.json" ]; then
-          echo "Performance metrics generated successfully"
-        else
-          echo "Warning: performance_metrics.json not found"
-        fi
-    
-    - name: Generate Performance Dashboard
-      if: always()
-      run: |
-        # Always try to generate the dashboard, even if tests failed
-        uv run python scripts/generate_performance_dashboard.py performance_metrics.json || echo "Failed to generate performance dashboard"
-    
-    - name: Upload Performance Dashboard
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: performance-dashboard
-        path: |
-          performance_dashboard.html
-          test_report.json
-          performance_metrics.json
-        if-no-files-found: warn
-        retention-days: 14
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run linting
+        run: |
+          echo "🔍 Running code linting..."
+          uv run ruff check src/ tests/ --output-format=github
+          echo "🎨 Checking code formatting..."
+          uv run ruff format src/ tests/ --check
+
+      - name: Run unit tests with coverage
+        env:
+          OPENAI_API_KEY: test-key-for-mocks
+          VECTOR_DATABASE: qdrant
+          DATABASE_PROVIDER: qdrant
+          QDRANT_URL: http://localhost:6333
+          QDRANT_API_KEY: ""
+          QDRANT_COLLECTION_NAME: test_crawled_pages
+          QDRANT_EMBEDDING_MODEL: text-embedding-3-small
+          SEARXNG_URL: http://localhost:8081
+          USE_RERANKING: "false"
+          RERANKER_MODEL: BAAI/bge-reranker-v2-m3
+          CHUNK_SIZE: "2000"
+          CHUNK_OVERLAP: "200"
+          PYTHONPATH: ${{ github.workspace }}/src
+          TESTING: "true"
+          CI: "true"
+        run: |
+          echo "🧪 Running unit tests..."
+          uv run pytest tests/ -v --tb=short \
+            --cov=src \
+            --cov-report=json \
+            --cov-report=term-missing \
+            -m "not integration" \
+            --maxfail=10
+
+      - name: Check coverage threshold
+        run: |
+          if [ -f coverage.json ]; then
+            coverage_pct=$(python -c "import json; print(json.load(open('coverage.json'))['totals']['percent_covered'])")
+            echo "Coverage: ${coverage_pct}%"
+            if (( $(echo "$coverage_pct < ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
+              echo "❌ Coverage ${coverage_pct}% is below threshold of ${{ env.COVERAGE_THRESHOLD }}%"
+              exit 1
+            else
+              echo "✅ Coverage ${coverage_pct}% meets threshold of ${{ env.COVERAGE_THRESHOLD }}%"
+            fi
+          fi
+
+      - name: Run integration tests (if files changed)
+        if: github.event_name == 'pull_request'
+        env:
+          OPENAI_API_KEY: test-key-for-mocks
+          VECTOR_DATABASE: qdrant
+          DATABASE_PROVIDER: qdrant
+          QDRANT_URL: http://localhost:6333
+          QDRANT_API_KEY: ""
+          QDRANT_COLLECTION_NAME: test_crawled_pages
+          QDRANT_EMBEDDING_MODEL: text-embedding-3-small
+          SEARXNG_URL: http://localhost:8081
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_USERNAME: neo4j
+          NEO4J_PASSWORD: testpassword123
+          USE_RERANKING: "false"
+          RERANKER_MODEL: BAAI/bge-reranker-v2-m3
+          CHUNK_SIZE: "2000"
+          CHUNK_OVERLAP: "200"
+          PYTHONPATH: ${{ github.workspace }}/src
+          TESTING: "true"
+          CI: "true"
+        run: |
+          # Check if integration tests are needed based on changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD | grep -E '^(src/|docker-compose|Dockerfile)' || true)
+          
+          if [ ! -z "$CHANGED_FILES" ]; then
+            echo "📋 Changed files that may need integration testing:"
+            echo "$CHANGED_FILES"
+            
+            # Start minimal test services
+            echo "🚀 Starting test services..."
+            docker compose -f docker-compose.test.yml up -d qdrant-test --wait --wait-timeout 60
+            
+            # Wait for services
+            sleep 10
+            
+            # Run integration tests
+            echo "🧪 Running integration tests..."
+            uv run pytest tests/ -v --tb=short \
+              -m "integration" \
+              --maxfail=5 \
+              --timeout=60 || true
+            
+            # Stop services
+            docker compose -f docker-compose.test.yml down -v
+          else
+            echo "ℹ️ No integration-relevant files changed, skipping integration tests"
+          fi
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.json
+            .coverage
+          retention-days: 7
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const coverage = JSON.parse(fs.readFileSync('coverage.json', 'utf8'));
+              const totalCoverage = coverage.totals.percent_covered;
+              const threshold = ${{ env.COVERAGE_THRESHOLD }};
+              
+              const status = totalCoverage >= threshold ? '✅' : '❌';
+              const message = `## ${status} Coverage Report
+              
+              **Coverage**: ${totalCoverage.toFixed(2)}% (threshold: ${threshold}%)
+              
+              | File | Coverage |
+              |------|----------|
+              ${Object.entries(coverage.files)
+                .map(([file, data]) => `| ${file.replace(/^.*\/src\//, 'src/')} | ${data.summary.percent_covered.toFixed(1)}% |`)
+                .slice(0, 10)
+                .join('\n')}
+              
+              [View full coverage report](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+              
+              // Find existing comment
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number
+              });
+              
+              const botComment = comments.data.find(comment => 
+                comment.user.type === 'Bot' && 
+                comment.body.includes('Coverage Report')
+              );
+              
+              if (botComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: message
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: message
+                });
+              }
+            } catch (error) {
+              console.log('Could not generate coverage comment:', error);
+            }
