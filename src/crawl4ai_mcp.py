@@ -122,9 +122,9 @@ logger.debug(f"Added knowledge_graphs path: {knowledge_graphs_path}")
 
 # Import database factory and utilities
 try:
-    logger.info("Importing database factory...")
+    logger.debug("Importing database factory...")
     from database.factory import create_and_initialize_database
-    logger.info("Database factory imported successfully")
+    logger.debug("Database factory imported successfully")
 except Exception as e:
     logger.error(f"Error importing database factory: {e}")
     logger.error(f"Traceback: {traceback.format_exc()}")
@@ -167,12 +167,27 @@ else:
 logger.info(f"VECTOR_DATABASE: {os.getenv('VECTOR_DATABASE')}")
 logger.debug(f"QDRANT_URL: {os.getenv('QDRANT_URL')}")
 
+# Validate critical environment variables
+openai_api_key = os.getenv('OPENAI_API_KEY')
+if not openai_api_key or openai_api_key.strip() == '':
+    logger.error("OPENAI_API_KEY is missing or empty. Please check your .env file.")
+    sys.exit(1)
+
+# Import and use proper security validation
+try:
+    from security import validate_api_key
+    validate_api_key(openai_api_key)
+    logger.debug("API key validation passed")
+except (ValueError, TypeError) as e:
+    logger.error(f"Invalid OPENAI_API_KEY: {e}")
+    sys.exit(1)
+
 # Helper functions for Neo4j validation and error handling
 def validate_neo4j_connection() -> bool:
     """Check if Neo4j environment variables are configured."""
     return all([
         os.getenv("NEO4J_URI"),
-        os.getenv("NEO4J_USER"),
+        os.getenv("NEO4J_USERNAME"),
         os.getenv("NEO4J_PASSWORD")
     ])
 
@@ -180,7 +195,7 @@ def format_neo4j_error(error: Exception) -> str:
     """Format Neo4j connection errors for user-friendly messages."""
     error_str = str(error).lower()
     if "authentication" in error_str or "unauthorized" in error_str:
-        return "Neo4j authentication failed. Check NEO4J_USER and NEO4J_PASSWORD."
+        return "Neo4j authentication failed. Check NEO4J_USERNAME and NEO4J_PASSWORD."
     elif "connection" in error_str or "refused" in error_str or "timeout" in error_str:
         return "Cannot connect to Neo4j. Check NEO4J_URI and ensure Neo4j is running."
     elif "database" in error_str:
@@ -276,7 +291,7 @@ async def crawl4ai_lifespan(server: FastMCP) -> AsyncIterator[Crawl4AIContext]:
     
     if knowledge_graph_enabled:
         neo4j_uri = os.getenv("NEO4J_URI")
-        neo4j_user = os.getenv("NEO4J_USER")
+        neo4j_user = os.getenv("NEO4J_USERNAME")
         neo4j_password = os.getenv("NEO4J_PASSWORD")
         
         if neo4j_uri and neo4j_user and neo4j_password:
@@ -749,89 +764,131 @@ async def search(ctx: Context, query: str, return_raw_markdown: bool = False, nu
             "processing_time_seconds": round(processing_time, 2)
         }, indent=2)
 
+def _parse_url_input(url_input: Union[str, List[str]], max_urls: int = 100) -> List[str]:
+    """
+    Parse URL input that can be:
+    - A single URL string
+    - A Python list of URLs (for internal calls)
+    - A JSON array string (for MCP calls)
+    
+    Args:
+        url_input: URL input in various formats
+        max_urls: Maximum number of URLs allowed (security limit)
+        
+    Returns:
+        List of validated URLs
+        
+    Raises:
+        MCPToolError: If input is invalid or exceeds limits
+    """
+    try:
+        # Handle different input types
+        if isinstance(url_input, str):
+            # Try to parse as JSON array first
+            if url_input.strip().startswith('[') and url_input.strip().endswith(']'):
+                try:
+                    parsed_urls = json.loads(url_input)
+                    if not isinstance(parsed_urls, list):
+                        raise MCPToolError("JSON input must be an array of URLs")
+                    urls = [str(url).strip() for url in parsed_urls]
+                except json.JSONDecodeError as e:
+                    raise MCPToolError(f"Invalid JSON array format: {str(e)}")
+            else:
+                # Single URL string
+                urls = [url_input.strip()]
+        elif isinstance(url_input, list):
+            # Python list (internal calls)
+            urls = [str(url).strip() for url in url_input]
+        else:
+            raise MCPToolError(f"Invalid URL input type: {type(url_input)}. Expected string or list.")
+        
+        # Remove empty URLs
+        urls = [url for url in urls if url]
+        
+        # Check for empty input
+        if not urls:
+            raise MCPToolError("No valid URLs provided")
+        
+        # Security limit check
+        if len(urls) > max_urls:
+            raise MCPToolError(f"Too many URLs provided ({len(urls)}). Maximum allowed: {max_urls}")
+        
+        # Validate each URL
+        validated_urls = []
+        for i, url in enumerate(urls):
+            try:
+                parsed = urlparse(url)
+                
+                # Check for valid scheme
+                if parsed.scheme not in ('http', 'https'):
+                    raise MCPToolError(f"URL {i+1} has invalid scheme '{parsed.scheme}'. Only http and https are allowed: {url}")
+                
+                # Check for valid netloc (domain)
+                if not parsed.netloc:
+                    raise MCPToolError(f"URL {i+1} is missing domain: {url}")
+                
+                validated_urls.append(url)
+                
+            except Exception as e:
+                if isinstance(e, MCPToolError):
+                    raise
+                raise MCPToolError(f"URL {i+1} is invalid: {str(e)} - {url}")
+        
+        return validated_urls
+        
+    except MCPToolError:
+        raise
+    except Exception as e:
+        raise MCPToolError(f"Failed to parse URL input: {str(e)}")
+
 @mcp.tool()
 @track_request("scrape_urls")
 async def scrape_urls(ctx: Context, url: Union[str, List[str]], max_concurrent: int = 10, batch_size: int = 20, return_raw_markdown: bool = False) -> str:
     """
     Scrape **one or more URLs** and store their contents as embedding chunks in Supabase.
     Optionally, use `return_raw_markdown=true` to return raw markdown content without storing.
-    
+
     The content is scraped and stored in Supabase for later retrieval and querying via perform_rag_query tool, unless
     `return_raw_markdown=True` is specified, in which case raw markdown is returned directly.
-    
+
     Args:
         url: URL to scrape, or list of URLs for batch processing
         max_concurrent: Maximum number of concurrent browser sessions for multi-URL mode (default: 10)
         batch_size: Size of batches for database operations (default: 20)
         return_raw_markdown: If True, skip database storage and return raw markdown content (default: False)
-    
+
     Returns:
         Summary of the scraping operation and storage in Supabase, or raw markdown content if requested
     """
     start_time = time.time()
     
     try:
-        # Input validation and type detection
-        if isinstance(url, str):
-            # Single URL - convert to list for unified processing
-            urls_to_process = [url]
-        elif isinstance(url, list):
-            # Multiple URLs
-            if not url:
-                return json.dumps({
-                    "success": False,
-                    "error": "URL list cannot be empty"
-                }, indent=2)
-            
-            # Validate all URLs are strings and remove duplicates
-            validated_urls = []
-            for i, u in enumerate(url):
-                if not isinstance(u, str):
-                    return json.dumps({
-                        "success": False,
-                        "error": f"URL at index {i} must be a string, got {type(u).__name__}"
-                    }, indent=2)
-                if u.strip():  # Only add non-empty URLs
-                    validated_urls.append(u.strip())
-            
-            if not validated_urls:
-                return json.dumps({
-                    "success": False,
-                    "error": "No valid URLs found in the list"
-                }, indent=2)
-            
-            # Remove duplicates while preserving order
-            seen = set()
-            urls_to_process = []
-            for u in validated_urls:
-                if u not in seen:
-                    seen.add(u)
-                    urls_to_process.append(u)
-        else:
-            return json.dumps({
-                "success": False,
-                "error": f"URL must be a string or list of strings, got {type(url).__name__}"
-            }, indent=2)
+        # Parse and validate input URLs with security limits
+        urls = _parse_url_input(url)
         
         # Get context components
         crawler = ctx.request_context.lifespan_context.crawler
         database_client = ctx.request_context.lifespan_context.database_client
         
-        # Always use unified processing (handles both single and multiple URLs seamlessly)
+        # Process URLs using existing helper function
         return await _process_multiple_urls(
-            crawler, database_client, urls_to_process,
+            crawler, database_client, urls,
             max_concurrent, batch_size, start_time, return_raw_markdown
         )
             
+    except ValueError as e:
+        return json.dumps({
+            "success": False,
+            "error": str(e)
+        }, indent=2)
     except Exception as e:
         processing_time = time.time() - start_time
         return json.dumps({
             "success": False,
-            "url": url if isinstance(url, str) else f"[{len(url)} URLs]" if isinstance(url, list) else str(url),
-            "error": str(e),
+            "url": str(url),
+            "error": f"Error processing URLs: {str(e)}",
             "processing_time_seconds": round(processing_time, 2)
         }, indent=2)
-
 
 async def _process_multiple_urls(
     crawler: AsyncWebCrawler,
@@ -1050,7 +1107,7 @@ async def _process_multiple_urls(
                 if doc.get('markdown'):
                     source_url = doc['url']
                     md = doc['markdown']
-                    code_blocks = extract_code_blocks(md)
+                    code_blocks = extract_code_blocks(md, min_length=100)
                     
                     if code_blocks:
                         # Process code examples in parallel
@@ -1331,7 +1388,7 @@ async def smart_crawl_url(ctx: Context, url: str, max_depth: int = 3, max_concur
             for doc in crawl_results:
                 source_url = doc['url']
                 md = doc['markdown']
-                code_blocks = extract_code_blocks(md)
+                code_blocks = extract_code_blocks(md, min_length=100)
                 
                 if code_blocks:
                     # Process code examples in parallel
@@ -1667,15 +1724,16 @@ async def search_code_examples(ctx: Context, query: str, source_id: str = None, 
         if use_hybrid_search:
             # Hybrid search: combine vector and keyword search
             
-            # Import the search function from utils
-            from utils import search_code_examples as search_code_examples_impl
+            # Import the search function from utils_refactored
+            from utils_refactored import search_code_examples as search_code_examples_impl
             
             # 1. Get vector search results (get more to account for filtering)
-            vector_results = search_code_examples_impl(
-                client=database_client,
+            vector_results = await search_code_examples_impl(
+                database=database_client,
                 query=query,
                 match_count=match_count * 2,  # Get double to have room for filtering
-                filter_metadata=filter_metadata
+                filter_metadata=filter_metadata,
+                source_filter=source_id if source_id and source_id.strip() else None
             )
             
             # 2. Get keyword search results on both content and summary
@@ -1729,26 +1787,27 @@ async def search_code_examples(ctx: Context, query: str, source_id: str = None, 
             
         else:
             # Standard vector search only
-            from utils import search_code_examples as search_code_examples_impl
+            from utils_refactored import search_code_examples as search_code_examples_impl
             
-            results = search_code_examples_impl(
-                client=database_client,
+            results = await search_code_examples_impl(
+                database=database_client,
                 query=query,
                 match_count=match_count,
-                filter_metadata=filter_metadata
+                filter_metadata=filter_metadata,
+                source_filter=source_id if source_id and source_id.strip() else None
             )
         
         # Apply reranking if enabled
         use_reranking = os.getenv("USE_RERANKING", "false") == "true"
         if use_reranking and ctx.request_context.lifespan_context.reranking_model:
-            results = rerank_results(ctx.request_context.lifespan_context.reranking_model, query, results, content_key="content")
+            results = rerank_results(ctx.request_context.lifespan_context.reranking_model, query, results, content_key="code")
         
         # Format the results
         formatted_results = []
         for result in results:
             formatted_result = {
                 "url": result.get("url"),
-                "code": result.get("content"),
+                "code": result.get("code"),  # Code examples are stored with "code" field
                 "summary": result.get("summary"),
                 "metadata": result.get("metadata"),
                 "source_id": result.get("source_id"),

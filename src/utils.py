@@ -486,6 +486,98 @@ Based on the code example and its surrounding context, provide a concise summary
         return "Code example for demonstration purposes."
 
 
+async def store_code_example(
+    client: Any,
+    code: str,
+    summary: str,
+    language: str,
+    source_url: str,
+    metadata: Dict[str, Any]
+) -> None:
+    """
+    Store a single code example in the database.
+    
+    Args:
+        client: Database client (Supabase or Qdrant)
+        code: The code content
+        summary: Summary of what the code does
+        language: Programming language
+        source_url: URL where the code was found
+        metadata: Additional metadata about the code
+    """
+    from database.base import VectorDatabase
+    
+    # If client is a VectorDatabase instance, use the new interface
+    if isinstance(client, VectorDatabase):
+        # Create embedding for the code + summary
+        combined_text = f"{code}\n\nSummary: {summary}"
+        embeddings = create_embeddings_batch([combined_text])
+        
+        # Extract source ID from URL
+        parsed_url = urlparse(source_url)
+        source_id = parsed_url.netloc or parsed_url.path
+        
+        # Prepare metadata with language and other info
+        full_metadata = {
+            "language": language,
+            "char_count": len(code),
+            "word_count": len(code.split()),
+            "url": source_url,
+            "source": source_id,
+            **metadata
+        }
+        
+        # Store in database using the VectorDatabase interface
+        await client.add_code_examples(
+            urls=[source_url],
+            chunk_numbers=[0],
+            code_examples=[code],
+            summaries=[summary],
+            metadatas=[full_metadata],
+            embeddings=embeddings,
+            source_ids=[source_id]
+        )
+    else:
+        # Legacy Supabase client handling
+        try:
+            # Create embedding for the code + summary
+            combined_text = f"{code}\n\nSummary: {summary}"
+            embeddings = create_embeddings_batch([combined_text])
+            
+            if not embeddings:
+                raise ValueError("Failed to create embedding for code example")
+            
+            # Extract source ID from URL
+            parsed_url = urlparse(source_url)
+            source_id = parsed_url.netloc or parsed_url.path
+            
+            # Prepare data for insertion
+            code_data = {
+                "url": source_url,
+                "chunk_number": 0,
+                "code": code,
+                "summary": summary,
+                "embedding": embeddings[0],
+                "source_id": source_id,
+                "metadata": {
+                    "language": language,
+                    "char_count": len(code),
+                    "word_count": len(code.split()),
+                    **metadata
+                }
+            }
+            
+            # Insert into Supabase
+            result = client.table("code_examples").insert(code_data).execute()
+            
+            if not result.data:
+                raise ValueError("Failed to insert code example into database")
+                
+        except Exception as e:
+            print(f"Error storing code example: {e}", file=sys.stderr)
+            raise
+
+
 def add_code_examples_to_supabase(
     client: Client,
     urls: List[str],

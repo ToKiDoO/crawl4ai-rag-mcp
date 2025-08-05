@@ -8,7 +8,7 @@ import asyncio
 import os
 import sys
 from typing import List, Dict, Any
-from unittest.mock import patch, Mock, AsyncMock, MagicMock, side_effect
+from unittest.mock import patch, Mock, AsyncMock, MagicMock
 from concurrent.futures import ThreadPoolExecutor
 
 # Add src to path

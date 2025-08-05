@@ -1,37 +1,72 @@
-# Development-specific overrides for docker-compose.yml
-# This file extends the base docker-compose.yml with development features
+# Development Docker Compose Configuration
+# Optimized for local development with hot-reload, debugging, and minimal resource usage
 
 services:
   # MCP Crawl4AI Server - Development Configuration
   mcp-crawl4ai:
-    # Development-specific build args
-    image: mcp-crawl4ai:dev
     build:
+      context: .
+      dockerfile: Dockerfile
       args:
         - DEVELOPMENT=true
-    
-    # Development environment variables
+    container_name: mcp-crawl4ai-dev
+    restart: unless-stopped
+    env_file:
+      - .env
     environment:
+      # Core settings
+      - TRANSPORT=${TRANSPORT:-http}
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${PORT:-8051}
+      - SEARXNG_URL=http://searxng-dev:8080
+      # Development settings
       - DEBUG=true
       - LOG_LEVEL=DEBUG
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
-      # Enable hot-reload for FastMCP
       - FASTMCP_DEV_MODE=true
-      
-    # Mount source code for hot-reloading
+      # Database URLs - Use container names for Docker
+      - QDRANT_URL=http://qdrant-dev:6333
+      - NEO4J_URI=bolt://neo4j-dev:7687
+      - NEO4J_USERNAME=${NEO4J_USERNAME:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
+      # Load other environment variables from .env file
+      # OPENAI_API_KEY will be loaded from env_file directive above
+      - MODEL_CHOICE=${MODEL_CHOICE:-gpt-4-mini}
+      - USE_CONTEXTUAL_EMBEDDINGS=${USE_CONTEXTUAL_EMBEDDINGS:-false}
+      - USE_HYBRID_SEARCH=${USE_HYBRID_SEARCH:-false}
+      - USE_AGENTIC_RAG=${USE_AGENTIC_RAG:-false}
+      - USE_RERANKING=${USE_RERANKING:-false}
+      - USE_KNOWLEDGE_GRAPH=${USE_KNOWLEDGE_GRAPH:-false}
+      - VECTOR_DATABASE=${VECTOR_DATABASE:-qdrant}
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
+      - TESTING=${TESTING:-true}
+      - PYTHONDONTWRITEBYTECODE=${PYTHONDONTWRITEBYTECODE:-1}
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED:-1}
+    ports:
+      - "8051:8051"
+      - "5678:5678"  # Python debugger port
+    depends_on:
+      - searxng
+      - neo4j
+      - qdrant
+      - valkey
+    networks:
+      - dev-network
     volumes:
-      # - ./src:/app/src:rw
-      # - ./tests:/app/tests:rw
+      # Source code mounting for hot-reload
+      # - ./src:/app/src:rw # cannot be mounted and watched at the same time.
+      # - ./tests:/app/tests:rw # cannot be mounted and watched at the same time.
       - ./pyproject.toml:/app/pyproject.toml:ro
       - ./pytest.ini:/app/pytest.ini:ro
-      # Persist Python cache for faster startup
+      # Data and logs
+      - ./data:/app/data:rw
+      - ./logs:/app/logs:rw
+      # Python cache for faster startup
       - python-cache:/root/.cache
-      
-    # Development watch configuration
     develop:
       watch:
-        # Watch src directory with sync+restart action
+        # Watch src directory with sync+restart
         - action: sync+restart
           path: ./src
           target: /app/src
@@ -57,7 +92,7 @@ services:
         # Watch pyproject.toml for dependency changes
         - action: rebuild
           path: ./pyproject.toml
-        # Watch tests directory for test development
+        # Watch tests directory
         - action: sync
           path: ./tests
           target: /app/tests
@@ -68,8 +103,12 @@ services:
             - .coverage
             - htmlcov/
             - "*.swp"
-      
-    # Development-specific resource limits
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; s = socket.socket(); s.settimeout(1); s.connect(('localhost', ${PORT:-8051})); s.close()\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
     deploy:
       resources:
         limits:
@@ -78,115 +117,224 @@ services:
         reservations:
           cpus: '1'
           memory: 1G
-          
-    # Enhanced health check for development
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import socket; s = socket.socket(); s.settimeout(1); s.connect(('localhost', ${PORT:-8051})); s.close()\" || exit 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 30s
-      
-    # Development logging configuration
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "5"
         labels: "service=mcp-crawl4ai,env=dev"
-        
-    # Enable stdin/tty for debugging
     stdin_open: true
     tty: true
-    
-    # Development-specific labels
     labels:
       - "com.crawl4ai.environment=development"
       - "com.crawl4ai.hot-reload=enabled"
 
-  # Valkey - Development Configuration
+  # Redis Alternative - Valkey (Development)
   valkey:
-    # Enable verbose logging in development
+    container_name: valkey-dev
+    image: docker.io/valkey/valkey:8-alpine
     command: valkey-server --save 30 1 --loglevel debug
-    
-    # Development resource limits
+    restart: unless-stopped
+    networks:
+      - dev-network
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - valkey-data:/data
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 512M
-          
-    # Expose port for local debugging
-    ports:
-      - "127.0.0.1:6379:6379"
-      
-    # Development logging
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     logging:
       driver: "json-file"
       options:
         max-size: "5m"
         max-file: "3"
+        labels: "service=valkey,env=dev"
 
-  # SearXNG - Development Configuration
+  # SearXNG Search Engine (Development)
   searxng:
-    # Development environment
-    environment:
-      - SEARXNG_BASE_URL=http://localhost:8080/
-      - SEARXNG_DEBUG=true
-      
-    # Mount config for hot-reloading
+    container_name: searxng-dev
+    image: docker.io/searxng/searxng:latest
+    restart: unless-stopped
+    networks:
+      - dev-network
+    ports:
+      - "127.0.0.1:8080:8080"
     volumes:
       - ./searxng:/etc/searxng:rw
       - searxng-data:/var/cache/searxng:rw
-      # Development-specific settings override
-      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
-      
-    # Development resource limits
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 1G
-          
-    # Development logging
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+      - SEARXNG_DEBUG=true
+      - SEARXNG_SECRET_KEY=dev-secret-key-change-in-production
+      - BIND_ADDRESS=0.0.0.0:8080
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     logging:
       driver: "json-file"
       options:
         max-size: "5m"
         max-file: "3"
-
-  # Qdrant - Development Configuration (when enabled)
-  qdrant:
-    # Development environment
-    environment:
-      - QDRANT__LOG_LEVEL=DEBUG
-      - QDRANT__TELEMETRY_DISABLED=true
-      
-    # Development resource limits
+        labels: "service=searxng,env=dev"
+    depends_on:
+      - valkey
     deploy:
       resources:
         limits:
           cpus: '1'
           memory: 1G
-      
-    # No profiles - service is always enabled in dev
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
-  # Neo4j - Development Configuration (when enabled)
-  neo4j:
-    # Development environment
+  # Qdrant Vector Database (Development)
+  qdrant:
+    container_name: qdrant-dev
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"  # gRPC port
+    volumes:
+      - qdrant-data:/qdrant/storage
     environment:
-      - NEO4J_dbms_logs_debug_level=DEBUG
+      - QDRANT__LOG_LEVEL=DEBUG
+      - QDRANT__TELEMETRY_DISABLED=true
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    networks:
+      - dev-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "/usr/bin/bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6333 && echo -e 'GET /readyz HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q 'HTTP/1.1 200' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+        labels: "service=qdrant,env=dev"
+
+  # Neo4j Graph Database (Development)
+  neo4j:
+    container_name: neo4j-dev
+    image: neo4j:5.25-community
+    restart: unless-stopped
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    environment:
+      - NEO4J_AUTH=${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-password}
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
-      
-    # Development resource limits
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_logs_debug_level=DEBUG
+      - NEO4J_server_memory_heap_initial__size=512m
+      - NEO4J_server_memory_heap_max__size=1G
+      - NEO4J_server_memory_pagecache_size=512m
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+      - neo4j-plugins:/plugins
+    networks:
+      - dev-network
     deploy:
       resources:
         limits:
           cpus: '2'
           memory: 2G
-          
-    # No profiles - service is always enabled in dev
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+        labels: "service=neo4j,env=dev"
 
-# Additional development volumes
+  # Mailhog for email testing (Development only)
+  mailhog:
+    container_name: mailhog-dev
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - dev-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+        labels: "service=mailhog,env=dev"
+
+networks:
+  dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
 volumes:
+  valkey-data:
+    driver: local
+  searxng-data:
+    driver: local
+  qdrant-data:
+    driver: local
+  neo4j-data:
+    driver: local
+  neo4j-logs:
+    driver: local
+  neo4j-plugins:
+    driver: local
   python-cache:
+    driver: local

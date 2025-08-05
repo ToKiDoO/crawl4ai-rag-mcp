@@ -2,6 +2,12 @@
 
 <em>Web Crawling, Search and RAG Capabilities for AI Agents and AI Coding Assistants</em>
 
+[![CI/CD Pipeline](https://github.com/krashnicov/crawl4aimcp/workflows/CI%2FCD%20Pipeline%20-%20Test%20%26%20Coverage/badge.svg)](https://github.com/krashnicov/crawl4aimcp/actions)
+[![codecov](https://codecov.io/gh/krashnicov/crawl4aimcp/graph/badge.svg)](https://codecov.io/gh/krashnicov/crawl4aimcp)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > **(FORKED FROM https://github.com/coleam00/mcp-crawl4ai-rag). Added SearXNG integration and batch scrape and processing capabilities.**
 
 A **self-contained Docker solution** that combines the [Model Context Protocol (MCP)](https://modelcontextprotocol.io), [Crawl4AI](https://crawl4ai.com), [SearXNG](https://github.com/searxng/searxng), and [Supabase](https://supabase.com/) to provide AI agents and coding assistants with complete web **search, crawling, and RAG capabilities**.
@@ -592,67 +598,203 @@ docker volume ls
 
 ## Testing
 
-The project includes comprehensive unit and integration tests:
+The project includes comprehensive unit and integration tests with a fully isolated test environment. All tests run independently without interfering with development or production environments.
 
-### Test Environment Setup
+### 📋 Deprecation Warnings
 
-1. **Start test containers**:
-   ```bash
-   docker compose -f docker-compose.test.yml up -d
-   ```
+**Important**: Before running tests, review the [Deprecation Warnings Documentation](docs/DEPRECATION_WARNINGS.md) to track any warnings from dependencies. Current known warnings are from external dependencies (Pydantic, fake_http_header) and do not affect functionality.
 
-2. **Copy test environment configuration**:
-   ```bash
-   cp .env.test.template .env.test
-   # Edit .env.test with your API keys
-   ```
+### 🚀 Quick Start
 
-### Running Tests
-
-**Unit tests only** (no external dependencies):
+**Validate test environment and run tests**:
 ```bash
+# Validate entire test setup (recommended first run)
+./scripts/validate-test-environment.sh
+
+# Quick unit tests (no external dependencies, ~30 seconds)
 make test-unit
-# or
-pytest tests/ -v -m "not integration"
+
+# Full test suite with coverage (includes integration tests, ~2 minutes)
+make test-ci
 ```
 
-**SearXNG integration tests**:
+### 📋 Test Environment Setup
+
+The test environment uses completely isolated services with dedicated ports and configurations:
+
+- **Qdrant Test**: `localhost:6333` (isolated vector database)
+- **Neo4j Test**: `localhost:7474` / `localhost:7687` (isolated graph database)  
+- **SearXNG Test**: `localhost:8081` (isolated search engine)
+- **Test Configuration**: `.env.test` (optimized for fast testing)
+
+**Manual setup**:
 ```bash
-make test-searxng
-# or
-pytest tests/test_searxng_integration.py -v
+# 1. Ensure test configuration exists
+ls .env.test  # Should exist (created automatically)
+
+# 2. Start isolated test services
+make docker-test-up-wait
+
+# 3. Verify services are ready
+make test-db-connect
 ```
 
-**All integration tests**:
+### 🧪 Running Tests
+
+**Quick development tests**:
 ```bash
-make test-integration
-# or
-pytest tests/ -v -m integration
+make test-quick      # Core unit tests only (~15 seconds)
+make test-unit       # All unit tests (~30 seconds)
+make test-coverage   # Unit tests with coverage report
 ```
 
-**All tests with coverage**:
+**Integration tests** (require Docker services):
 ```bash
-make test-all
-# or
-pytest tests/ -v --cov=src --cov-report=html
+make test-integration    # All integration tests (~1 minute)
+make test-searxng       # SearXNG-specific integration tests
+make test-qdrant        # Qdrant-specific integration tests  
+make test-neo4j         # Neo4j-specific integration tests
 ```
 
-### Test Structure
-
-- **Unit tests**: Mock external dependencies for fast, isolated testing
-- **Integration tests**: Test against real services (Qdrant, SearXNG)
-- **Test markers**: `@pytest.mark.searxng` for SearXNG-specific tests
-- **Test isolation**: Separate test configurations and databases
-
-### Clean Up
-
+**Comprehensive testing**:
 ```bash
-# Stop test containers and remove volumes
-docker compose -f docker-compose.test.yml down -v
-
-# Clean test artifacts
-make clean
+make test-all        # All tests (unit + integration)
+make test-ci         # Full CI suite with coverage
+make test-coverage-ci # All tests with coverage (mimics CI)
 ```
+
+**Specialized testing**:
+```bash
+make test-file FILE=tests/test_example.py    # Test specific file
+make test-mark MARK=integration              # Test specific marker
+make test-debug                              # Verbose debugging output
+make test-pdb                               # Run with PDB debugger
+```
+
+### 🔧 Test Environment Management
+
+**Service management**:
+```bash
+make docker-test-up           # Start test services
+make docker-test-up-wait      # Start and wait for readiness
+make docker-test-down         # Stop and clean test services
+make docker-test-status       # Show service status
+make docker-test-logs         # View service logs
+```
+
+**Service health checks**:
+```bash
+make test-db-connect         # Test database connectivity
+curl http://localhost:6333/readyz   # Qdrant health
+curl http://localhost:8081/healthz  # SearXNG health
+```
+
+### 📊 Coverage and CI
+
+**Coverage reports**:
+```bash
+make test-coverage           # Generate HTML coverage report
+# View: open htmlcov/index.html
+
+make test-coverage-ci        # CI-style coverage with XML output
+```
+
+**CI Integration**:
+- **GitHub Actions**: Automated testing on push/PR
+- **Multi-Python**: Tests run on Python 3.12 and 3.13
+- **Matrix Testing**: Unit tests grouped by component
+- **Integration Testing**: Full service stack testing
+- **Coverage Threshold**: 80% minimum required (enforced by codecov.yml)
+- **Codecov Integration**: Automatic coverage reporting with PR comments
+- **Security Scanning**: Trivy vulnerability scanning
+
+### 🏗️ Test Structure
+
+**Test organization**:
+```
+tests/
+├── test_utils_refactored.py      # Core utility tests
+├── test_database_factory.py      # Database factory tests  
+├── test_crawl4ai_mcp.py          # MCP server tests
+├── test_supabase_adapter.py      # Supabase integration
+├── test_qdrant_adapter.py        # Qdrant integration
+├── test_database_interface.py    # Database interface tests
+└── test_integration_simple.py    # Basic integration tests
+```
+
+**Test markers**:
+- `@pytest.mark.unit`: Unit tests (fast, no external deps)
+- `@pytest.mark.integration`: Integration tests (require services)
+- `@pytest.mark.searxng`: SearXNG-specific tests
+- `@pytest.mark.performance`: Performance/benchmark tests
+
+**Test isolation**:
+- ✅ Separate test databases and collections
+- ✅ Isolated Docker network (`test-network`)  
+- ✅ Different ports to avoid conflicts
+- ✅ Independent configuration (`.env.test`)
+- ✅ Cleanup between test runs
+
+### 🔍 Development Testing
+
+**Watch mode** (for active development):
+```bash
+make test-watch             # Re-run tests on file changes
+make test-debug             # Verbose output for troubleshooting
+```
+
+**Performance testing**:
+```bash
+make test-performance       # Run performance benchmarks
+# Add custom benchmarks with @pytest.mark.performance
+```
+
+### 🧹 Cleanup
+
+**Clean test artifacts**:
+```bash
+make clean                  # Remove test caches and reports
+make clean-all              # Remove everything including Docker volumes
+make docker-test-down       # Stop test services and remove volumes
+```
+
+**Reset test environment**:
+```bash
+make docker-test-down && make docker-test-up-wait
+```
+
+### 🚨 Troubleshooting Tests
+
+**Common issues**:
+
+1. **Services not ready**: 
+   ```bash
+   make docker-test-logs      # Check service startup logs
+   make test-db-connect       # Verify connectivity
+   ```
+
+2. **Port conflicts**:
+   ```bash
+   # Check what's using test ports
+   lsof -i :6333 -i :7474 -i :7687 -i :8081
+   ```
+
+3. **Test failures**:
+   ```bash
+   make test-debug            # Verbose test output
+   make test-pdb             # Interactive debugging
+   ```
+
+4. **Environment issues**:
+   ```bash
+   ./scripts/validate-test-environment.sh  # Full validation
+   ```
+
+**Performance optimization**:
+- Unit tests run in parallel by default
+- Integration tests use optimized service configurations
+- Test data is minimized for speed
+- Services use resource limits for consistency
 
 ## Development & Customization
 

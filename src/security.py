@@ -150,24 +150,28 @@ def validate_api_key(api_key: Optional[str]) -> bool:
         raise ValueError("Invalid API key format detected")
     
     # API key format validation - must match expected patterns
-    # OpenAI keys
+    # OpenAI keys - proper validation
     if api_key.startswith('sk-'):
-        if not api_key.startswith('sk-proj-') and not api_key.startswith('sk-test-'):
-            raise ValueError("Invalid OpenAI API key format")
+        # Reject test/mock/fake/placeholder patterns first
+        forbidden_patterns = ['test', 'mock', 'fake', 'placeholder', 'dummy', 'example']
+        api_key_lower = api_key.lower()
+        if any(pattern in api_key_lower for pattern in forbidden_patterns):
+            raise ValueError("Invalid OpenAI API key format: test/mock keys not allowed")
+        
+        # OpenAI keys must be at least 51 characters
+        if len(api_key) < 51:
+            raise ValueError("Invalid OpenAI API key format: too short")
+        
         return True
     
     # Other known API key patterns
     valid_prefixes = [
-        'sk-',  # OpenAI
         'eyJ',  # JWT tokens (Supabase, etc)
         'Bearer ',  # Bearer tokens
     ]
     
     # Check if it matches any known pattern
     if not any(api_key.startswith(prefix) for prefix in valid_prefixes):
-        # For testing/development, allow specific test keys
-        if api_key in ['test-mock-key-not-real', 'test-api-key']:
-            return True
         raise ValueError("Invalid API key format")
     
     return True

@@ -516,14 +516,14 @@ class TestMCPTools:
         from src.crawl4ai_mcp import search_code_examples
         
         # Test when feature is disabled
-        with patch.dict('os.environ', {'ENABLE_AGENTIC_RAG': 'false'}):
+        with patch.dict('os.environ', {'USE_AGENTIC_RAG': 'false'}):
             result = await search_code_examples(mock_context, "python function")
             result_data = json.loads(result)
             assert result_data["success"] is False
             assert "not enabled" in result_data["error"]
         
         # Test when feature is enabled
-        with patch.dict('os.environ', {'ENABLE_AGENTIC_RAG': 'true'}):
+        with patch.dict('os.environ', {'USE_AGENTIC_RAG': 'true'}):
             # Mock embedding creation
             mock_context.crawl4ai.embedding_service.create_embedding.return_value = [0.1] * 1536
             
@@ -873,7 +873,7 @@ class TestMCPTools:
         mock_context.request_context.lifespan_context.database_client = AsyncMock()
         
         # Test when feature is enabled
-        with patch.dict(os.environ, {'ENABLE_AGENTIC_RAG': 'true'}):
+        with patch.dict(os.environ, {'USE_AGENTIC_RAG': 'true'}):
             # Mock search results
             with patch('src.crawl4ai_mcp.search_code_examples_db', new_callable=AsyncMock) as mock_search:
                 mock_search.return_value = [

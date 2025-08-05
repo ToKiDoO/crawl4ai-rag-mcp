@@ -2,7 +2,8 @@
 
 # Variables
 DOCKER_COMPOSE := docker compose
-DOCKER_COMPOSE_DEV := $(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.dev.yml
+DOCKER_COMPOSE_PROD := $(DOCKER_COMPOSE) -f docker-compose.prod.yml
+DOCKER_COMPOSE_DEV := $(DOCKER_COMPOSE) -f docker-compose.dev.yml
 DOCKER_COMPOSE_TEST := $(DOCKER_COMPOSE) -f docker-compose.test.yml
 PYTHON := uv run python
 PYTEST := uv run pytest
@@ -34,19 +35,39 @@ help:
 	@echo "$(COLOR_YELLOW)Testing:$(COLOR_RESET)"
 	@echo "  make test            - Run unit tests (alias)"
 	@echo "  make test-unit       - Run unit tests only (no external dependencies)"
-	@echo "  make test-searxng    - Run SearXNG integration tests"
-	@echo "  make test-integration- Run all integration tests"
+	@echo "  make test-quick      - Run quick unit tests (core only) for rapid feedback"
+	@echo "  make test-integration- Run all integration tests with Docker services"
 	@echo "  make test-all        - Run all tests (unit + integration)"
-	@echo "  make test-watch      - Run tests in watch mode"
 	@echo "  make test-coverage   - Run tests with coverage report"
+	@echo "  make test-coverage-ci- Run comprehensive tests with coverage for CI"
+	@echo "  make test-ci         - Run complete CI test suite"
+	@echo "  make test-file FILE=<path> - Run tests for specific file"
+	@echo "  make test-mark MARK=<marker> - Run tests with specific marker"
+	@echo "  make test-watch      - Run tests in watch mode (development)"
+	@echo "  make test-debug      - Run tests in debug mode with verbose output"
+	@echo "  make test-pdb        - Run tests with PDB debugger"
+	@echo ""
+	@echo "$(COLOR_YELLOW)Test Environment:$(COLOR_RESET)"
 	@echo "  make docker-test-up  - Start test environment containers"
+	@echo "  make docker-test-up-wait - Start test environment and wait for readiness"
 	@echo "  make docker-test-down- Stop test environment containers"
+	@echo "  make docker-test-status - Show test environment status"
+	@echo "  make docker-test-logs- Show test environment logs"
+	@echo "  make test-db-connect - Test database connections"
+	@echo "  make test-qdrant     - Test Qdrant integration specifically"
+	@echo "  make test-neo4j      - Test Neo4j integration specifically"
+	@echo ""
+	@echo "$(COLOR_YELLOW)Production Environment:$(COLOR_RESET)"
+	@echo "  make prod            - Start production environment"
+	@echo "  make prod-down       - Stop production environment"
+	@echo "  make prod-logs       - View production logs"
+	@echo "  make prod-ps         - Show production service status"
 	@echo ""
 	@echo "$(COLOR_YELLOW)Service Management:$(COLOR_RESET)"
-	@echo "  make up              - Start all services"
+	@echo "  make up              - Start production services (alias for prod)"
 	@echo "  make down            - Stop all services"
-	@echo "  make restart         - Restart all services"
-	@echo "  make logs            - View all service logs"
+	@echo "  make restart         - Restart services"
+	@echo "  make logs            - View service logs"
 	@echo "  make ps              - Show service status"
 	@echo "  make health          - Check service health"
 	@echo ""
@@ -92,7 +113,7 @@ dev-bg: env-check
 # Development without rebuilding images
 dev-nobuild: env-check
 	@echo "$(COLOR_GREEN)Starting development environment (no rebuild) with watch mode...$(COLOR_RESET)"
-	$(DOCKER_COMPOSE_DEV) up --watch
+	$(DOCKER_COMPOSE_DEV) up --watch --no-build
 
 dev-bg-nobuild: env-check
 	@echo "$(COLOR_GREEN)Starting development environment in background (no rebuild)...$(COLOR_RESET)"
@@ -121,34 +142,92 @@ watch:
 	@echo "$(COLOR_GREEN)Starting Docker watch mode for development...$(COLOR_RESET)"
 	$(DOCKER_COMPOSE_DEV) watch
 
-# Service Management Commands
+# Production Environment Commands
+.PHONY: prod prod-down prod-logs prod-ps prod-restart
+
+prod: env-check
+	@echo "$(COLOR_GREEN)Starting production environment...$(COLOR_RESET)"
+	$(DOCKER_COMPOSE_PROD) up -d
+
+prod-down:
+	@echo "$(COLOR_YELLOW)Stopping production environment...$(COLOR_RESET)"
+	$(DOCKER_COMPOSE_PROD) down
+
+prod-logs:
+	$(DOCKER_COMPOSE_PROD) logs -f
+
+prod-ps:
+	$(DOCKER_COMPOSE_PROD) ps
+
+prod-restart:
+	@echo "$(COLOR_YELLOW)Restarting production services...$(COLOR_RESET)"
+	$(DOCKER_COMPOSE_PROD) restart
+
+# Service Management Commands (aliases for production)
 .PHONY: up down restart logs ps health
 
-up:
-	$(DOCKER_COMPOSE) up -d
+up: prod
 
 down:
-	$(DOCKER_COMPOSE) down
+	@echo "$(COLOR_YELLOW)Stopping all environments...$(COLOR_RESET)"
+	-$(DOCKER_COMPOSE_PROD) down
+	-$(DOCKER_COMPOSE_DEV) down
+	-$(DOCKER_COMPOSE_TEST) down
 
 restart:
-	$(DOCKER_COMPOSE) restart
+	@echo "$(COLOR_YELLOW)Which environment to restart?$(COLOR_RESET)"
+	@echo "1. Production"
+	@echo "2. Development"
+	@read -p "Enter choice (1-2): " choice; \
+	case $$choice in \
+		1) $(MAKE) prod-restart ;; \
+		2) $(MAKE) dev-restart ;; \
+		*) echo "Invalid choice" ;; \
+	esac
 
 logs:
-	$(DOCKER_COMPOSE) logs -f
+	@echo "$(COLOR_YELLOW)Which environment logs?$(COLOR_RESET)"
+	@echo "1. Production"
+	@echo "2. Development"
+	@echo "3. Test"
+	@read -p "Enter choice (1-3): " choice; \
+	case $$choice in \
+		1) $(MAKE) prod-logs ;; \
+		2) $(MAKE) dev-logs ;; \
+		3) $(MAKE) docker-test-logs ;; \
+		*) echo "Invalid choice" ;; \
+	esac
 
 ps:
-	$(DOCKER_COMPOSE) ps
+	@echo "$(COLOR_GREEN)Service status across environments:$(COLOR_RESET)"
+	@echo "\n$(COLOR_YELLOW)Production:$(COLOR_RESET)"
+	-@$(DOCKER_COMPOSE_PROD) ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
+	@echo "\n$(COLOR_YELLOW)Development:$(COLOR_RESET)"
+	-@$(DOCKER_COMPOSE_DEV) ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
+	@echo "\n$(COLOR_YELLOW)Test:$(COLOR_RESET)"
+	-@$(DOCKER_COMPOSE_TEST) ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
 
 health:
 	@echo "$(COLOR_GREEN)Checking service health...$(COLOR_RESET)"
-	@$(DOCKER_COMPOSE) ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
+	@echo "\n$(COLOR_YELLOW)Production:$(COLOR_RESET)"
+	-@$(DOCKER_COMPOSE_PROD) ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
+	@echo "\n$(COLOR_YELLOW)Development:$(COLOR_RESET)"
+	-@$(DOCKER_COMPOSE_DEV) ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
 
 # Database Operations
 .PHONY: db-test db-shell qdrant-shell neo4j-shell
 
 db-test:
 	@echo "$(COLOR_GREEN)Testing database connections...$(COLOR_RESET)"
-	$(DOCKER_COMPOSE) exec mcp-crawl4ai python -c "from utils import test_supabase_connection; test_supabase_connection()"
+	@echo "$(COLOR_YELLOW)Which environment?$(COLOR_RESET)"
+	@echo "1. Production"
+	@echo "2. Development"
+	@read -p "Enter choice (1-2): " choice; \
+	case $$choice in \
+		1) $(DOCKER_COMPOSE_PROD) exec mcp-crawl4ai python -c "from utils import test_supabase_connection; test_supabase_connection()" ;; \
+		2) $(DOCKER_COMPOSE_DEV) exec mcp-crawl4ai python -c "from utils import test_supabase_connection; test_supabase_connection()" ;; \
+		*) echo "Invalid choice" ;; \
+	esac
 
 db-shell:
 	@echo "$(COLOR_YELLOW)Choose database:$(COLOR_RESET)"
@@ -179,10 +258,26 @@ neo4j-shell:
 .PHONY: shell python dev-shell dev-python lint format type-check validate
 
 shell:
-	$(DOCKER_COMPOSE) exec mcp-crawl4ai /bin/bash
+	@echo "$(COLOR_YELLOW)Which environment?$(COLOR_RESET)"
+	@echo "1. Production"
+	@echo "2. Development"
+	@read -p "Enter choice (1-2): " choice; \
+	case $$choice in \
+		1) $(DOCKER_COMPOSE_PROD) exec mcp-crawl4ai /bin/bash ;; \
+		2) $(DOCKER_COMPOSE_DEV) exec mcp-crawl4ai /bin/bash ;; \
+		*) echo "Invalid choice" ;; \
+	esac
 
 python:
-	$(DOCKER_COMPOSE) exec mcp-crawl4ai python
+	@echo "$(COLOR_YELLOW)Which environment?$(COLOR_RESET)"
+	@echo "1. Production"
+	@echo "2. Development"
+	@read -p "Enter choice (1-2): " choice; \
+	case $$choice in \
+		1) $(DOCKER_COMPOSE_PROD) exec mcp-crawl4ai python ;; \
+		2) $(DOCKER_COMPOSE_DEV) exec mcp-crawl4ai python ;; \
+		*) echo "Invalid choice" ;; \
+	esac
 
 # Development-specific versions
 dev-shell:
@@ -208,60 +303,196 @@ validate: lint type-check test-unit
 
 # Testing Commands
 
+# Copy test environment configuration
+.PHONY: test-env-setup
+test-env-setup:
+	@echo "$(COLOR_GREEN)Setting up test environment configuration...$(COLOR_RESET)"
+	@if [ ! -f .env.test ]; then \
+		echo "$(COLOR_RED)ERROR: .env.test file not found!$(COLOR_RESET)"; \
+		exit 1; \
+	fi
+	@cp .env.test .env
+	@echo "$(COLOR_GREEN)Test environment configuration ready!$(COLOR_RESET)"
+
 # Unit tests only (no external dependencies)
-test-unit:
+test-unit: test-env-setup
 	@echo "$(COLOR_GREEN)Running unit tests...$(COLOR_RESET)"
-	$(PYTEST) tests/ -v -m "not integration"
+	$(PYTEST) tests/ -v -m "not integration" --tb=short
+
+# Quick unit test for rapid feedback
+test-quick: test-env-setup
+	@echo "$(COLOR_GREEN)Running quick unit tests (core only)...$(COLOR_RESET)"
+	$(PYTEST) tests/test_utils_refactored.py tests/test_database_factory.py -v --tb=line
 
 # SearXNG integration tests
-test-searxng: docker-test-up
-	@echo "$(COLOR_YELLOW)Waiting for services to be ready...$(COLOR_RESET)"
-	@sleep 10
-	$(PYTEST) tests/ -v -m searxng
+test-searxng: docker-test-up-wait
+	@echo "$(COLOR_GREEN)Running SearXNG integration tests...$(COLOR_RESET)"
+	$(PYTEST) tests/ -v -m searxng --tb=short
+	@$(MAKE) docker-test-down
 
 # All integration tests
-test-integration: docker-test-up
-	@echo "$(COLOR_YELLOW)Waiting for services to be ready...$(COLOR_RESET)"
-	@sleep 10
-	$(PYTEST) tests/ -v -m integration
+test-integration: docker-test-up-wait
+	@echo "$(COLOR_GREEN)Running integration tests...$(COLOR_RESET)"
+	$(PYTEST) tests/ -v -m integration --tb=short --maxfail=5
+	@$(MAKE) docker-test-down
 
-# All tests
-test-all: docker-test-up
-	@echo "$(COLOR_YELLOW)Waiting for services to be ready...$(COLOR_RESET)"
-	@sleep 10
-	$(PYTEST) tests/ -v
+# All tests (unit + integration)
+test-all: docker-test-up-wait
+	@echo "$(COLOR_GREEN)Running all tests...$(COLOR_RESET)"
+	$(PYTEST) tests/ -v --tb=short --maxfail=10
+	@$(MAKE) docker-test-down
 
-# Test in watch mode
-test-watch:
+# Test specific file or pattern
+test-file: test-env-setup
+	@if [ -z "$(FILE)" ]; then \
+		echo "$(COLOR_RED)Usage: make test-file FILE=tests/test_example.py$(COLOR_RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(COLOR_GREEN)Running tests for $(FILE)...$(COLOR_RESET)"
+	$(PYTEST) $(FILE) -v --tb=short
+
+# Test in watch mode (for development)
+test-watch: test-env-setup
 	@echo "$(COLOR_GREEN)Running tests in watch mode...$(COLOR_RESET)"
-	$(PYTEST) tests/ -v --watch
+	@echo "$(COLOR_YELLOW)Note: This requires pytest-watch to be installed$(COLOR_RESET)"
+	$(PYTEST) tests/ -v --tb=short -f
 
-# Test with coverage
-test-coverage:
+# Test with coverage report
+test-coverage: test-env-setup
 	@echo "$(COLOR_GREEN)Running tests with coverage...$(COLOR_RESET)"
-	$(PYTEST) tests/ -v --cov=src --cov-report=html --cov-report=term
+	$(PYTEST) tests/ -v --cov=src --cov-report=html --cov-report=term-missing --cov-report=xml --tb=short
+	@echo "$(COLOR_GREEN)Coverage report generated in htmlcov/index.html$(COLOR_RESET)"
 
-# Docker test environment management
+# Test with coverage for CI (includes integration)
+test-coverage-ci: docker-test-up-wait
+	@echo "$(COLOR_GREEN)Running all tests with coverage for CI...$(COLOR_RESET)"
+	$(PYTEST) tests/ -v --cov=src --cov-report=xml --cov-report=term-missing --tb=short --maxfail=5
+	@$(MAKE) docker-test-down
+
+# Performance/benchmark tests
+test-performance: docker-test-up-wait
+	@echo "$(COLOR_GREEN)Running performance tests...$(COLOR_RESET)"
+	$(PYTEST) tests/ -v -m "performance" --tb=short || echo "No performance tests marked"
+	@$(MAKE) docker-test-down
+
+# Test with specific markers
+test-mark: test-env-setup
+	@if [ -z "$(MARK)" ]; then \
+		echo "$(COLOR_RED)Usage: make test-mark MARK=unit$(COLOR_RESET)"; \
+		echo "Available marks: unit, integration, searxng, performance"; \
+		exit 1; \
+	fi
+	@echo "$(COLOR_GREEN)Running tests with marker: $(MARK)...$(COLOR_RESET)"
+	$(PYTEST) tests/ -v -m "$(MARK)" --tb=short
+
+# Docker test environment management with proper waiting
 docker-test-up:
 	@echo "$(COLOR_GREEN)Starting test environment...$(COLOR_RESET)"
-	$(DOCKER_COMPOSE_TEST) up -d
-	@echo "$(COLOR_YELLOW)Test environment started. Checking health...$(COLOR_RESET)"
+	$(DOCKER_COMPOSE_TEST) up -d --remove-orphans
+	@echo "$(COLOR_GREEN)Test environment containers started!$(COLOR_RESET)"
+
+docker-test-up-wait: docker-test-up
+	@echo "$(COLOR_YELLOW)Waiting for services to be ready...$(COLOR_RESET)"
+	@sleep 5
+	@echo "$(COLOR_GREEN)Checking service health...$(COLOR_RESET)"
+	@for i in {1..12}; do \
+		if $(DOCKER_COMPOSE_TEST) ps --filter "status=running" | grep -q "healthy\|Up"; then \
+			echo "$(COLOR_GREEN)Services are ready!$(COLOR_RESET)"; \
+			break; \
+		fi; \
+		echo "$(COLOR_YELLOW)Waiting for services... ($$i/12)$(COLOR_RESET)"; \
+		sleep 5; \
+	done
 	@$(DOCKER_COMPOSE_TEST) ps
+	@echo "$(COLOR_GREEN)Service health check complete!$(COLOR_RESET)"
 
 docker-test-down:
 	@echo "$(COLOR_YELLOW)Stopping test environment...$(COLOR_RESET)"
-	$(DOCKER_COMPOSE_TEST) down -v
+	$(DOCKER_COMPOSE_TEST) down -v --remove-orphans
+	@echo "$(COLOR_GREEN)Test environment stopped and cleaned!$(COLOR_RESET)"
+
+# Test environment status and logs
+docker-test-status:
+	@echo "$(COLOR_GREEN)Test environment status:$(COLOR_RESET)"
+	@$(DOCKER_COMPOSE_TEST) ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
+
+docker-test-logs:
+	@echo "$(COLOR_GREEN)Test environment logs:$(COLOR_RESET)"
+	$(DOCKER_COMPOSE_TEST) logs --tail=20
+
+docker-test-logs-follow:
+	@echo "$(COLOR_GREEN)Following test environment logs...$(COLOR_RESET)"
+	$(DOCKER_COMPOSE_TEST) logs -f
+
+# Test database operations
+test-db-connect:
+	@echo "$(COLOR_GREEN)Testing database connections...$(COLOR_RESET)"
+	@echo "Testing Qdrant connection..."
+	@curl -f http://localhost:6333/readyz 2>/dev/null && echo "✅ Qdrant is ready" || echo "❌ Qdrant is not ready"
+	@echo "Testing Neo4j connection..."
+	@docker exec neo4j_test cypher-shell -u neo4j -p testpassword123 "RETURN 1" 2>/dev/null && echo "✅ Neo4j is ready" || echo "❌ Neo4j is not ready"
+
+# Integration test for specific services
+test-qdrant: docker-test-up-wait
+	@echo "$(COLOR_GREEN)Testing Qdrant integration...$(COLOR_RESET)"
+	$(PYTEST) tests/test_qdrant_adapter.py -v --tb=short
+	@$(MAKE) docker-test-down
+
+test-neo4j: docker-test-up-wait
+	@echo "$(COLOR_GREEN)Testing Neo4j integration...$(COLOR_RESET)"
+	$(PYTEST) tests/ -k "neo4j" -v --tb=short
+	@$(MAKE) docker-test-down
+
+# Comprehensive test suite (mimics CI)
+test-ci: 
+	@echo "$(COLOR_GREEN)Running comprehensive CI test suite...$(COLOR_RESET)"
+	@$(MAKE) test-unit
+	@$(MAKE) test-coverage-ci
+	@echo "$(COLOR_GREEN)✅ All tests completed successfully!$(COLOR_RESET)"
+
+# Test debugging utilities
+test-debug: test-env-setup
+	@echo "$(COLOR_GREEN)Running tests in debug mode...$(COLOR_RESET)"
+	$(PYTEST) tests/ -v -s --tb=long --log-cli-level=DEBUG
+
+test-pdb: test-env-setup
+	@echo "$(COLOR_GREEN)Running tests with PDB debugger...$(COLOR_RESET)"
+	$(PYTEST) tests/ -v -s --pdb --tb=short
 
 # Build Commands
 .PHONY: build build-no-cache
 
 build:
 	@echo "$(COLOR_GREEN)Building Docker images...$(COLOR_RESET)"
-	$(DOCKER_COMPOSE) build
+	@echo "$(COLOR_YELLOW)Which environment?$(COLOR_RESET)"
+	@echo "1. Production"
+	@echo "2. Development"
+	@echo "3. Test"
+	@echo "4. All"
+	@read -p "Enter choice (1-4): " choice; \
+	case $$choice in \
+		1) $(DOCKER_COMPOSE_PROD) build ;; \
+		2) $(DOCKER_COMPOSE_DEV) build ;; \
+		3) $(DOCKER_COMPOSE_TEST) build ;; \
+		4) $(DOCKER_COMPOSE_PROD) build && $(DOCKER_COMPOSE_DEV) build && $(DOCKER_COMPOSE_TEST) build ;; \
+		*) echo "Invalid choice" ;; \
+	esac
 
 build-no-cache:
 	@echo "$(COLOR_GREEN)Building Docker images (no cache)...$(COLOR_RESET)"
-	$(DOCKER_COMPOSE) build --no-cache
+	@echo "$(COLOR_YELLOW)Which environment?$(COLOR_RESET)"
+	@echo "1. Production"
+	@echo "2. Development"
+	@echo "3. Test"
+	@echo "4. All"
+	@read -p "Enter choice (1-4): " choice; \
+	case $$choice in \
+		1) $(DOCKER_COMPOSE_PROD) build --no-cache ;; \
+		2) $(DOCKER_COMPOSE_DEV) build --no-cache ;; \
+		3) $(DOCKER_COMPOSE_TEST) build --no-cache ;; \
+		4) $(DOCKER_COMPOSE_PROD) build --no-cache && $(DOCKER_COMPOSE_DEV) build --no-cache && $(DOCKER_COMPOSE_TEST) build --no-cache ;; \
+		*) echo "Invalid choice" ;; \
+	esac
 
 # Utility Commands
 .PHONY: clean clean-all env-check deps
@@ -279,8 +510,9 @@ clean:
 
 clean-all: clean
 	@echo "$(COLOR_RED)Removing Docker volumes...$(COLOR_RESET)"
-	$(DOCKER_COMPOSE) down -v
-	$(DOCKER_COMPOSE_TEST) down -v
+	-$(DOCKER_COMPOSE_PROD) down -v
+	-$(DOCKER_COMPOSE_DEV) down -v
+	-$(DOCKER_COMPOSE_TEST) down -v
 	@echo "$(COLOR_GREEN)Full clean complete!$(COLOR_RESET)"
 
 env-check:

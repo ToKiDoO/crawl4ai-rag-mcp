@@ -36,7 +36,7 @@ class TestQdrantStoreCrawledPage:
             'USE_RERANKING': 'false',
             'USE_HYBRID_SEARCH': 'false',
             'ENHANCED_CONTEXT': 'false',
-            'ENABLE_AGENTIC_RAG': 'false'
+            'USE_AGENTIC_RAG': 'false'
         }):
             yield
     

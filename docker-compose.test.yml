@@ -1,31 +1,42 @@
-version: "3.7"
-
 services:
-  # Qdrant Vector Database for testing
+  # ========================================
+  # VECTOR DATABASE - QDRANT TEST INSTANCE
+  # ========================================
   qdrant-test:
     container_name: qdrant_test
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.15.1  # Pinned version for consistency
     restart: unless-stopped
     ports:
-      - "6333:6333"
+      - "6333:6333"  # HTTP API
       - "6334:6334"  # gRPC port
     volumes:
       - qdrant-test-data:/qdrant/storage
     environment:
       - QDRANT__LOG_LEVEL=INFO
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
     networks:
       - test-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
-  # Valkey (Redis Alternative) for SearXNG
+  # ========================================
+  # CACHE - VALKEY (REDIS ALTERNATIVE) FOR SEARXNG
+  # ========================================
   valkey-test:
     container_name: valkey_test
     image: docker.io/valkey/valkey:8-alpine
-    command: valkey-server --save "" --loglevel warning
+    command: valkey-server --save "" --loglevel warning --maxmemory 128mb --maxmemory-policy allkeys-lru
     restart: unless-stopped
     networks:
       - test-network
@@ -40,26 +51,40 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
-  # SearXNG Search Engine for testing
+  # ========================================
+  # SEARCH ENGINE - SEARXNG TEST INSTANCE
+  # ========================================
   searxng-test:
     container_name: searxng_test
-    image: docker.io/searxng/searxng:latest
+    image: docker.io/searxng/searxng:latest  # Latest stable version
     restart: unless-stopped
     networks:
       - test-network
     ports:
-      - "8081:8080"  # Different port to avoid conflicts
+      - "8081:8080"  # Different port to avoid conflicts with dev
     logging:
       driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
     volumes:
       - ./searxng-test:/etc/searxng:rw
     environment:
       - SEARXNG_BASE_URL=http://localhost:8081/
-      - SEARXNG_SECRET_KEY=test-secret-key
+      - SEARXNG_SECRET_KEY=test-secret-key-for-ci-cd-environment
       - SEARXNG_SETTINGS_PATH=/etc/searxng/settings.yml
+      - BIND_ADDRESS=0.0.0.0:8080
     depends_on:
-      - valkey-test
+      valkey-test:
+        condition: service_healthy
     cap_drop:
       - ALL
     cap_add:
@@ -67,36 +92,134 @@ services:
       - SETGID
       - SETUID
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8081/healthz"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/healthz"]
       interval: 10s
       timeout: 5s
-      retries: 5
-  # neo4j
+      retries: 10
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # ========================================
+  # KNOWLEDGE GRAPH - NEO4J TEST INSTANCE
+  # ========================================
   neo4j-test:
     container_name: neo4j_test
-    image: neo4j:latest
+    image: neo4j:5.25-community  # Pinned version
     restart: unless-stopped
     ports:
-      - "7474:7474"
-      - "7687:7687"
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
     environment:
       - NEO4J_AUTH=neo4j/testpassword123
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_memory_heap_initial__size=256m
+      - NEO4J_dbms_memory_heap_max__size=512m
+      - NEO4J_dbms_memory_pagecache_size=128m
     volumes:
       - neo4j-test-data:/data
+      - neo4j-test-logs:/logs
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7474/browser/"]
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "testpassword123", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - test-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ========================================
+  # TEST MCP SERVER (OPTIONAL FOR INTEGRATION TESTS)
+  # ========================================
+  mcp-test:
+    container_name: mcp_test
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    restart: "no"  # Don't auto-restart during tests
+    ports:
+      - "8052:8052"  # Different port from dev server
+    env_file:
+      - .env.test
+    environment:
+      - TRANSPORT=http
+      - HOST=0.0.0.0
+      - PORT=8052
+      - SEARXNG_URL=http://searxng-test:8080
+      - QDRANT_URL=http://qdrant-test:6333
+      - NEO4J_URI=bolt://neo4j-test:7687
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=testpassword123
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - test-logs:/app/logs
+    networks:
+      - test-network
+    depends_on:
+      qdrant-test:
+        condition: service_healthy
+      searxng-test:
+        condition: service_healthy
+      neo4j-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8052/health"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - test-network
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    profiles:
+      - integration  # Only start for integration tests
 
+# ========================================
+# NETWORKING CONFIGURATION
+# ========================================
 networks:
   test-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
+# ========================================
+# VOLUME CONFIGURATION
+# ========================================
 volumes:
+  # Database volumes
   qdrant-test-data:
-  valkey-test-data:
-  searxng-test-data:
+    driver: local
   neo4j-test-data:
+    driver: local
+  neo4j-test-logs:
+    driver: local
+  
+  # Cache volumes
+  valkey-test-data:
+    driver: local
+  
+  # Search engine volumes
+  searxng-test-data:
+    driver: local
+  
+  # Application volumes
+  test-logs:
+    driver: local

@@ -260,7 +260,7 @@ Examples:
     parser.add_argument(
         '--neo4j-user',
         default=None,
-        help='Neo4j username (default: from environment NEO4J_USER)'
+        help='Neo4j username (default: from environment NEO4J_USERNAME)'
     )
     
     parser.add_argument(
@@ -289,7 +289,7 @@ Examples:
     
     # Get Neo4j credentials
     neo4j_uri = args.neo4j_uri or os.environ.get('NEO4J_URI', 'bolt://localhost:7687')
-    neo4j_user = args.neo4j_user or os.environ.get('NEO4J_USER', 'neo4j')
+    neo4j_user = args.neo4j_user or os.environ.get('NEO4J_USERNAME', 'neo4j')
     neo4j_password = args.neo4j_password or os.environ.get('NEO4J_PASSWORD', 'password')
     
     if not neo4j_password or neo4j_password == 'password':

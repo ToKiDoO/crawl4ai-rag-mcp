@@ -11,3 +11,7 @@ test_script_hallucination*
 coverage.xml
 qa-logs/
 CLAUDE.md
+
+# Pre-commit and security scanning
+bandit-report.json
+.secrets.baseline.tmp

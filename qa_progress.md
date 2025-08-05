@@ -1153,6 +1153,21 @@ The MCP server MUST:
 - ⏳ Scalability test (1000+ documents) - Pending
 - ⏳ Concurrent query handling - Pending
 
+## Deprecation Warnings Review
+
+### Important: Review Before Each Test Cycle
+Please review the [Deprecation Warnings Documentation](docs/DEPRECATION_WARNINGS.md) before running tests to track any new warnings.
+
+**Current Known Warnings** (as of 2025-01-05):
+- Pydantic V2 class-based config deprecation (external dependency)
+- fake_http_header read_text deprecation (external dependency)
+
+**Review Checklist**:
+- [ ] Run tests with warnings enabled: `python -W default::DeprecationWarning -m pytest tests/`
+- [ ] Check for new deprecation warnings in test output
+- [ ] Update [DEPRECATION_WARNINGS.md](docs/DEPRECATION_WARNINGS.md) if new warnings found
+- [ ] Note if any warnings are from our code (requires immediate attention)
+
 ## Session 18 Summary (2025-08-02) - Claude Desktop Integration ✅ SUCCESS
 
 ### Issue: Claude Desktop MCP Integration Errors

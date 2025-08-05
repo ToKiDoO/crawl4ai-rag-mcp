@@ -559,7 +559,7 @@ class TestValidationFunctions:
         """Test Neo4j connection validation with all required env vars"""
         with patch.dict(os.environ, {
             "NEO4J_URI": "bolt://localhost:7687",
-            "NEO4J_USER": "neo4j",  # Note: actual code uses NEO4J_USER
+            "NEO4J_USERNAME": "neo4j",  # Fixed to use NEO4J_USERNAME
             "NEO4J_PASSWORD": "password"
         }):
             assert validate_neo4j_connection() is True
@@ -894,7 +894,7 @@ class TestCheckAiScriptHallucinations:
     @patch.dict(os.environ, {
         "USE_KNOWLEDGE_GRAPH": "true",
         "NEO4J_URI": "bolt://localhost:7687",
-        "NEO4J_USER": "neo4j", 
+        "NEO4J_USERNAME": "neo4j", 
         "NEO4J_PASSWORD": "password"
     })
     @patch('crawl4ai_mcp.KnowledgeGraphValidator')
@@ -968,7 +968,7 @@ class TestQueryKnowledgeGraph:
     @patch.dict(os.environ, {
         "USE_KNOWLEDGE_GRAPH": "true",
         "NEO4J_URI": "bolt://localhost:7687",
-        "NEO4J_USER": "neo4j",
+        "NEO4J_USERNAME": "neo4j",
         "NEO4J_PASSWORD": "password"
     })
     @patch('neo4j.AsyncGraphDatabase')
@@ -1000,7 +1000,7 @@ class TestQueryKnowledgeGraph:
     @patch.dict(os.environ, {
         "USE_KNOWLEDGE_GRAPH": "true",
         "NEO4J_URI": "bolt://localhost:7687",
-        "NEO4J_USER": "neo4j",
+        "NEO4J_USERNAME": "neo4j",
         "NEO4J_PASSWORD": "password"
     })
     @patch('neo4j.AsyncGraphDatabase')
@@ -1057,7 +1057,7 @@ class TestParseGithubRepository:
     @patch.dict(os.environ, {
         "USE_KNOWLEDGE_GRAPH": "true",
         "NEO4J_URI": "bolt://localhost:7687",
-        "NEO4J_USER": "neo4j",
+        "NEO4J_USERNAME": "neo4j",
         "NEO4J_PASSWORD": "password"
     })
     @patch('crawl4ai_mcp.DirectNeo4jExtractor')
