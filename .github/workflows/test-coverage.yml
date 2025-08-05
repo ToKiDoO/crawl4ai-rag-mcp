@@ -266,7 +266,11 @@ jobs:
       - name: Start test services
         run: |
           echo "🚀 Starting test services..."
-          docker compose -f docker-compose.test.yml up -d --wait --wait-timeout 60
+          # Pull images first to avoid timeout issues
+          docker compose -f docker-compose.test.yml pull
+          
+          # Start services
+          docker compose -f docker-compose.test.yml up -d --wait --wait-timeout 90
           
           # Wait for services to be ready
           echo "⏳ Waiting for services to be ready..."
@@ -275,26 +279,48 @@ jobs:
           # Check service health
           echo "🔍 Checking service health..."
           docker compose -f docker-compose.test.yml ps
+          
+          # Show logs if any service is not running
+          if ! docker compose -f docker-compose.test.yml ps | grep -q "running"; then
+            echo "⚠️ Some services may not be running properly. Showing logs:"
+            docker compose -f docker-compose.test.yml logs --tail=50
+          fi
 
       - name: Verify service connectivity
         run: |
           echo "🔗 Testing service connectivity..."
           
-          # Test Qdrant
-          curl -f http://localhost:6333/readyz || echo "Qdrant not ready"
-          
-          # Test SearXNG (with retries)
-          for i in {1..5}; do
-            if curl -f http://localhost:8081/healthz; then
-              echo "SearXNG is ready"
+          # Test Qdrant with retries
+          echo "🔍 Checking Qdrant health..."
+          for i in {1..10}; do
+            if curl -f http://localhost:6333/readyz 2>/dev/null; then
+              echo "✅ Qdrant is ready"
+              curl -s -X GET "http://localhost:6333/collections" || true
               break
             fi
-            echo "SearXNG not ready, attempt $i/5"
+            echo "⏳ Qdrant not ready, attempt $i/10"
+            sleep 5
+          done
+          
+          # Test SearXNG (with retries)
+          echo "🔍 Checking SearXNG health..."
+          for i in {1..5}; do
+            if curl -f http://localhost:8081/healthz 2>/dev/null; then
+              echo "✅ SearXNG is ready"
+              break
+            fi
+            echo "⏳ SearXNG not ready, attempt $i/5"
             sleep 10
           done
           
           # Test Neo4j
-          docker exec neo4j_test cypher-shell -u neo4j -p testpassword123 "RETURN 1" || echo "Neo4j not ready"
+          echo "🔍 Checking Neo4j health..."
+          docker exec neo4j_test cypher-shell -u neo4j -p testpassword123 "RETURN 1" || echo "⚠️ Neo4j not ready"
+          
+          # Show final service status
+          echo ""
+          echo "📋 Final service status:"
+          docker compose -f docker-compose.test.yml ps
 
       - name: Run integration tests
         env:

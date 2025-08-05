@@ -1,0 +1,55 @@
+name: Test Qdrant Connection (Simple)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/test-qdrant-simple.yml'
+
+jobs:
+  test-qdrant:
+    runs-on: ubuntu-latest
+    
+    services:
+      qdrant:
+        image: qdrant/qdrant:v1.15.1
+        ports:
+          - 6333:6333
+        env:
+          QDRANT__LOG_LEVEL: INFO
+        options: >-
+          --health-cmd "curl -f http://localhost:6333/readyz || exit 1"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 15
+          --health-start-period 40s
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install requests
+      run: pip install requests
+    
+    - name: Wait for Qdrant
+      run: sleep 20
+    
+    - name: Test Qdrant Connection
+      env:
+        QDRANT_URL: http://localhost:6333
+      run: |
+        python test_qdrant_ci.py
+    
+    - name: Debug if failed
+      if: failure()
+      run: |
+        echo "Docker containers:"
+        docker ps -a
+        echo ""
+        echo "Qdrant logs:"
+        docker logs $(docker ps -aq --filter "ancestor=qdrant/qdrant:v1.15.1" | head -1) 2>&1 || true
