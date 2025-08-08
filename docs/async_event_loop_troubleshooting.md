@@ -3,6 +3,7 @@
 ## Problem Summary
 
 The integration tests in `test_integration.py` fail with:
+
 ```
 RuntimeError: Runner.run() cannot be called from a running event loop
 ```
@@ -12,6 +13,7 @@ This occurs when using async generator fixtures (`async def` with `yield`) in py
 ## Root Cause
 
 The issue stems from:
+
 1. **Async generator fixtures** that use `yield` create event loop conflicts
 2. **Parametrized fixtures** combined with async generators compound the problem
 3. **pytest-asyncio** tries to manage event loops but conflicts with async generators
@@ -21,6 +23,7 @@ The issue stems from:
 ### Solution 1: Fixed Integration Tests (Recommended)
 
 Use `test_integration_fixed.py` which:
+
 - Replaces async generator fixtures with regular async methods
 - Avoids the `yield` pattern in async fixtures
 - Creates separate test methods for each database type
@@ -43,6 +46,7 @@ async def create_qdrant_db(self):
 ### Solution 2: Direct Runner Script
 
 Use `scripts/test_integration_runner.py` for quick testing:
+
 ```bash
 # Start Qdrant
 docker compose -f docker-compose.test.yml up -d qdrant
@@ -54,6 +58,7 @@ python scripts/test_integration_runner.py
 ### Solution 3: Update pytest Configuration
 
 Add to `pytest.ini`:
+
 ```ini
 [tool:pytest]
 asyncio_mode = auto
@@ -64,6 +69,7 @@ asyncio_mode = strict
 ### Solution 4: Use pytest-asyncio Fixtures Properly
 
 For fixtures that need cleanup:
+
 ```python
 @pytest_asyncio.fixture
 async def database():
@@ -81,11 +87,13 @@ def cleanup_database(database):
 ## Running the Fixed Tests
 
 1. **Start test environment:**
+
    ```bash
    docker compose -f docker-compose.test.yml up -d
    ```
 
 2. **Run fixed integration tests:**
+
    ```bash
    # Run all fixed tests
    pytest tests/test_integration_fixed.py -v
@@ -95,6 +103,7 @@ def cleanup_database(database):
    ```
 
 3. **Run simple integration test:**
+
    ```bash
    python scripts/test_integration_runner.py
    ```
@@ -102,6 +111,7 @@ def cleanup_database(database):
 ## Alternative Testing Approaches
 
 ### 1. Use unittest.IsolatedAsyncioTestCase
+
 ```python
 import unittest
 
@@ -112,6 +122,7 @@ class TestIntegration(unittest.IsolatedAsyncioTestCase):
 ```
 
 ### 2. Manual Event Loop Management
+
 ```python
 def test_with_manual_loop():
     loop = asyncio.new_event_loop()
@@ -124,6 +135,7 @@ def test_with_manual_loop():
 ```
 
 ### 3. Use Regular Fixtures with Context Managers
+
 ```python
 @pytest.fixture
 def database():
@@ -141,6 +153,7 @@ def database():
 ## Debugging Tips
 
 1. **Check event loop state:**
+
    ```python
    import asyncio
    try:
@@ -151,11 +164,13 @@ def database():
    ```
 
 2. **Use pytest verbose mode:**
+
    ```bash
    pytest -vvv tests/test_integration.py
    ```
 
 3. **Enable asyncio debug mode:**
+
    ```python
    import asyncio
    asyncio.set_debug(True)

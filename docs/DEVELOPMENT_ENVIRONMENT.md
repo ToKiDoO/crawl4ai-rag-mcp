@@ -109,18 +109,21 @@ develop:
 ### Initial Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/your-org/crawl4ai-mcp.git
    cd crawl4ai-mcp
    ```
 
 2. **Create environment file**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your API keys and configuration
    ```
 
 3. **Check for existing services**:
+
    ```bash
    # Check if any services are already running
    docker compose ps
@@ -130,6 +133,7 @@ develop:
    ```
 
 4. **Start development environment**:
+
    ```bash
    # Start in background with watch mode
    make dev-bg
@@ -138,6 +142,7 @@ develop:
 ### Daily Development
 
 1. **Start your development session**:
+
    ```bash
    # Start services in background with watch mode
    make dev-bg
@@ -158,6 +163,7 @@ develop:
    - Run tests: `make test`
 
 4. **Development tools**:
+
    ```bash
    # Open shell in development container
    make dev-shell
@@ -167,6 +173,7 @@ develop:
    ```
 
 5. **Stop development**:
+
    ```bash
    make dev-down
    ```
@@ -176,17 +183,20 @@ develop:
 ### Core Services
 
 #### MCP Server (mcp-crawl4ai)
+
 - **Purpose**: Main application server implementing MCP protocol
 - **Port**: 8051
 - **Watch Path**: `./src` (sync+restart), `./tests` (sync only)
 - **Dependencies**: SearXNG, Valkey, Qdrant, Neo4j
 
 #### SearXNG
+
 - **Purpose**: Privacy-respecting metasearch engine
 - **Port**: 8080 (localhost only)
 - **Configuration**: `./searxng/settings.yml` with development overrides
 
 #### Valkey
+
 - **Purpose**: Redis-compatible caching layer
 - **Port**: 6379 (exposed in dev for debugging)
 - **Persistence**: 30-second snapshots with debug logging
@@ -194,15 +204,17 @@ develop:
 ### Default Services (Always Enabled in Development)
 
 #### Qdrant
+
 - **Purpose**: Vector database for embeddings
 - **Ports**: 6333 (HTTP), 6334 (gRPC)
-- **Dashboard**: http://localhost:6333/dashboard
+- **Dashboard**: <http://localhost:6333/dashboard>
 - **Status**: Enabled by default in development
 
 #### Neo4j
+
 - **Purpose**: Graph database for knowledge graphs
 - **Ports**: 7474 (HTTP), 7687 (Bolt)
-- **Browser**: http://localhost:7474
+- **Browser**: <http://localhost:7474>
 - **Status**: Enabled by default in development
 
 ## Environment Configuration
@@ -356,16 +368,19 @@ tests/
 ### Running Tests
 
 1. **Unit Tests** (fast, no dependencies):
+
    ```bash
    make test-unit
    ```
 
 2. **Integration Tests** (requires services):
+
    ```bash
    make test-integration
    ```
 
 3. **Watch Mode Testing**:
+
    ```bash
    # In one terminal
    make dev
@@ -414,6 +429,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
 ### Common Issues and Solutions
 
 1. **Service won't start**:
+
    ```bash
    # Check service health
    make health
@@ -426,6 +442,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
    ```
 
 2. **Code changes not reflecting**:
+
    ```bash
    # Ensure development compose is running
    make ps
@@ -438,6 +455,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
    ```
 
 3. **Database connection issues**:
+
    ```bash
    # Test connections
    make db-test
@@ -452,16 +470,19 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
 ### Interactive Debugging
 
 1. **Shell access** (development container):
+
    ```bash
    make dev-shell
    ```
 
 2. **Python REPL** (development container):
+
    ```bash
    make dev-python
    ```
 
 3. **IPython with auto-reload**:
+
    ```python
    # In development container shell
    pip install ipython
@@ -483,6 +504,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
    - Service-specific code in subdirectories
 
 2. **Async Patterns**:
+
    ```python
    @mcp.tool()
    async def my_tool(param: str) -> str:
@@ -493,6 +515,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
    ```
 
 3. **Error Handling**:
+
    ```python
    try:
        result = await operation()
@@ -504,6 +527,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
 ### Development Tips
 
 1. **Use Type Hints**:
+
    ```python
    from typing import List, Dict, Optional
    
@@ -512,6 +536,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
    ```
 
 2. **Environment-Based Configuration**:
+
    ```python
    DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
    if DEBUG:
@@ -519,6 +544,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
    ```
 
 3. **Health Checks**:
+
    ```python
    @mcp.tool()
    async def health_check() -> Dict[str, any]:
@@ -532,6 +558,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
 ### Performance Optimization
 
 1. **Batch Operations**:
+
    ```python
    # Good: Batch embedding generation
    embeddings = await generate_embeddings(texts)
@@ -542,6 +569,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
    ```
 
 2. **Connection Pooling**:
+
    ```python
    # Reuse client instances
    if not hasattr(search_crawled_pages, '_client'):
@@ -549,6 +577,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
    ```
 
 3. **Async Context Managers**:
+
    ```python
    async with AsyncWebCrawler() as crawler:
        # Crawler is properly initialized and cleaned up
@@ -563,6 +592,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --tail=100 -
    - Clear separation of concerns
 
 2. **Resource Management**:
+
    ```yaml
    deploy:
      resources:

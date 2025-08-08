@@ -1,0 +1,73 @@
+# CODEOWNERS Template for Crawl4AI MCP
+#
+# This file defines code ownership for automatic review requests.
+# Rename this file to CODEOWNERS (remove .template) and update with actual GitHub usernames.
+#
+# Syntax:
+# <pattern> <owner1> <owner2> ...
+#
+# The last matching pattern takes precedence.
+# Use @username for users and @org/team for teams.
+
+# Default owners for all files
+* @maintainer1 @maintainer2
+
+# Documentation
+/docs/ @documentation-team
+*.md @documentation-team
+/README.md @maintainer1 @documentation-team
+
+# CI/CD and GitHub configuration
+/.github/ @devops-team @maintainer1
+/.github/workflows/ @devops-team @maintainer1
+/scripts/setup_branch_protection.py @devops-team @security-team
+
+# Core application code
+/src/ @backend-team @maintainer1
+/src/crawl4ai_mcp.py @backend-team @maintainer1 @maintainer2
+/src/utils*.py @backend-team
+
+# Database adapters
+/src/database/ @database-team @backend-team
+/src/database/qdrant_adapter.py @database-team @vector-search-expert
+/src/database/supabase_adapter.py @database-team @supabase-expert
+
+# Tests
+/tests/ @qa-team @backend-team
+/tests/test_*.py @qa-team
+/tests/benchmark_*.py @performance-team @qa-team
+
+# Configuration files
+/.env.example @security-team @devops-team
+/docker-compose*.yml @devops-team
+/Dockerfile @devops-team @backend-team
+/Makefile @devops-team
+
+# Security-sensitive files
+/searxng/settings.yml @security-team @backend-team
+*.pem @security-team
+*.key @security-team
+
+# Dependencies
+/pyproject.toml @backend-team @security-team
+/uv.lock @backend-team @security-team
+/requirements*.txt @backend-team @security-team
+
+# Special files that need careful review
+/crawled_pages.sql @database-team @maintainer1
+/.gitignore @maintainer1
+/LICENSE @maintainer1 @legal-team
+
+# Example team definitions (update with your actual teams):
+# @maintainer1 = Lead maintainer username
+# @maintainer2 = Secondary maintainer username
+# @backend-team = Backend development team
+# @documentation-team = Documentation writers
+# @devops-team = DevOps and infrastructure team
+# @security-team = Security review team
+# @database-team = Database specialists
+# @qa-team = Quality assurance team
+# @performance-team = Performance optimization team
+# @vector-search-expert = Specialist for vector databases
+# @supabase-expert = Supabase platform expert
+# @legal-team = Legal/compliance review

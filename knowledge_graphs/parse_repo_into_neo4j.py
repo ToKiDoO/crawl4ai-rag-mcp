@@ -19,6 +19,13 @@ import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Set
+import sys
+sys.path.append(str(Path(__file__).parent.parent / "src"))
+try:
+    from knowledge_graph.git_manager import GitRepositoryManager
+except ImportError:
+    # Fallback if running standalone
+    GitRepositoryManager = None
 import ast
 
 from dotenv import load_dotenv
@@ -402,89 +409,223 @@ class DirectNeo4jExtractor:
         self.neo4j_password = neo4j_password
         self.driver = None
         self.analyzer = Neo4jCodeAnalyzer()
+        self.git_manager = GitRepositoryManager() if GitRepositoryManager else None
     
     async def initialize(self):
         """Initialize Neo4j connection"""
         logger.info("Initializing Neo4j connection...")
-        self.driver = AsyncGraphDatabase.driver(
-            self.neo4j_uri, 
-            auth=(self.neo4j_user, self.neo4j_password)
-        )
+        
+        # Import notification suppression (available in neo4j>=5.21.0)
+        try:
+            from neo4j import NotificationMinimumSeverity
+            # Create Neo4j driver with notification suppression
+            self.driver = AsyncGraphDatabase.driver(
+                self.neo4j_uri, 
+                auth=(self.neo4j_user, self.neo4j_password),
+                warn_notification_severity=NotificationMinimumSeverity.OFF
+            )
+        except (ImportError, AttributeError):
+            # Fallback for older versions - use logging suppression
+            import logging
+            logging.getLogger('neo4j.notifications').setLevel(logging.ERROR)
+            self.driver = AsyncGraphDatabase.driver(
+                self.neo4j_uri, 
+                auth=(self.neo4j_user, self.neo4j_password)
+            )
         
         # Clear existing data
         # logger.info("Clearing existing data...")
         # async with self.driver.session() as session:
         #     await session.run("MATCH (n) DETACH DELETE n")
-        
-        # Create constraints and indexes
-        logger.info("Creating constraints and indexes...")
-        async with self.driver.session() as session:
-            # Create constraints - using MERGE-friendly approach
-            await session.run("CREATE CONSTRAINT IF NOT EXISTS FOR (f:File) REQUIRE f.path IS UNIQUE")
-            await session.run("CREATE CONSTRAINT IF NOT EXISTS FOR (c:Class) REQUIRE c.full_name IS UNIQUE")
-            # Remove unique constraints for methods/attributes since they can be duplicated across classes
-            # await session.run("CREATE CONSTRAINT IF NOT EXISTS FOR (m:Method) REQUIRE m.full_name IS UNIQUE")
-            # await session.run("CREATE CONSTRAINT IF NOT EXISTS FOR (f:Function) REQUIRE f.full_name IS UNIQUE")
-            # await session.run("CREATE CONSTRAINT IF NOT EXISTS FOR (a:Attribute) REQUIRE a.full_name IS UNIQUE")
-            
-            # Create indexes for performance
-            await session.run("CREATE INDEX IF NOT EXISTS FOR (f:File) ON (f.name)")
-            await session.run("CREATE INDEX IF NOT EXISTS FOR (c:Class) ON (c.name)")
-            await session.run("CREATE INDEX IF NOT EXISTS FOR (m:Method) ON (m.name)")
-        
-        logger.info("Neo4j initialized successfully")
+        logger.info("Neo4j connection initialized successfully")
     
     async def clear_repository_data(self, repo_name: str):
-        """Clear all data for a specific repository"""
-        logger.info(f"Clearing existing data for repository: {repo_name}")
+        """Clear all data for a specific repository with production-ready error handling and transaction management.
+        
+        This method uses a single Neo4j transaction to ensure atomicity - either all cleanup operations 
+        succeed or none are applied. The deletion order follows dependency hierarchy to prevent constraint violations:
+        1. Methods and Attributes (depend on Classes)
+        2. Functions (depend on Files) 
+        3. Classes (depend on Files)
+        4. Files (depend on Repository)
+        5. Branches and Commits (depend on Repository)
+        6. Repository (root node)
+        
+        Args:
+            repo_name: Name of the repository to clear
+            
+        Raises:
+            Exception: If repository validation fails or Neo4j operations encounter errors
+        """
+        logger.info(f"Starting cleanup for repository: {repo_name}")
+        
+        # Validate that repository exists before attempting cleanup
         async with self.driver.session() as session:
-            # Delete in specific order to avoid constraint issues
-            
-            # 1. Delete methods and attributes (they depend on classes)
-            await session.run("""
-                MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)-[:DEFINES]->(c:Class)-[:HAS_METHOD]->(m:Method)
-                DETACH DELETE m
-            """, repo_name=repo_name)
-            
-            await session.run("""
-                MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)-[:DEFINES]->(c:Class)-[:HAS_ATTRIBUTE]->(a:Attribute)
-                DETACH DELETE a
-            """, repo_name=repo_name)
-            
-            # 2. Delete functions (they depend on files)
-            await session.run("""
-                MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)-[:DEFINES]->(func:Function)
-                DETACH DELETE func
-            """, repo_name=repo_name)
-            
-            # 3. Delete classes (they depend on files)
-            await session.run("""
-                MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)-[:DEFINES]->(c:Class)
-                DETACH DELETE c
-            """, repo_name=repo_name)
-            
-            # 4. Delete files (they depend on repository)
-            await session.run("""
-                MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)
-                DETACH DELETE f
-            """, repo_name=repo_name)
-            
-            # 5. Finally delete the repository
-            await session.run("""
-                MATCH (r:Repository {name: $repo_name})
-                DETACH DELETE r
-            """, repo_name=repo_name)
-            
-        logger.info(f"Cleared data for repository: {repo_name}")
+            try:
+                result = await session.run(
+                    "MATCH (r:Repository {name: $repo_name}) RETURN count(r) as repo_count",
+                    repo_name=repo_name
+                )
+                record = await result.single()
+                if not record or record["repo_count"] == 0:
+                    logger.warning(f"Repository '{repo_name}' not found in database - nothing to clean")
+                    return
+                    
+                logger.info(f"Confirmed repository '{repo_name}' exists, proceeding with cleanup")
+            except Exception as e:
+                logger.error(f"Failed to validate repository '{repo_name}': {e}")
+                raise Exception(f"Repository validation failed: {e}")
+        
+        # Track cleanup statistics for logging
+        cleanup_stats = {
+            "methods": 0,
+            "attributes": 0, 
+            "functions": 0,
+            "classes": 0,
+            "files": 0,
+            "branches": 0,
+            "commits": 0,
+            "repository": 0
+        }
+        
+        # Execute all cleanup operations within a single transaction
+        async with self.driver.session() as session:
+            tx = await session.begin_transaction()
+            try:
+                logger.info("Starting transactional cleanup operations...")
+                
+                # Step 1: Delete methods and attributes (they depend on classes)
+                logger.debug("Deleting methods...")
+                result = await tx.run("""
+                    MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)-[:DEFINES]->(c:Class)
+                    OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)
+                    DETACH DELETE m
+                    RETURN count(m) as deleted_count
+                """, repo_name=repo_name)
+                record = await result.single()
+                cleanup_stats["methods"] = record["deleted_count"] if record else 0
+                
+                logger.debug("Deleting attributes...")
+                result = await tx.run("""
+                    MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)-[:DEFINES]->(c:Class)
+                    OPTIONAL MATCH (c)-[:HAS_ATTRIBUTE]->(a:Attribute)
+                    DETACH DELETE a
+                    RETURN count(a) as deleted_count
+                """, repo_name=repo_name)
+                record = await result.single()
+                cleanup_stats["attributes"] = record["deleted_count"] if record else 0
+                
+                # Step 2: Delete functions (they depend on files)
+                logger.debug("Deleting functions...")
+                result = await tx.run("""
+                    MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)
+                    OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)
+                    DETACH DELETE func
+                    RETURN count(func) as deleted_count
+                """, repo_name=repo_name)
+                record = await result.single()
+                cleanup_stats["functions"] = record["deleted_count"] if record else 0
+                
+                # Step 3: Delete classes (they depend on files)
+                logger.debug("Deleting classes...")
+                result = await tx.run("""
+                    MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)
+                    OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)
+                    DETACH DELETE c
+                    RETURN count(c) as deleted_count
+                """, repo_name=repo_name)
+                record = await result.single()
+                cleanup_stats["classes"] = record["deleted_count"] if record else 0
+                
+                # Step 4: Delete files (they depend on repository)
+                logger.debug("Deleting files...")
+                result = await tx.run("""
+                    MATCH (r:Repository {name: $repo_name})
+                    OPTIONAL MATCH (r)-[:CONTAINS]->(f:File)
+                    DETACH DELETE f
+                    RETURN count(f) as deleted_count
+                """, repo_name=repo_name)
+                record = await result.single()
+                cleanup_stats["files"] = record["deleted_count"] if record else 0
+                
+                # Step 5: Delete branches and commits (they depend on repository)
+                # This is the key fix for HAS_COMMIT relationship warnings
+                logger.debug("Deleting branches...")
+                result = await tx.run("""
+                    MATCH (r:Repository {name: $repo_name})
+                    OPTIONAL MATCH (r)-[:HAS_BRANCH]->(b:Branch)
+                    DETACH DELETE b
+                    RETURN count(b) as deleted_count
+                """, repo_name=repo_name)
+                record = await result.single()
+                cleanup_stats["branches"] = record["deleted_count"] if record else 0
+                
+                logger.debug("Deleting commits...")
+                result = await tx.run("""
+                    MATCH (r:Repository {name: $repo_name})
+                    OPTIONAL MATCH (r)-[:HAS_COMMIT]->(c:Commit)
+                    DETACH DELETE c
+                    RETURN count(c) as deleted_count
+                """, repo_name=repo_name)
+                record = await result.single()
+                cleanup_stats["commits"] = record["deleted_count"] if record else 0
+                
+                # Step 6: Finally delete the repository
+                logger.debug("Deleting repository...")
+                result = await tx.run("""
+                    MATCH (r:Repository {name: $repo_name})
+                    DETACH DELETE r
+                    RETURN count(r) as deleted_count
+                """, repo_name=repo_name)
+                record = await result.single()
+                cleanup_stats["repository"] = record["deleted_count"] if record else 0
+                
+                # Commit the transaction
+                await tx.commit()
+                logger.info("Transaction committed successfully")
+                
+            except Exception as e:
+                # Rollback the transaction on any error
+                logger.error(f"Error during cleanup transaction, rolling back: {e}")
+                await tx.rollback()
+                raise Exception(f"Repository cleanup failed and was rolled back: {e}")
+        
+        # Log cleanup statistics
+        total_deleted = sum(cleanup_stats.values())
+        logger.info(f"Successfully cleared repository '{repo_name}' - {total_deleted} total nodes deleted:")
+        for entity_type, count in cleanup_stats.items():
+            if count > 0:
+                logger.info(f"  - {entity_type}: {count}")
+        
+        if total_deleted == 0:
+            logger.info("Repository was already empty or contained no data to clean")
     
     async def close(self):
         """Close Neo4j connection"""
         if self.driver:
             await self.driver.close()
     
-    def clone_repo(self, repo_url: str, target_dir: str) -> str:
-        """Clone repository with shallow clone"""
+    async def clone_repo(self, repo_url: str, target_dir: str, branch: Optional[str] = None) -> str:
+        """Clone repository with enhanced Git support"""
         logger.info(f"Cloning repository to: {target_dir}")
+        
+        # Use GitRepositoryManager if available for enhanced features
+        if self.git_manager:
+            try:
+                import asyncio
+                # GitRepositoryManager provides branch support and better error handling
+                result = await self.git_manager.clone_repository(
+                    url=repo_url, 
+                    target_dir=target_dir,
+                    branch=branch,
+                    depth=1,  # Keep shallow clone for performance
+                    single_branch=True if branch else False
+                )
+                return result
+            except Exception as e:
+                logger.warning(f"GitRepositoryManager failed, falling back to subprocess: {e}")
+        
+        # Fallback to original implementation
         if os.path.exists(target_dir):
             logger.info(f"Removing existing directory: {target_dir}")
             try:
@@ -501,9 +642,44 @@ class DirectNeo4jExtractor:
                 logger.warning(f"Could not fully remove {target_dir}: {e}. Proceeding anyway...")
         
         logger.info(f"Running git clone from {repo_url}")
-        subprocess.run(['git', 'clone', '--depth', '1', repo_url, target_dir], check=True)
+        cmd = ['git', 'clone', '--depth', '1']
+        if branch:
+            cmd.extend(['--branch', branch])
+        cmd.extend([repo_url, target_dir])
+        
+        subprocess.run(cmd, check=True)
         logger.info("Repository cloned successfully")
         return target_dir
+
+    async def get_repository_metadata(self, repo_dir: str) -> Dict:
+        """Extract Git repository metadata using GitRepositoryManager"""
+        metadata = {
+            "branches": [],
+            "tags": [],
+            "recent_commits": [],
+            "info": {}
+        }
+        
+        if self.git_manager:
+            try:
+                # Get repository info
+                metadata["info"] = await self.git_manager.get_repository_info(repo_dir)
+                
+                # Get branches
+                metadata["branches"] = await self.git_manager.get_branches(repo_dir)
+                
+                # Get tags
+                metadata["tags"] = await self.git_manager.get_tags(repo_dir)
+                
+                # Get recent commits (last 10)
+                metadata["recent_commits"] = await self.git_manager.get_commits(repo_dir, limit=10)
+                
+                logger.info(f"Extracted Git metadata: {len(metadata['branches'])} branches, "
+                          f"{len(metadata['tags'])} tags, {len(metadata['recent_commits'])} commits")
+            except Exception as e:
+                logger.warning(f"Could not extract Git metadata: {e}")
+        
+        return metadata
     
     def get_python_files(self, repo_path: str) -> List[Path]:
         """Get Python files, focusing on main source directories"""
@@ -526,7 +702,7 @@ class DirectNeo4jExtractor:
         
         return python_files
     
-    async def analyze_repository(self, repo_url: str, temp_dir: str = None):
+    async def analyze_repository(self, repo_url: str, temp_dir: str = None, branch: str = None):
         """Analyze repository and create nodes/relationships in Neo4j"""
         repo_name = repo_url.split('/')[-1].replace('.git', '')
         logger.info(f"Analyzing repository: {repo_name}")
@@ -540,7 +716,7 @@ class DirectNeo4jExtractor:
             temp_dir = str(script_dir / "repos" / repo_name)
         
         # Clone and analyze
-        repo_path = Path(self.clone_repo(repo_url, temp_dir))
+        repo_path = Path(await self.clone_repo(repo_url, temp_dir, branch))
         
         try:
             logger.info("Getting Python files...")
@@ -571,9 +747,12 @@ class DirectNeo4jExtractor:
             
             logger.info(f"Found {len(modules_data)} files with content")
             
+            # Get Git metadata if available
+            git_metadata = await self.get_repository_metadata(str(repo_path))
+            
             # Create nodes and relationships in Neo4j
             logger.info("Creating nodes and relationships in Neo4j...")
-            await self._create_graph(repo_name, modules_data)
+            await self._create_graph(repo_name, modules_data, git_metadata)
             
             # Print summary
             total_classes = sum(len(mod['classes']) for mod in modules_data)
@@ -609,14 +788,44 @@ class DirectNeo4jExtractor:
                     logger.warning(f"Cleanup failed: {e}. Directory may remain at {temp_dir}")
                     # Don't fail the whole process due to cleanup issues
     
-    async def _create_graph(self, repo_name: str, modules_data: List[Dict]):
+    async def _create_graph(self, repo_name: str, modules_data: List[Dict], git_metadata: Dict = None):
         """Create all nodes and relationships in Neo4j"""
         
         async with self.driver.session() as session:
-            # Create Repository node
+            # Create Repository node with enhanced metadata
+            repo_properties = {
+                "name": repo_name,
+                "created_at": "datetime()"
+            }
+            
+            # Add Git metadata if available
+            if git_metadata and git_metadata.get("info"):
+                info = git_metadata["info"]
+                repo_properties.update({
+                    "remote_url": info.get("remote_url", ""),
+                    "current_branch": info.get("current_branch", "main"),
+                    "file_count": info.get("file_count", 0),
+                    "contributor_count": info.get("contributor_count", 0),
+                    "size": info.get("size", "unknown")
+                })
+            
+            # Create repository with all properties
             await session.run(
-                "CREATE (r:Repository {name: $repo_name, created_at: datetime()})",
-                repo_name=repo_name
+                """CREATE (r:Repository {
+                    name: $name,
+                    remote_url: $remote_url,
+                    current_branch: $current_branch,
+                    file_count: $file_count,
+                    contributor_count: $contributor_count,
+                    size: $size,
+                    created_at: datetime()
+                })""",
+                name=repo_name,
+                remote_url=repo_properties.get("remote_url", ""),
+                current_branch=repo_properties.get("current_branch", "main"),
+                file_count=repo_properties.get("file_count", 0),
+                contributor_count=repo_properties.get("contributor_count", 0),
+                size=repo_properties.get("size", "unknown")
             )
             
             nodes_created = 0
@@ -778,6 +987,58 @@ class DirectNeo4jExtractor:
                 
                 if (i + 1) % 10 == 0:
                     logger.info(f"Processed {i + 1}/{len(modules_data)} files...")
+            
+            # Create Branch nodes if metadata available
+            if git_metadata and git_metadata.get("branches"):
+                for branch in git_metadata["branches"][:10]:  # Limit to 10 branches
+                    await session.run("""
+                        CREATE (b:Branch {
+                            name: $name,
+                            last_commit_date: $last_commit_date,
+                            last_commit_message: $last_commit_message
+                        })
+                    """, 
+                        name=branch["name"],
+                        last_commit_date=branch.get("last_commit_date", ""),
+                        last_commit_message=branch.get("last_commit_message", "")
+                    )
+                    nodes_created += 1
+                    
+                    # Connect Branch to Repository
+                    await session.run("""
+                        MATCH (r:Repository {name: $repo_name})
+                        MATCH (b:Branch {name: $branch_name})
+                        CREATE (r)-[:HAS_BRANCH]->(b)
+                    """, repo_name=repo_name, branch_name=branch["name"])
+                    relationships_created += 1
+            
+            # Create Commit nodes if metadata available
+            if git_metadata and git_metadata.get("recent_commits"):
+                for commit in git_metadata["recent_commits"]:
+                    await session.run("""
+                        CREATE (c:Commit {
+                            hash: $hash,
+                            author_name: $author_name,
+                            author_email: $author_email,
+                            date: $date,
+                            message: $message
+                        })
+                    """,
+                        hash=commit["hash"],
+                        author_name=commit.get("author_name", ""),
+                        author_email=commit.get("author_email", ""),
+                        date=commit.get("date", ""),
+                        message=commit.get("message", "")
+                    )
+                    nodes_created += 1
+                    
+                    # Connect Commit to Repository
+                    await session.run("""
+                        MATCH (r:Repository {name: $repo_name})
+                        MATCH (c:Commit {hash: $commit_hash})
+                        CREATE (r)-[:HAS_COMMIT]->(c)
+                    """, repo_name=repo_name, commit_hash=commit["hash"])
+                    relationships_created += 1
             
             logger.info(f"Created {nodes_created} nodes and {relationships_created} relationships")
     

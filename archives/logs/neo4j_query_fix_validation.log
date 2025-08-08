@@ -1,0 +1,738 @@
+2025-08-07 15:05:40,083 - asyncio - DEBUG - Using selector: EpollSelector
+2025-08-07 15:05:40,083 - neo4j.pool - DEBUG - [#0000]  _: <POOL> created, direct address IPv4Address(('localhost', 7687))
+2025-08-07 15:05:40,083 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:40,083 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:05:40,084 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:40,084 - neo4j.pool - DEBUG - [#0000]  _: <POOL> trying to hand out new connection
+2025-08-07 15:05:40,084 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> in: localhost:7687
+2025-08-07 15:05:40,085 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> dns resolver out: 127.0.0.1:7687
+2025-08-07 15:05:40,085 - neo4j.io - DEBUG - [#0000]  C: <OPEN> 127.0.0.1:7687
+2025-08-07 15:05:40,085 - neo4j.io - DEBUG - [#BA90]  C: <MAGIC> 0x6060B017
+2025-08-07 15:05:40,085 - neo4j.io - DEBUG - [#BA90]  C: <HANDSHAKE> 0x000001FF 0x00080805 0x00020404 0x00000003
+2025-08-07 15:05:40,087 - neo4j.io - DEBUG - [#BA90]  S: <HANDSHAKE> 0x00000605
+2025-08-07 15:05:40,087 - neo4j.io - DEBUG - [#BA90]  C: HELLO {'user_agent': 'neo4j-python/5.28.1 Python/3.12.3-final-0 (linux)', 'bolt_agent': {'product': 'neo4j-python/5.28.1', 'platform': 'Linux 5.15.167.4-microsoft-standard-WSL2; x86_64', 'language': 'Python/3.12.3-final-0', 'language_details': 'CPython; 3.12.3-final-0 (main, Jun 18 2025 17:59:45) [GCC 13.3.0]'}}
+2025-08-07 15:05:40,087 - neo4j.io - DEBUG - [#BA90]  _: <CONNECTION> client state: CONNECTED > AUTHENTICATION
+2025-08-07 15:05:40,087 - neo4j.io - DEBUG - [#BA90]  C: LOGON {'scheme': 'basic', 'principal': 'neo4j', 'credentials': '*******'}
+2025-08-07 15:05:40,087 - neo4j.io - DEBUG - [#BA90]  _: <CONNECTION> client state: AUTHENTICATION > READY
+2025-08-07 15:05:40,088 - neo4j.io - DEBUG - [#BA90]  S: SUCCESS {'server': 'Neo4j/5.25.1', 'connection_id': 'bolt-1744', 'hints': {'connection.recv_timeout_seconds': 120}}
+2025-08-07 15:05:40,088 - neo4j.io - DEBUG - [#BA90]  _: <CONNECTION> server state: CONNECTED > AUTHENTICATION
+2025-08-07 15:05:40,089 - neo4j.io - DEBUG - [#BA90]  S: FAILURE {'code': 'Neo.ClientError.Security.Unauthorized', 'message': 'The client is unauthorized due to authentication failure.'}
+2025-08-07 15:05:40,090 - neo4j.io - DEBUG - [#BA90]  C: <KILL>
+2025-08-07 15:05:40,090 - neo4j.io - DEBUG - [#BA90]  C: <OPEN FAILED> AuthError('The client is unauthorized due to authentication failure.')
+2025-08-07 15:05:40,090 - __main__ - ERROR - ❌ Failed to connect to Neo4j: {code: Neo.ClientError.Security.Unauthorized} {message: The client is unauthorized due to authentication failure.}
+2025-08-07 15:05:40,090 - neo4j.pool - DEBUG - [#0000]  _: <POOL> close
+2025-08-07 15:05:54,899 - asyncio - DEBUG - Using selector: EpollSelector
+2025-08-07 15:05:54,899 - neo4j.pool - DEBUG - [#0000]  _: <POOL> created, direct address IPv4Address(('localhost', 7687))
+2025-08-07 15:05:54,900 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:54,900 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:05:54,900 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:54,900 - neo4j.pool - DEBUG - [#0000]  _: <POOL> trying to hand out new connection
+2025-08-07 15:05:54,900 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> in: localhost:7687
+2025-08-07 15:05:54,901 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> dns resolver out: 127.0.0.1:7687
+2025-08-07 15:05:54,901 - neo4j.io - DEBUG - [#0000]  C: <OPEN> 127.0.0.1:7687
+2025-08-07 15:05:54,901 - neo4j.io - DEBUG - [#C280]  C: <MAGIC> 0x6060B017
+2025-08-07 15:05:54,901 - neo4j.io - DEBUG - [#C280]  C: <HANDSHAKE> 0x000001FF 0x00080805 0x00020404 0x00000003
+2025-08-07 15:05:54,903 - neo4j.io - DEBUG - [#C280]  S: <HANDSHAKE> 0x00000605
+2025-08-07 15:05:54,903 - neo4j.io - DEBUG - [#C280]  C: HELLO {'user_agent': 'neo4j-python/5.28.1 Python/3.12.3-final-0 (linux)', 'bolt_agent': {'product': 'neo4j-python/5.28.1', 'platform': 'Linux 5.15.167.4-microsoft-standard-WSL2; x86_64', 'language': 'Python/3.12.3-final-0', 'language_details': 'CPython; 3.12.3-final-0 (main, Jun 18 2025 17:59:45) [GCC 13.3.0]'}}
+2025-08-07 15:05:54,904 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: CONNECTED > AUTHENTICATION
+2025-08-07 15:05:54,904 - neo4j.io - DEBUG - [#C280]  C: LOGON {'scheme': 'basic', 'principal': 'neo4j', 'credentials': '*******'}
+2025-08-07 15:05:54,904 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: AUTHENTICATION > READY
+2025-08-07 15:05:54,904 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'server': 'Neo4j/5.25.1', 'connection_id': 'bolt-1747', 'hints': {'connection.recv_timeout_seconds': 120}}
+2025-08-07 15:05:54,905 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: CONNECTED > AUTHENTICATION
+2025-08-07 15:05:54,905 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {}
+2025-08-07 15:05:54,906 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: AUTHENTICATION > READY
+2025-08-07 15:05:54,906 - neo4j.io - DEBUG - [#C280]  C: RUN 'RETURN 1 as test' {} {}
+2025-08-07 15:05:54,906 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: READY > STREAMING
+2025-08-07 15:05:54,906 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:54,917 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'t_first': 11, 'fields': ['test']}
+2025-08-07 15:05:54,917 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:05:54,918 - neo4j.io - DEBUG - [#C280]  S: RECORD * 1
+2025-08-07 15:05:54,918 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrpkA==', 'statuses': [{'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:05:54,918 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:05:54,918 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:54,918 - __main__ - INFO - ✅ Neo4j connection established successfully
+2025-08-07 15:05:54,918 - __main__ - INFO - 📝 Creating test data for validation...
+2025-08-07 15:05:54,918 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:54,918 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:05:54,918 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:54,918 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:54,918 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:54,919 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:54,919 - neo4j.io - DEBUG - [#C280]  C: RUN "\n                MATCH (r:Repository) \n                WHERE r.name STARTS WITH 'test_repo_'\n                DETACH DELETE r\n            " {} {}
+2025-08-07 15:05:54,919 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:54,934 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'t_first': 15, 'fields': []}
+2025-08-07 15:05:54,934 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:05:54,935 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrpkA==', 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:05:54,935 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:05:54,935 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:54,935 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:54,935 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:54,935 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:54,935 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:54,935 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:54,935 - neo4j.io - DEBUG - [#C280]  C: RUN "\n                CREATE (r1:Repository {name: 'test_repo_valid_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f1:File {path: 'file1.py', module_name: 'file1', line_count: 100})\n                CREATE (f2:File {path: 'file2.py', module_name: 'file2', line_count: 200})  \n                CREATE (f3:File {path: 'file3.py', module_name: 'file3', line_count: 50})\n                CREATE (r1)-[:CONTAINS]->(f1)\n                CREATE (r1)-[:CONTAINS]->(f2)\n                CREATE (r1)-[:CONTAINS]->(f3)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrpkA==']}
+2025-08-07 15:05:54,935 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:54,957 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'t_first': 21, 'fields': []}
+2025-08-07 15:05:54,957 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:05:54,962 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrqkA==', 'stats': {'contains-updates': True, 'labels-added': 4, 'relationships-created': 3, 'nodes-created': 4, 'properties-set': 12}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:05:54,962 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:05:54,962 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:54,963 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:54,963 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:54,963 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:54,963 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:54,963 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:54,963 - neo4j.io - DEBUG - [#C280]  C: RUN "\n                CREATE (r2:Repository {name: 'test_repo_null_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f4:File {path: 'file4.py', module_name: 'file4'})\n                CREATE (f5:File {path: 'file5.py', module_name: 'file5'})\n                CREATE (r2)-[:CONTAINS]->(f4)\n                CREATE (r2)-[:CONTAINS]->(f5)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrqkA==']}
+2025-08-07 15:05:54,963 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:54,981 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'t_first': 18, 'fields': []}
+2025-08-07 15:05:54,981 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:05:54,984 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrrkA==', 'stats': {'contains-updates': True, 'labels-added': 3, 'relationships-created': 2, 'nodes-created': 3, 'properties-set': 7}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:05:54,984 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:05:54,984 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:54,984 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:54,984 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:54,984 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:54,984 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:54,984 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:54,985 - neo4j.io - DEBUG - [#C280]  C: RUN "\n                CREATE (r3:Repository {name: 'test_repo_mixed_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f6:File {path: 'file6.py', module_name: 'file6', line_count: 75})\n                CREATE (f7:File {path: 'file7.py', module_name: 'file7'})\n                CREATE (f8:File {path: 'file8.py', module_name: 'file8', line_count: 125})\n                CREATE (r3)-[:CONTAINS]->(f6)\n                CREATE (r3)-[:CONTAINS]->(f7) \n                CREATE (r3)-[:CONTAINS]->(f8)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrrkA==']}
+2025-08-07 15:05:54,985 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:55,006 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'t_first': 21, 'fields': []}
+2025-08-07 15:05:55,006 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:05:55,009 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrskA==', 'stats': {'contains-updates': True, 'labels-added': 4, 'relationships-created': 3, 'nodes-created': 4, 'properties-set': 11}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:05:55,010 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:05:55,010 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:55,010 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:55,010 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:55,010 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:55,010 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:55,010 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:55,010 - neo4j.io - DEBUG - [#C280]  C: RUN "\n                CREATE (r4:Repository {name: 'test_repo_empty', remote_url: 'test.com', current_branch: 'main'})\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrskA==']}
+2025-08-07 15:05:55,013 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:55,024 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'t_first': 10, 'fields': []}
+2025-08-07 15:05:55,024 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:05:55,024 - __main__ - INFO - ✅ Test data created successfully
+2025-08-07 15:05:55,028 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrtkA==', 'stats': {'contains-updates': True, 'labels-added': 1, 'nodes-created': 1, 'properties-set': 3}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:05:55,028 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:05:55,028 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:55,028 - __main__ - INFO - 🚀 Starting Neo4j query fix validation tests...
+2025-08-07 15:05:55,028 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_valid_lines
+2025-08-07 15:05:55,028 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:55,028 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:05:55,029 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:55,029 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:55,029 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:55,029 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:55,029 - neo4j.io - DEBUG - [#C280]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines\n        ' {'repo_name': 'test_repo_valid_lines'} {}
+2025-08-07 15:05:55,029 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:55,039 - neo4j.io - DEBUG - [#C280]  S: FAILURE {'code': 'Neo.ClientError.Statement.SyntaxError', 'message': 'Type mismatch: expected Float, Integer or Duration but was List<Integer> (line 16, column 17 (offset: 743))\n"            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines"\n                 ^'}
+2025-08-07 15:05:55,040 - neo4j.io - DEBUG - [#C280]  C: RESET
+2025-08-07 15:05:55,040 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: STREAMING > READY
+2025-08-07 15:05:55,040 - neo4j.io - DEBUG - [#C280]  S: IGNORED
+2025-08-07 15:05:55,040 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {}
+2025-08-07 15:05:55,040 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: FAILED > READY
+2025-08-07 15:05:55,040 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:55,040 - __main__ - ERROR - ❌ Query execution failed for test_repo_valid_lines: {code: Neo.ClientError.Statement.SyntaxError} {message: Type mismatch: expected Float, Integer or Duration but was List<Integer> (line 16, column 17 (offset: 743))
+"            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines"
+                 ^}
+2025-08-07 15:05:55,041 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_null_lines
+2025-08-07 15:05:55,041 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:55,041 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:05:55,041 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:55,041 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:55,041 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:55,041 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:55,041 - neo4j.io - DEBUG - [#C280]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines\n        ' {'repo_name': 'test_repo_null_lines'} {}
+2025-08-07 15:05:55,041 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: READY > STREAMING
+2025-08-07 15:05:55,041 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:55,047 - neo4j.io - DEBUG - [#C280]  S: FAILURE {'code': 'Neo.ClientError.Statement.SyntaxError', 'message': 'Type mismatch: expected Float, Integer or Duration but was List<Integer> (line 16, column 17 (offset: 743))\n"            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines"\n                 ^'}
+2025-08-07 15:05:55,048 - neo4j.io - DEBUG - [#C280]  C: RESET
+2025-08-07 15:05:55,048 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: STREAMING > READY
+2025-08-07 15:05:55,048 - neo4j.io - DEBUG - [#C280]  S: IGNORED
+2025-08-07 15:05:55,048 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {}
+2025-08-07 15:05:55,048 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: FAILED > READY
+2025-08-07 15:05:55,048 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:55,048 - __main__ - ERROR - ❌ Query execution failed for test_repo_null_lines: {code: Neo.ClientError.Statement.SyntaxError} {message: Type mismatch: expected Float, Integer or Duration but was List<Integer> (line 16, column 17 (offset: 743))
+"            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines"
+                 ^}
+2025-08-07 15:05:55,048 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_mixed_lines
+2025-08-07 15:05:55,049 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:55,049 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:05:55,049 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:55,049 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:55,049 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:55,049 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:55,049 - neo4j.io - DEBUG - [#C280]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines\n        ' {'repo_name': 'test_repo_mixed_lines'} {}
+2025-08-07 15:05:55,049 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: READY > STREAMING
+2025-08-07 15:05:55,049 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:55,064 - neo4j.io - DEBUG - [#C280]  S: FAILURE {'code': 'Neo.ClientError.Statement.SyntaxError', 'message': 'Type mismatch: expected Float, Integer or Duration but was List<Integer> (line 16, column 17 (offset: 743))\n"            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines"\n                 ^'}
+2025-08-07 15:05:55,064 - neo4j.io - DEBUG - [#C280]  C: RESET
+2025-08-07 15:05:55,064 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: STREAMING > READY
+2025-08-07 15:05:55,064 - neo4j.io - DEBUG - [#C280]  S: IGNORED
+2025-08-07 15:05:55,065 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {}
+2025-08-07 15:05:55,065 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: FAILED > READY
+2025-08-07 15:05:55,065 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:55,065 - __main__ - ERROR - ❌ Query execution failed for test_repo_mixed_lines: {code: Neo.ClientError.Statement.SyntaxError} {message: Type mismatch: expected Float, Integer or Duration but was List<Integer> (line 16, column 17 (offset: 743))
+"            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines"
+                 ^}
+2025-08-07 15:05:55,065 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_empty
+2025-08-07 15:05:55,065 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:55,065 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:05:55,065 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:55,065 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:55,065 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:55,066 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:55,066 - neo4j.io - DEBUG - [#C280]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines\n        ' {'repo_name': 'test_repo_empty'} {}
+2025-08-07 15:05:55,066 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: READY > STREAMING
+2025-08-07 15:05:55,066 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:55,075 - neo4j.io - DEBUG - [#C280]  S: FAILURE {'code': 'Neo.ClientError.Statement.SyntaxError', 'message': 'Type mismatch: expected Float, Integer or Duration but was List<Integer> (line 16, column 17 (offset: 743))\n"            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines"\n                 ^'}
+2025-08-07 15:05:55,075 - neo4j.io - DEBUG - [#C280]  C: RESET
+2025-08-07 15:05:55,075 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: STREAMING > READY
+2025-08-07 15:05:55,075 - neo4j.io - DEBUG - [#C280]  S: IGNORED
+2025-08-07 15:05:55,076 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {}
+2025-08-07 15:05:55,076 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: FAILED > READY
+2025-08-07 15:05:55,076 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:55,076 - __main__ - ERROR - ❌ Query execution failed for test_repo_empty: {code: Neo.ClientError.Statement.SyntaxError} {message: Type mismatch: expected Float, Integer or Duration but was List<Integer> (line 16, column 17 (offset: 743))
+"            sum([f IN files | toInteger(COALESCE(f.line_count, 0))]) as total_lines"
+                 ^}
+2025-08-07 15:05:55,076 - __main__ - INFO - 🔍 Checking for Neo4j aggregation warnings...
+2025-08-07 15:05:55,190 - __main__ - INFO - ✅ No aggregation warnings detected in logs
+2025-08-07 15:05:55,190 - __main__ - INFO - 🔍 Validating JSON structure returned by get_repository_metadata_from_neo4j...
+2025-08-07 15:05:55,190 - __main__ - INFO - ✅ JSON structure validation passed
+2025-08-07 15:05:55,190 - __main__ - INFO - 
+============================================================
+2025-08-07 15:05:55,190 - __main__ - INFO - NEO4J QUERY FIX VALIDATION REPORT
+2025-08-07 15:05:55,190 - __main__ - INFO - ============================================================
+2025-08-07 15:05:55,190 - __main__ - INFO - Test DateTime: 2025-08-07T15:05:54.898977
+2025-08-07 15:05:55,190 - __main__ - INFO - Overall Status: ❌ FAILED
+2025-08-07 15:05:55,190 - __main__ - INFO - Tests Passed: 0/4
+2025-08-07 15:05:55,190 - __main__ - INFO - Warnings Detected: 0
+2025-08-07 15:05:55,190 - __main__ - INFO - Avg Execution Time: 11.84ms
+2025-08-07 15:05:55,190 - __main__ - INFO - Detailed Report: /home/krashnicov/crawl4aimcp/neo4j_query_fix_validation_report.json
+2025-08-07 15:05:55,190 - __main__ - INFO - ============================================================
+2025-08-07 15:05:55,190 - __main__ - INFO - 🧹 Cleaning up test data...
+2025-08-07 15:05:55,190 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:05:55,191 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:05:55,191 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:05:55,191 - neo4j.pool - DEBUG - [#C280]  _: <POOL> picked existing connection bolt-1747
+2025-08-07 15:05:55,191 - neo4j.pool - DEBUG - [#C280]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:05:55,191 - neo4j.pool - DEBUG - [#C280]  _: <POOL> handing out existing connection
+2025-08-07 15:05:55,191 - neo4j.io - DEBUG - [#C280]  C: RUN "\n                    MATCH (r:Repository) \n                    WHERE r.name STARTS WITH 'test_repo_'\n                    DETACH DELETE r\n                " {} {}
+2025-08-07 15:05:55,191 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> client state: READY > STREAMING
+2025-08-07 15:05:55,191 - neo4j.io - DEBUG - [#C280]  C: PULL {'n': 1000}
+2025-08-07 15:05:55,197 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'t_first': 6, 'fields': []}
+2025-08-07 15:05:55,197 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:05:55,201 - neo4j.io - DEBUG - [#C280]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrukA==', 'stats': {'contains-updates': True, 'nodes-deleted': 4, 'relationships-deleted': 8}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:05:55,202 - neo4j.io - DEBUG - [#C280]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:05:55,202 - neo4j.pool - DEBUG - [#C280]  _: <POOL> released bolt-1747
+2025-08-07 15:05:55,202 - __main__ - INFO - ✅ Test data cleaned up successfully
+2025-08-07 15:05:55,202 - neo4j.pool - DEBUG - [#0000]  _: <POOL> close
+2025-08-07 15:05:55,202 - neo4j.io - DEBUG - [#C280]  C: GOODBYE
+2025-08-07 15:05:55,202 - neo4j.io - DEBUG - [#C280]  C: <CLOSE>
+2025-08-07 15:07:02,846 - asyncio - DEBUG - Using selector: EpollSelector
+2025-08-07 15:07:02,847 - neo4j.pool - DEBUG - [#0000]  _: <POOL> created, direct address IPv4Address(('localhost', 7687))
+2025-08-07 15:07:02,847 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:02,847 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:02,847 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:02,847 - neo4j.pool - DEBUG - [#0000]  _: <POOL> trying to hand out new connection
+2025-08-07 15:07:02,847 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> in: localhost:7687
+2025-08-07 15:07:02,848 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> dns resolver out: 127.0.0.1:7687
+2025-08-07 15:07:02,848 - neo4j.io - DEBUG - [#0000]  C: <OPEN> 127.0.0.1:7687
+2025-08-07 15:07:02,849 - neo4j.io - DEBUG - [#DCFE]  C: <MAGIC> 0x6060B017
+2025-08-07 15:07:02,849 - neo4j.io - DEBUG - [#DCFE]  C: <HANDSHAKE> 0x000001FF 0x00080805 0x00020404 0x00000003
+2025-08-07 15:07:02,850 - neo4j.io - DEBUG - [#DCFE]  S: <HANDSHAKE> 0x00000605
+2025-08-07 15:07:02,850 - neo4j.io - DEBUG - [#DCFE]  C: HELLO {'user_agent': 'neo4j-python/5.28.1 Python/3.12.3-final-0 (linux)', 'bolt_agent': {'product': 'neo4j-python/5.28.1', 'platform': 'Linux 5.15.167.4-microsoft-standard-WSL2; x86_64', 'language': 'Python/3.12.3-final-0', 'language_details': 'CPython; 3.12.3-final-0 (main, Jun 18 2025 17:59:45) [GCC 13.3.0]'}}
+2025-08-07 15:07:02,850 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> client state: CONNECTED > AUTHENTICATION
+2025-08-07 15:07:02,850 - neo4j.io - DEBUG - [#DCFE]  C: LOGON {'scheme': 'basic', 'principal': 'neo4j', 'credentials': '*******'}
+2025-08-07 15:07:02,850 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> client state: AUTHENTICATION > READY
+2025-08-07 15:07:02,851 - neo4j.io - DEBUG - [#DCFE]  S: SUCCESS {'server': 'Neo4j/5.25.1', 'connection_id': 'bolt-1755', 'hints': {'connection.recv_timeout_seconds': 120}}
+2025-08-07 15:07:02,851 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> server state: CONNECTED > AUTHENTICATION
+2025-08-07 15:07:02,852 - neo4j.io - DEBUG - [#DCFE]  S: SUCCESS {}
+2025-08-07 15:07:02,852 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> server state: AUTHENTICATION > READY
+2025-08-07 15:07:02,852 - neo4j.io - DEBUG - [#DCFE]  C: RUN 'RETURN 1 as test' {} {}
+2025-08-07 15:07:02,852 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> client state: READY > STREAMING
+2025-08-07 15:07:02,852 - neo4j.io - DEBUG - [#DCFE]  C: PULL {'n': 1000}
+2025-08-07 15:07:02,853 - neo4j.io - DEBUG - [#DCFE]  S: SUCCESS {'t_first': 1, 'fields': ['test']}
+2025-08-07 15:07:02,853 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:02,854 - neo4j.io - DEBUG - [#DCFE]  S: RECORD * 1
+2025-08-07 15:07:02,854 - neo4j.io - DEBUG - [#DCFE]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrukA==', 'statuses': [{'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:02,854 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:02,854 - neo4j.pool - DEBUG - [#DCFE]  _: <POOL> released bolt-1755
+2025-08-07 15:07:02,854 - __main__ - INFO - ✅ Neo4j connection established successfully
+2025-08-07 15:07:02,854 - __main__ - INFO - 📝 Creating test data for validation...
+2025-08-07 15:07:02,854 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:02,854 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:02,855 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:02,855 - neo4j.pool - DEBUG - [#DCFE]  _: <POOL> picked existing connection bolt-1755
+2025-08-07 15:07:02,855 - neo4j.pool - DEBUG - [#DCFE]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:02,855 - neo4j.pool - DEBUG - [#DCFE]  _: <POOL> handing out existing connection
+2025-08-07 15:07:02,855 - neo4j.io - DEBUG - [#DCFE]  C: RUN "\n                MATCH (r:Repository) \n                WHERE r.name STARTS WITH 'test_repo_'\n                DETACH DELETE r\n            " {} {}
+2025-08-07 15:07:02,855 - neo4j.io - DEBUG - [#DCFE]  C: PULL {'n': 1000}
+2025-08-07 15:07:02,856 - neo4j.io - DEBUG - [#DCFE]  S: SUCCESS {'t_first': 1, 'fields': []}
+2025-08-07 15:07:02,856 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:02,856 - neo4j.io - DEBUG - [#DCFE]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrukA==', 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:02,856 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:02,856 - neo4j.pool - DEBUG - [#DCFE]  _: <POOL> released bolt-1755
+2025-08-07 15:07:02,856 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:02,857 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:02,857 - neo4j.pool - DEBUG - [#DCFE]  _: <POOL> picked existing connection bolt-1755
+2025-08-07 15:07:02,857 - neo4j.pool - DEBUG - [#DCFE]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:02,857 - neo4j.pool - DEBUG - [#DCFE]  _: <POOL> handing out existing connection
+2025-08-07 15:07:02,857 - neo4j.io - DEBUG - [#DCFE]  C: RUN "\n                CREATE (r1:Repository {name: 'test_repo_valid_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f1:File {path: 'file1.py', module_name: 'file1', line_count: 100})\n                CREATE (f2:File {path: 'file2.py', module_name: 'file2', line_count: 200})  \n                CREATE (f3:File {path: 'file3.py', module_name: 'file3', line_count: 50})\n                CREATE (r1)-[:CONTAINS]->(f1)\n                CREATE (r1)-[:CONTAINS]->(f2)\n                CREATE (r1)-[:CONTAINS]->(f3)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrukA==']}
+2025-08-07 15:07:02,857 - neo4j.io - DEBUG - [#DCFE]  C: PULL {'n': 1000}
+2025-08-07 15:07:02,859 - neo4j.io - DEBUG - [#DCFE]  S: FAILURE {'code': 'Neo.ClientError.Schema.ConstraintValidationFailed', 'message': "Node(849) already exists with label `File` and property `path` = 'file1.py'"}
+2025-08-07 15:07:02,859 - neo4j.io - DEBUG - [#DCFE]  C: RESET
+2025-08-07 15:07:02,859 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> client state: STREAMING > READY
+2025-08-07 15:07:02,859 - neo4j.io - DEBUG - [#DCFE]  S: IGNORED
+2025-08-07 15:07:02,859 - neo4j.io - DEBUG - [#DCFE]  S: SUCCESS {}
+2025-08-07 15:07:02,860 - neo4j.io - DEBUG - [#DCFE]  _: <CONNECTION> server state: FAILED > READY
+2025-08-07 15:07:02,860 - neo4j.pool - DEBUG - [#DCFE]  _: <POOL> released bolt-1755
+2025-08-07 15:07:02,860 - __main__ - ERROR - ❌ Validation failed with exception: {code: Neo.ClientError.Schema.ConstraintValidationFailed} {message: Node(849) already exists with label `File` and property `path` = 'file1.py'}
+2025-08-07 15:07:02,860 - neo4j.pool - DEBUG - [#0000]  _: <POOL> close
+2025-08-07 15:07:02,860 - neo4j.io - DEBUG - [#DCFE]  C: GOODBYE
+2025-08-07 15:07:02,860 - neo4j.io - DEBUG - [#DCFE]  C: <CLOSE>
+2025-08-07 15:07:29,378 - asyncio - DEBUG - Using selector: EpollSelector
+2025-08-07 15:07:29,378 - neo4j.pool - DEBUG - [#0000]  _: <POOL> created, direct address IPv4Address(('localhost', 7687))
+2025-08-07 15:07:29,378 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,378 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:29,378 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,378 - neo4j.pool - DEBUG - [#0000]  _: <POOL> trying to hand out new connection
+2025-08-07 15:07:29,378 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> in: localhost:7687
+2025-08-07 15:07:29,379 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> dns resolver out: 127.0.0.1:7687
+2025-08-07 15:07:29,379 - neo4j.io - DEBUG - [#0000]  C: <OPEN> 127.0.0.1:7687
+2025-08-07 15:07:29,380 - neo4j.io - DEBUG - [#B9F6]  C: <MAGIC> 0x6060B017
+2025-08-07 15:07:29,380 - neo4j.io - DEBUG - [#B9F6]  C: <HANDSHAKE> 0x000001FF 0x00080805 0x00020404 0x00000003
+2025-08-07 15:07:29,381 - neo4j.io - DEBUG - [#B9F6]  S: <HANDSHAKE> 0x00000605
+2025-08-07 15:07:29,381 - neo4j.io - DEBUG - [#B9F6]  C: HELLO {'user_agent': 'neo4j-python/5.28.1 Python/3.12.3-final-0 (linux)', 'bolt_agent': {'product': 'neo4j-python/5.28.1', 'platform': 'Linux 5.15.167.4-microsoft-standard-WSL2; x86_64', 'language': 'Python/3.12.3-final-0', 'language_details': 'CPython; 3.12.3-final-0 (main, Jun 18 2025 17:59:45) [GCC 13.3.0]'}}
+2025-08-07 15:07:29,381 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> client state: CONNECTED > AUTHENTICATION
+2025-08-07 15:07:29,381 - neo4j.io - DEBUG - [#B9F6]  C: LOGON {'scheme': 'basic', 'principal': 'neo4j', 'credentials': '*******'}
+2025-08-07 15:07:29,381 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> client state: AUTHENTICATION > READY
+2025-08-07 15:07:29,382 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'server': 'Neo4j/5.25.1', 'connection_id': 'bolt-1759', 'hints': {'connection.recv_timeout_seconds': 120}}
+2025-08-07 15:07:29,382 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: CONNECTED > AUTHENTICATION
+2025-08-07 15:07:29,383 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {}
+2025-08-07 15:07:29,383 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: AUTHENTICATION > READY
+2025-08-07 15:07:29,384 - neo4j.io - DEBUG - [#B9F6]  C: RUN 'RETURN 1 as test' {} {}
+2025-08-07 15:07:29,384 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> client state: READY > STREAMING
+2025-08-07 15:07:29,384 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,385 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 0, 'fields': ['test']}
+2025-08-07 15:07:29,385 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,385 - neo4j.io - DEBUG - [#B9F6]  S: RECORD * 1
+2025-08-07 15:07:29,385 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrukA==', 'statuses': [{'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,386 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,386 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,386 - __main__ - INFO - ✅ Neo4j connection established successfully
+2025-08-07 15:07:29,386 - __main__ - INFO - 📝 Creating test data for validation...
+2025-08-07 15:07:29,386 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,386 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:29,386 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,386 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,386 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,386 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,386 - neo4j.io - DEBUG - [#B9F6]  C: RUN "\n                MATCH (r:Repository) \n                WHERE r.name STARTS WITH 'test_repo_'\n                DETACH DELETE r\n            " {} {}
+2025-08-07 15:07:29,386 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,387 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 0, 'fields': []}
+2025-08-07 15:07:29,388 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,388 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrukA==', 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,388 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,388 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,388 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,388 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,388 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,388 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,388 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,388 - neo4j.io - DEBUG - [#B9F6]  C: RUN "\n                CREATE (r1:Repository {name: 'test_repo_valid_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f1:File {path: 'test_file1.py', module_name: 'test_file1', line_count: 100})\n                CREATE (f2:File {path: 'test_file2.py', module_name: 'test_file2', line_count: 200})  \n                CREATE (f3:File {path: 'test_file3.py', module_name: 'test_file3', line_count: 50})\n                CREATE (r1)-[:CONTAINS]->(f1)\n                CREATE (r1)-[:CONTAINS]->(f2)\n                CREATE (r1)-[:CONTAINS]->(f3)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrukA==']}
+2025-08-07 15:07:29,388 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,411 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 22, 'fields': []}
+2025-08-07 15:07:29,412 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,414 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrvkA==', 'stats': {'contains-updates': True, 'labels-added': 4, 'relationships-created': 3, 'nodes-created': 4, 'properties-set': 12}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,415 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,415 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,415 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,415 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,415 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,415 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,415 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,415 - neo4j.io - DEBUG - [#B9F6]  C: RUN "\n                CREATE (r2:Repository {name: 'test_repo_null_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f4:File {path: 'test_file4.py', module_name: 'test_file4'})\n                CREATE (f5:File {path: 'test_file5.py', module_name: 'test_file5'})\n                CREATE (r2)-[:CONTAINS]->(f4)\n                CREATE (r2)-[:CONTAINS]->(f5)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrvkA==']}
+2025-08-07 15:07:29,415 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,431 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 15, 'fields': []}
+2025-08-07 15:07:29,431 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,435 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrwkA==', 'stats': {'contains-updates': True, 'labels-added': 3, 'relationships-created': 2, 'nodes-created': 3, 'properties-set': 7}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,435 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,435 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,435 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,435 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,435 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,435 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,435 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,436 - neo4j.io - DEBUG - [#B9F6]  C: RUN "\n                CREATE (r3:Repository {name: 'test_repo_mixed_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f6:File {path: 'test_file6.py', module_name: 'test_file6', line_count: 75})\n                CREATE (f7:File {path: 'test_file7.py', module_name: 'test_file7'})\n                CREATE (f8:File {path: 'test_file8.py', module_name: 'test_file8', line_count: 125})\n                CREATE (r3)-[:CONTAINS]->(f6)\n                CREATE (r3)-[:CONTAINS]->(f7) \n                CREATE (r3)-[:CONTAINS]->(f8)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrwkA==']}
+2025-08-07 15:07:29,436 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,456 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 19, 'fields': []}
+2025-08-07 15:07:29,456 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,459 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrxkA==', 'stats': {'contains-updates': True, 'labels-added': 4, 'relationships-created': 3, 'nodes-created': 4, 'properties-set': 11}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,459 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,459 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,459 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,459 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,459 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,459 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,459 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,459 - neo4j.io - DEBUG - [#B9F6]  C: RUN "\n                CREATE (r4:Repository {name: 'test_repo_empty', remote_url: 'test.com', current_branch: 'main'})\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrxkA==']}
+2025-08-07 15:07:29,461 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,462 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 1, 'fields': []}
+2025-08-07 15:07:29,462 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,462 - __main__ - INFO - ✅ Test data created successfully
+2025-08-07 15:07:29,464 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrykA==', 'stats': {'contains-updates': True, 'labels-added': 1, 'nodes-created': 1, 'properties-set': 3}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,464 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,464 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,464 - __main__ - INFO - 🚀 Starting Neo4j query fix validation tests...
+2025-08-07 15:07:29,464 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_valid_lines
+2025-08-07 15:07:29,464 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,464 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:29,464 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,464 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,464 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,464 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,464 - neo4j.io - DEBUG - [#B9F6]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL] | total + COALESCE(f.line_count, 0)) as total_lines\n        ' {'repo_name': 'test_repo_valid_lines'} {}
+2025-08-07 15:07:29,464 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,537 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 72, 'fields': ['file_count', 'class_count', 'method_count', 'function_count', 'total_lines']}
+2025-08-07 15:07:29,537 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,538 - neo4j.io - DEBUG - [#B9F6]  S: RECORD * 1
+2025-08-07 15:07:29,538 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrykA==', 'statuses': [{'gql_status': '01G11', 'neo4j_code': 'Neo.ClientNotification.Statement.AggregationSkippedNull', 'status_description': 'warn: null value eliminated in set function', 'diagnostic_record': {'_classification': 'UNRECOGNIZED', '_severity': 'WARNING'}, 'description': 'null value eliminated in set function.', 'title': 'The query contains an aggregation function that skips null values.'}, {'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,538 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,538 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,538 - neo4j.notifications - WARNING - Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.AggregationSkippedNull} {category: UNRECOGNIZED} {title: The query contains an aggregation function that skips null values.} {description: null value eliminated in set function.} {position: None} for query: '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL] | total + COALESCE(f.line_count, 0)) as total_lines\n        '
+2025-08-07 15:07:29,539 - __main__ - INFO - ✅ Query executed successfully: {'repo_name': 'test_repo_valid_lines', 'file_count': 3, 'total_lines': 350, 'execution_time_ms': 74.55, 'status': 'SUCCESS', 'expected_lines': 350, 'lines_match': True}
+2025-08-07 15:07:29,539 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_null_lines
+2025-08-07 15:07:29,539 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,539 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:29,539 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,539 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,539 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,539 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,539 - neo4j.io - DEBUG - [#B9F6]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL] | total + COALESCE(f.line_count, 0)) as total_lines\n        ' {'repo_name': 'test_repo_null_lines'} {}
+2025-08-07 15:07:29,539 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,540 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 0, 'fields': ['file_count', 'class_count', 'method_count', 'function_count', 'total_lines']}
+2025-08-07 15:07:29,540 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,541 - neo4j.io - DEBUG - [#B9F6]  S: RECORD * 1
+2025-08-07 15:07:29,541 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrykA==', 'statuses': [{'gql_status': '01G11', 'neo4j_code': 'Neo.ClientNotification.Statement.AggregationSkippedNull', 'status_description': 'warn: null value eliminated in set function', 'diagnostic_record': {'_classification': 'UNRECOGNIZED', '_severity': 'WARNING'}, 'description': 'null value eliminated in set function.', 'title': 'The query contains an aggregation function that skips null values.'}, {'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,541 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,541 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,541 - neo4j.notifications - WARNING - Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.AggregationSkippedNull} {category: UNRECOGNIZED} {title: The query contains an aggregation function that skips null values.} {description: null value eliminated in set function.} {position: None} for query: '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL] | total + COALESCE(f.line_count, 0)) as total_lines\n        '
+2025-08-07 15:07:29,541 - __main__ - INFO - ✅ Query executed successfully: {'repo_name': 'test_repo_null_lines', 'file_count': 2, 'total_lines': 0, 'execution_time_ms': 2.43, 'status': 'SUCCESS', 'expected_lines': 0, 'lines_match': True}
+2025-08-07 15:07:29,541 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_mixed_lines
+2025-08-07 15:07:29,541 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,541 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:29,541 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,542 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,542 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,542 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,542 - neo4j.io - DEBUG - [#B9F6]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL] | total + COALESCE(f.line_count, 0)) as total_lines\n        ' {'repo_name': 'test_repo_mixed_lines'} {}
+2025-08-07 15:07:29,542 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,543 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 0, 'fields': ['file_count', 'class_count', 'method_count', 'function_count', 'total_lines']}
+2025-08-07 15:07:29,543 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,543 - neo4j.io - DEBUG - [#B9F6]  S: RECORD * 1
+2025-08-07 15:07:29,543 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrykA==', 'statuses': [{'gql_status': '01G11', 'neo4j_code': 'Neo.ClientNotification.Statement.AggregationSkippedNull', 'status_description': 'warn: null value eliminated in set function', 'diagnostic_record': {'_classification': 'UNRECOGNIZED', '_severity': 'WARNING'}, 'description': 'null value eliminated in set function.', 'title': 'The query contains an aggregation function that skips null values.'}, {'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 1, 'db': 'neo4j'}
+2025-08-07 15:07:29,543 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,543 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,543 - neo4j.notifications - WARNING - Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.AggregationSkippedNull} {category: UNRECOGNIZED} {title: The query contains an aggregation function that skips null values.} {description: null value eliminated in set function.} {position: None} for query: '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL] | total + COALESCE(f.line_count, 0)) as total_lines\n        '
+2025-08-07 15:07:29,543 - __main__ - INFO - ✅ Query executed successfully: {'repo_name': 'test_repo_mixed_lines', 'file_count': 3, 'total_lines': 200, 'execution_time_ms': 2.1, 'status': 'SUCCESS', 'expected_lines': 200, 'lines_match': True}
+2025-08-07 15:07:29,543 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_empty
+2025-08-07 15:07:29,544 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,544 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:29,544 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,544 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,544 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,544 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,544 - neo4j.io - DEBUG - [#B9F6]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL] | total + COALESCE(f.line_count, 0)) as total_lines\n        ' {'repo_name': 'test_repo_empty'} {}
+2025-08-07 15:07:29,544 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,545 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 0, 'fields': ['file_count', 'class_count', 'method_count', 'function_count', 'total_lines']}
+2025-08-07 15:07:29,545 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,545 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrykA==', 'statuses': [{'gql_status': '02000', 'status_description': 'note: no data'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,545 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,545 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,545 - __main__ - INFO - 🔍 Checking for Neo4j aggregation warnings...
+2025-08-07 15:07:29,644 - __main__ - INFO - ✅ No aggregation warnings detected in logs
+2025-08-07 15:07:29,644 - __main__ - INFO - 🔍 Validating JSON structure returned by get_repository_metadata_from_neo4j...
+2025-08-07 15:07:29,644 - __main__ - INFO - ✅ JSON structure validation passed
+2025-08-07 15:07:29,644 - __main__ - INFO - 
+============================================================
+2025-08-07 15:07:29,644 - __main__ - INFO - NEO4J QUERY FIX VALIDATION REPORT
+2025-08-07 15:07:29,644 - __main__ - INFO - ============================================================
+2025-08-07 15:07:29,644 - __main__ - INFO - Test DateTime: 2025-08-07T15:07:29.377938
+2025-08-07 15:07:29,644 - __main__ - INFO - Overall Status: ❌ FAILED
+2025-08-07 15:07:29,644 - __main__ - INFO - Tests Passed: 3/4
+2025-08-07 15:07:29,644 - __main__ - INFO - Warnings Detected: 0
+2025-08-07 15:07:29,644 - __main__ - INFO - Avg Execution Time: 20.18ms
+2025-08-07 15:07:29,644 - __main__ - INFO - Detailed Report: /home/krashnicov/crawl4aimcp/neo4j_query_fix_validation_report.json
+2025-08-07 15:07:29,644 - __main__ - INFO - ============================================================
+2025-08-07 15:07:29,644 - __main__ - INFO - 🧹 Cleaning up test data...
+2025-08-07 15:07:29,645 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:29,645 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:29,645 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:29,645 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> picked existing connection bolt-1759
+2025-08-07 15:07:29,645 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:29,645 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> handing out existing connection
+2025-08-07 15:07:29,645 - neo4j.io - DEBUG - [#B9F6]  C: RUN "\n                    MATCH (r:Repository) \n                    WHERE r.name STARTS WITH 'test_repo_'\n                    DETACH DELETE r\n                " {} {}
+2025-08-07 15:07:29,645 - neo4j.io - DEBUG - [#B9F6]  C: PULL {'n': 1000}
+2025-08-07 15:07:29,647 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'t_first': 1, 'fields': []}
+2025-08-07 15:07:29,647 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:29,649 - neo4j.io - DEBUG - [#B9F6]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrzkA==', 'stats': {'contains-updates': True, 'nodes-deleted': 4, 'relationships-deleted': 8}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:29,649 - neo4j.io - DEBUG - [#B9F6]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:29,649 - neo4j.pool - DEBUG - [#B9F6]  _: <POOL> released bolt-1759
+2025-08-07 15:07:29,649 - __main__ - INFO - ✅ Test data cleaned up successfully
+2025-08-07 15:07:29,649 - neo4j.pool - DEBUG - [#0000]  _: <POOL> close
+2025-08-07 15:07:29,649 - neo4j.io - DEBUG - [#B9F6]  C: GOODBYE
+2025-08-07 15:07:29,649 - neo4j.io - DEBUG - [#B9F6]  C: <CLOSE>
+2025-08-07 15:07:58,482 - asyncio - DEBUG - Using selector: EpollSelector
+2025-08-07 15:07:58,482 - neo4j.pool - DEBUG - [#0000]  _: <POOL> created, direct address IPv4Address(('localhost', 7687))
+2025-08-07 15:07:58,482 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:58,482 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:58,482 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:58,483 - neo4j.pool - DEBUG - [#0000]  _: <POOL> trying to hand out new connection
+2025-08-07 15:07:58,483 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> in: localhost:7687
+2025-08-07 15:07:58,484 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> dns resolver out: 127.0.0.1:7687
+2025-08-07 15:07:58,484 - neo4j.io - DEBUG - [#0000]  C: <OPEN> 127.0.0.1:7687
+2025-08-07 15:07:58,484 - neo4j.io - DEBUG - [#B9B8]  C: <MAGIC> 0x6060B017
+2025-08-07 15:07:58,484 - neo4j.io - DEBUG - [#B9B8]  C: <HANDSHAKE> 0x000001FF 0x00080805 0x00020404 0x00000003
+2025-08-07 15:07:58,486 - neo4j.io - DEBUG - [#B9B8]  S: <HANDSHAKE> 0x00000605
+2025-08-07 15:07:58,487 - neo4j.io - DEBUG - [#B9B8]  C: HELLO {'user_agent': 'neo4j-python/5.28.1 Python/3.12.3-final-0 (linux)', 'bolt_agent': {'product': 'neo4j-python/5.28.1', 'platform': 'Linux 5.15.167.4-microsoft-standard-WSL2; x86_64', 'language': 'Python/3.12.3-final-0', 'language_details': 'CPython; 3.12.3-final-0 (main, Jun 18 2025 17:59:45) [GCC 13.3.0]'}}
+2025-08-07 15:07:58,487 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> client state: CONNECTED > AUTHENTICATION
+2025-08-07 15:07:58,487 - neo4j.io - DEBUG - [#B9B8]  C: LOGON {'scheme': 'basic', 'principal': 'neo4j', 'credentials': '*******'}
+2025-08-07 15:07:58,487 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> client state: AUTHENTICATION > READY
+2025-08-07 15:07:58,488 - neo4j.io - DEBUG - [#B9B8]  S: SUCCESS {'server': 'Neo4j/5.25.1', 'connection_id': 'bolt-1763', 'hints': {'connection.recv_timeout_seconds': 120}}
+2025-08-07 15:07:58,488 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> server state: CONNECTED > AUTHENTICATION
+2025-08-07 15:07:58,488 - neo4j.io - DEBUG - [#B9B8]  S: SUCCESS {}
+2025-08-07 15:07:58,488 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> server state: AUTHENTICATION > READY
+2025-08-07 15:07:58,489 - neo4j.io - DEBUG - [#B9B8]  C: RUN 'RETURN 1 as test' {} {}
+2025-08-07 15:07:58,489 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> client state: READY > STREAMING
+2025-08-07 15:07:58,489 - neo4j.io - DEBUG - [#B9B8]  C: PULL {'n': 1000}
+2025-08-07 15:07:58,490 - neo4j.io - DEBUG - [#B9B8]  S: SUCCESS {'t_first': 1, 'fields': ['test']}
+2025-08-07 15:07:58,490 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:58,490 - neo4j.io - DEBUG - [#B9B8]  S: RECORD * 1
+2025-08-07 15:07:58,490 - neo4j.io - DEBUG - [#B9B8]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrzkA==', 'statuses': [{'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:58,490 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:58,490 - neo4j.pool - DEBUG - [#B9B8]  _: <POOL> released bolt-1763
+2025-08-07 15:07:58,490 - __main__ - INFO - ✅ Neo4j connection established successfully
+2025-08-07 15:07:58,491 - __main__ - INFO - 📝 Creating test data for validation...
+2025-08-07 15:07:58,491 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:58,491 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:07:58,491 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:58,491 - neo4j.pool - DEBUG - [#B9B8]  _: <POOL> picked existing connection bolt-1763
+2025-08-07 15:07:58,491 - neo4j.pool - DEBUG - [#B9B8]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:58,491 - neo4j.pool - DEBUG - [#B9B8]  _: <POOL> handing out existing connection
+2025-08-07 15:07:58,491 - neo4j.io - DEBUG - [#B9B8]  C: RUN "\n                MATCH (r:Repository) \n                WHERE r.name STARTS WITH 'test_repo_'\n                DETACH DELETE r\n            " {} {}
+2025-08-07 15:07:58,491 - neo4j.io - DEBUG - [#B9B8]  C: PULL {'n': 1000}
+2025-08-07 15:07:58,492 - neo4j.io - DEBUG - [#B9B8]  S: SUCCESS {'t_first': 1, 'fields': []}
+2025-08-07 15:07:58,492 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:07:58,492 - neo4j.io - DEBUG - [#B9B8]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrzkA==', 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:07:58,492 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:07:58,492 - neo4j.pool - DEBUG - [#B9B8]  _: <POOL> released bolt-1763
+2025-08-07 15:07:58,492 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:07:58,493 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:07:58,493 - neo4j.pool - DEBUG - [#B9B8]  _: <POOL> picked existing connection bolt-1763
+2025-08-07 15:07:58,493 - neo4j.pool - DEBUG - [#B9B8]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:07:58,493 - neo4j.pool - DEBUG - [#B9B8]  _: <POOL> handing out existing connection
+2025-08-07 15:07:58,493 - neo4j.io - DEBUG - [#B9B8]  C: RUN "\n                CREATE (r1:Repository {name: 'test_repo_valid_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f1:File {path: 'test_file1.py', module_name: 'test_file1', line_count: 100})\n                CREATE (f2:File {path: 'test_file2.py', module_name: 'test_file2', line_count: 200})  \n                CREATE (f3:File {path: 'test_file3.py', module_name: 'test_file3', line_count: 50})\n                CREATE (r1)-[:CONTAINS]->(f1)\n                CREATE (r1)-[:CONTAINS]->(f2)\n                CREATE (r1)-[:CONTAINS]->(f3)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARrzkA==']}
+2025-08-07 15:07:58,493 - neo4j.io - DEBUG - [#B9B8]  C: PULL {'n': 1000}
+2025-08-07 15:07:58,495 - neo4j.io - DEBUG - [#B9B8]  S: FAILURE {'code': 'Neo.ClientError.Schema.ConstraintValidationFailed', 'message': "Node(1007) already exists with label `File` and property `path` = 'test_file1.py'"}
+2025-08-07 15:07:58,495 - neo4j.io - DEBUG - [#B9B8]  C: RESET
+2025-08-07 15:07:58,495 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> client state: STREAMING > READY
+2025-08-07 15:07:58,495 - neo4j.io - DEBUG - [#B9B8]  S: IGNORED
+2025-08-07 15:07:58,495 - neo4j.io - DEBUG - [#B9B8]  S: SUCCESS {}
+2025-08-07 15:07:58,495 - neo4j.io - DEBUG - [#B9B8]  _: <CONNECTION> server state: FAILED > READY
+2025-08-07 15:07:58,495 - neo4j.pool - DEBUG - [#B9B8]  _: <POOL> released bolt-1763
+2025-08-07 15:07:58,495 - __main__ - ERROR - ❌ Validation failed with exception: {code: Neo.ClientError.Schema.ConstraintValidationFailed} {message: Node(1007) already exists with label `File` and property `path` = 'test_file1.py'}
+2025-08-07 15:07:58,496 - neo4j.pool - DEBUG - [#0000]  _: <POOL> close
+2025-08-07 15:07:58,496 - neo4j.io - DEBUG - [#B9B8]  C: GOODBYE
+2025-08-07 15:07:58,496 - neo4j.io - DEBUG - [#B9B8]  C: <CLOSE>
+2025-08-07 15:08:16,915 - asyncio - DEBUG - Using selector: EpollSelector
+2025-08-07 15:08:16,915 - neo4j.pool - DEBUG - [#0000]  _: <POOL> created, direct address IPv4Address(('localhost', 7687))
+2025-08-07 15:08:16,916 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:16,916 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:08:16,916 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:16,916 - neo4j.pool - DEBUG - [#0000]  _: <POOL> trying to hand out new connection
+2025-08-07 15:08:16,916 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> in: localhost:7687
+2025-08-07 15:08:16,917 - neo4j.io - DEBUG - [#0000]  _: <RESOLVE> dns resolver out: 127.0.0.1:7687
+2025-08-07 15:08:16,917 - neo4j.io - DEBUG - [#0000]  C: <OPEN> 127.0.0.1:7687
+2025-08-07 15:08:16,918 - neo4j.io - DEBUG - [#C540]  C: <MAGIC> 0x6060B017
+2025-08-07 15:08:16,918 - neo4j.io - DEBUG - [#C540]  C: <HANDSHAKE> 0x000001FF 0x00080805 0x00020404 0x00000003
+2025-08-07 15:08:16,919 - neo4j.io - DEBUG - [#C540]  S: <HANDSHAKE> 0x00000605
+2025-08-07 15:08:16,919 - neo4j.io - DEBUG - [#C540]  C: HELLO {'user_agent': 'neo4j-python/5.28.1 Python/3.12.3-final-0 (linux)', 'bolt_agent': {'product': 'neo4j-python/5.28.1', 'platform': 'Linux 5.15.167.4-microsoft-standard-WSL2; x86_64', 'language': 'Python/3.12.3-final-0', 'language_details': 'CPython; 3.12.3-final-0 (main, Jun 18 2025 17:59:45) [GCC 13.3.0]'}}
+2025-08-07 15:08:16,920 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> client state: CONNECTED > AUTHENTICATION
+2025-08-07 15:08:16,920 - neo4j.io - DEBUG - [#C540]  C: LOGON {'scheme': 'basic', 'principal': 'neo4j', 'credentials': '*******'}
+2025-08-07 15:08:16,920 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> client state: AUTHENTICATION > READY
+2025-08-07 15:08:16,921 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'server': 'Neo4j/5.25.1', 'connection_id': 'bolt-1768', 'hints': {'connection.recv_timeout_seconds': 120}}
+2025-08-07 15:08:16,922 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: CONNECTED > AUTHENTICATION
+2025-08-07 15:08:16,922 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {}
+2025-08-07 15:08:16,922 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: AUTHENTICATION > READY
+2025-08-07 15:08:16,922 - neo4j.io - DEBUG - [#C540]  C: RUN 'RETURN 1 as test' {} {}
+2025-08-07 15:08:16,923 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> client state: READY > STREAMING
+2025-08-07 15:08:16,923 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:16,924 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 1, 'fields': ['test']}
+2025-08-07 15:08:16,924 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:16,926 - neo4j.io - DEBUG - [#C540]  S: RECORD * 1
+2025-08-07 15:08:16,926 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr0kA==', 'statuses': [{'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:16,927 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:16,927 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:16,927 - __main__ - INFO - ✅ Neo4j connection established successfully
+2025-08-07 15:08:16,927 - __main__ - INFO - 📝 Creating test data for validation...
+2025-08-07 15:08:16,927 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:16,927 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:08:16,928 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:16,928 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:16,928 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:16,928 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:16,928 - neo4j.io - DEBUG - [#C540]  C: RUN "\n                MATCH (n) WHERE n.path STARTS WITH 'test_file' OR (n:Repository AND n.name STARTS WITH 'test_repo_')\n                DETACH DELETE n\n            " {} {}
+2025-08-07 15:08:16,928 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:16,963 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 34, 'fields': []}
+2025-08-07 15:08:16,963 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:16,964 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr0kA==', 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:16,964 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:16,964 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:16,964 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:16,964 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:16,964 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:16,964 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:16,964 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:16,964 - neo4j.io - DEBUG - [#C540]  C: RUN "\n                CREATE (r1:Repository {name: 'test_repo_valid_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f1:File {path: 'test_file1.py', module_name: 'test_file1', line_count: 100})\n                CREATE (f2:File {path: 'test_file2.py', module_name: 'test_file2', line_count: 200})  \n                CREATE (f3:File {path: 'test_file3.py', module_name: 'test_file3', line_count: 50})\n                CREATE (r1)-[:CONTAINS]->(f1)\n                CREATE (r1)-[:CONTAINS]->(f2)\n                CREATE (r1)-[:CONTAINS]->(f3)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr0kA==']}
+2025-08-07 15:08:16,964 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:16,966 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 1, 'fields': []}
+2025-08-07 15:08:16,967 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:16,970 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr1kA==', 'stats': {'contains-updates': True, 'labels-added': 4, 'relationships-created': 3, 'nodes-created': 4, 'properties-set': 12}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:16,970 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:16,970 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:16,970 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:16,970 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:16,971 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:16,971 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:16,971 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:16,971 - neo4j.io - DEBUG - [#C540]  C: RUN "\n                CREATE (r2:Repository {name: 'test_repo_null_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f4:File {path: 'test_file4.py', module_name: 'test_file4'})\n                CREATE (f5:File {path: 'test_file5.py', module_name: 'test_file5'})\n                CREATE (r2)-[:CONTAINS]->(f4)\n                CREATE (r2)-[:CONTAINS]->(f5)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr1kA==']}
+2025-08-07 15:08:16,971 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:16,973 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 1, 'fields': []}
+2025-08-07 15:08:16,973 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:16,974 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr2kA==', 'stats': {'contains-updates': True, 'labels-added': 3, 'relationships-created': 2, 'nodes-created': 3, 'properties-set': 7}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:16,974 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:16,974 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:16,974 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:16,974 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:16,975 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:16,975 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:16,975 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:16,975 - neo4j.io - DEBUG - [#C540]  C: RUN "\n                CREATE (r3:Repository {name: 'test_repo_mixed_lines', remote_url: 'test.com', current_branch: 'main'})\n                CREATE (f6:File {path: 'test_file6.py', module_name: 'test_file6', line_count: 75})\n                CREATE (f7:File {path: 'test_file7.py', module_name: 'test_file7'})\n                CREATE (f8:File {path: 'test_file8.py', module_name: 'test_file8', line_count: 125})\n                CREATE (r3)-[:CONTAINS]->(f6)\n                CREATE (r3)-[:CONTAINS]->(f7) \n                CREATE (r3)-[:CONTAINS]->(f8)\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr2kA==']}
+2025-08-07 15:08:16,975 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:16,976 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 1, 'fields': []}
+2025-08-07 15:08:16,976 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:16,978 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr3kA==', 'stats': {'contains-updates': True, 'labels-added': 4, 'relationships-created': 3, 'nodes-created': 4, 'properties-set': 11}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:16,978 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:16,978 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:16,978 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:16,978 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:16,978 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:16,978 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:16,978 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:16,978 - neo4j.io - DEBUG - [#C540]  C: RUN "\n                CREATE (r4:Repository {name: 'test_repo_empty', remote_url: 'test.com', current_branch: 'main'})\n            " {} {'bookmarks': ['FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr3kA==']}
+2025-08-07 15:08:16,980 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:16,981 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 1, 'fields': []}
+2025-08-07 15:08:16,981 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:16,981 - __main__ - INFO - ✅ Test data created successfully
+2025-08-07 15:08:16,984 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr4kA==', 'stats': {'contains-updates': True, 'labels-added': 1, 'nodes-created': 1, 'properties-set': 3}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:16,984 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:16,984 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:16,984 - __main__ - INFO - 🚀 Starting Neo4j query fix validation tests...
+2025-08-07 15:08:16,984 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_valid_lines
+2025-08-07 15:08:16,984 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:16,984 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:08:16,984 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:16,984 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:16,985 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:16,985 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:16,985 - neo4j.io - DEBUG - [#C540]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL AND file.line_count IS NOT NULL] | total + f.line_count) as total_lines\n        ' {'repo_name': 'test_repo_valid_lines'} {}
+2025-08-07 15:08:16,985 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:17,061 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 75, 'fields': ['file_count', 'class_count', 'method_count', 'function_count', 'total_lines']}
+2025-08-07 15:08:17,061 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:17,062 - neo4j.io - DEBUG - [#C540]  S: RECORD * 1
+2025-08-07 15:08:17,062 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr4kA==', 'statuses': [{'gql_status': '01G11', 'neo4j_code': 'Neo.ClientNotification.Statement.AggregationSkippedNull', 'status_description': 'warn: null value eliminated in set function', 'diagnostic_record': {'_classification': 'UNRECOGNIZED', '_severity': 'WARNING'}, 'description': 'null value eliminated in set function.', 'title': 'The query contains an aggregation function that skips null values.'}, {'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:17,062 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:17,062 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:17,062 - neo4j.notifications - WARNING - Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.AggregationSkippedNull} {category: UNRECOGNIZED} {title: The query contains an aggregation function that skips null values.} {description: null value eliminated in set function.} {position: None} for query: '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL AND file.line_count IS NOT NULL] | total + f.line_count) as total_lines\n        '
+2025-08-07 15:08:17,062 - __main__ - INFO - ✅ Query executed successfully: {'repo_name': 'test_repo_valid_lines', 'file_count': 3, 'total_lines': 350, 'execution_time_ms': 77.93, 'status': 'SUCCESS', 'expected_lines': 350, 'lines_match': True}
+2025-08-07 15:08:17,062 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_null_lines
+2025-08-07 15:08:17,062 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:17,062 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:08:17,062 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:17,063 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:17,063 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:17,063 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:17,063 - neo4j.io - DEBUG - [#C540]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL AND file.line_count IS NOT NULL] | total + f.line_count) as total_lines\n        ' {'repo_name': 'test_repo_null_lines'} {}
+2025-08-07 15:08:17,063 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:17,064 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 0, 'fields': ['file_count', 'class_count', 'method_count', 'function_count', 'total_lines']}
+2025-08-07 15:08:17,064 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:17,064 - neo4j.io - DEBUG - [#C540]  S: RECORD * 1
+2025-08-07 15:08:17,065 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr4kA==', 'statuses': [{'gql_status': '01G11', 'neo4j_code': 'Neo.ClientNotification.Statement.AggregationSkippedNull', 'status_description': 'warn: null value eliminated in set function', 'diagnostic_record': {'_classification': 'UNRECOGNIZED', '_severity': 'WARNING'}, 'description': 'null value eliminated in set function.', 'title': 'The query contains an aggregation function that skips null values.'}, {'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:17,065 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:17,065 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:17,065 - neo4j.notifications - WARNING - Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.AggregationSkippedNull} {category: UNRECOGNIZED} {title: The query contains an aggregation function that skips null values.} {description: null value eliminated in set function.} {position: None} for query: '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL AND file.line_count IS NOT NULL] | total + f.line_count) as total_lines\n        '
+2025-08-07 15:08:17,065 - __main__ - INFO - ✅ Query executed successfully: {'repo_name': 'test_repo_null_lines', 'file_count': 2, 'total_lines': 0, 'execution_time_ms': 3.07, 'status': 'SUCCESS', 'expected_lines': 0, 'lines_match': True}
+2025-08-07 15:08:17,066 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_mixed_lines
+2025-08-07 15:08:17,066 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:17,066 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:08:17,066 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:17,066 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:17,066 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:17,067 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:17,067 - neo4j.io - DEBUG - [#C540]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL AND file.line_count IS NOT NULL] | total + f.line_count) as total_lines\n        ' {'repo_name': 'test_repo_mixed_lines'} {}
+2025-08-07 15:08:17,067 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:17,068 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 0, 'fields': ['file_count', 'class_count', 'method_count', 'function_count', 'total_lines']}
+2025-08-07 15:08:17,068 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:17,069 - neo4j.io - DEBUG - [#C540]  S: RECORD * 1
+2025-08-07 15:08:17,069 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr4kA==', 'statuses': [{'gql_status': '01G11', 'neo4j_code': 'Neo.ClientNotification.Statement.AggregationSkippedNull', 'status_description': 'warn: null value eliminated in set function', 'diagnostic_record': {'_classification': 'UNRECOGNIZED', '_severity': 'WARNING'}, 'description': 'null value eliminated in set function.', 'title': 'The query contains an aggregation function that skips null values.'}, {'gql_status': '00000', 'status_description': 'note: successful completion'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:17,069 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:17,069 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:17,069 - neo4j.notifications - WARNING - Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.AggregationSkippedNull} {category: UNRECOGNIZED} {title: The query contains an aggregation function that skips null values.} {description: null value eliminated in set function.} {position: None} for query: '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL AND file.line_count IS NOT NULL] | total + f.line_count) as total_lines\n        '
+2025-08-07 15:08:17,069 - __main__ - INFO - ✅ Query executed successfully: {'repo_name': 'test_repo_mixed_lines', 'file_count': 3, 'total_lines': 200, 'execution_time_ms': 3.39, 'status': 'SUCCESS', 'expected_lines': 200, 'lines_match': True}
+2025-08-07 15:08:17,069 - __main__ - INFO - 🔍 Testing fixed query for repository: test_repo_empty
+2025-08-07 15:08:17,069 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:17,069 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:08:17,069 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:17,069 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:17,070 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:17,070 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:17,070 - neo4j.io - DEBUG - [#C540]  C: RUN '\n        MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)\n        OPTIONAL MATCH (f)-[:DEFINES]->(c:Class)\n        OPTIONAL MATCH (c)-[:HAS_METHOD]->(m:Method)\n        OPTIONAL MATCH (f)-[:DEFINES]->(func:Function)\n        WITH r,\n             COLLECT(DISTINCT f) as files,\n             COLLECT(DISTINCT c) as classes,\n             COLLECT(DISTINCT m) as methods,\n             COLLECT(DISTINCT func) as functions\n        RETURN \n            SIZE([f IN files WHERE f IS NOT NULL]) as file_count,\n            SIZE([c IN classes WHERE c IS NOT NULL]) as class_count,\n            SIZE([m IN methods WHERE m IS NOT NULL]) as method_count,\n            SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,\n            REDUCE(total = 0, f IN [file IN files WHERE file IS NOT NULL AND file.line_count IS NOT NULL] | total + f.line_count) as total_lines\n        ' {'repo_name': 'test_repo_empty'} {}
+2025-08-07 15:08:17,070 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:17,071 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 0, 'fields': ['file_count', 'class_count', 'method_count', 'function_count', 'total_lines']}
+2025-08-07 15:08:17,071 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:17,071 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr4kA==', 'statuses': [{'gql_status': '02000', 'status_description': 'note: no data'}], 'type': 'r', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:17,071 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:17,071 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:17,071 - __main__ - INFO - 🔍 Checking for Neo4j aggregation warnings...
+2025-08-07 15:08:17,173 - __main__ - INFO - ✅ No aggregation warnings detected in logs
+2025-08-07 15:08:17,173 - __main__ - INFO - 🔍 Validating JSON structure returned by get_repository_metadata_from_neo4j...
+2025-08-07 15:08:17,173 - __main__ - INFO - ✅ JSON structure validation passed
+2025-08-07 15:08:17,173 - __main__ - INFO - 
+============================================================
+2025-08-07 15:08:17,173 - __main__ - INFO - NEO4J QUERY FIX VALIDATION REPORT
+2025-08-07 15:08:17,173 - __main__ - INFO - ============================================================
+2025-08-07 15:08:17,173 - __main__ - INFO - Test DateTime: 2025-08-07T15:08:16.915128
+2025-08-07 15:08:17,173 - __main__ - INFO - Overall Status: ❌ FAILED
+2025-08-07 15:08:17,173 - __main__ - INFO - Tests Passed: 3/4
+2025-08-07 15:08:17,173 - __main__ - INFO - Warnings Detected: 0
+2025-08-07 15:08:17,174 - __main__ - INFO - Avg Execution Time: 21.61ms
+2025-08-07 15:08:17,174 - __main__ - INFO - Detailed Report: /home/krashnicov/crawl4aimcp/neo4j_query_fix_validation_report.json
+2025-08-07 15:08:17,174 - __main__ - INFO - ============================================================
+2025-08-07 15:08:17,174 - __main__ - INFO - 🧹 Cleaning up test data...
+2025-08-07 15:08:17,174 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> routing towards fixed database: None
+2025-08-07 15:08:17,174 - neo4j - DEBUG - [#0000]  _: <WORKSPACE> pinning database: None
+2025-08-07 15:08:17,174 - neo4j.pool - DEBUG - [#0000]  _: <POOL> acquire direct connection, access_mode='WRITE', database=AcquisitionDatabase(name=None, guessed=False)
+2025-08-07 15:08:17,174 - neo4j.pool - DEBUG - [#C540]  _: <POOL> picked existing connection bolt-1768
+2025-08-07 15:08:17,174 - neo4j.pool - DEBUG - [#C540]  _: <POOL> checked re_auth auth=None updated=False force=False
+2025-08-07 15:08:17,174 - neo4j.pool - DEBUG - [#C540]  _: <POOL> handing out existing connection
+2025-08-07 15:08:17,174 - neo4j.io - DEBUG - [#C540]  C: RUN "\n                    MATCH (r:Repository) \n                    WHERE r.name STARTS WITH 'test_repo_'\n                    DETACH DELETE r\n                " {} {}
+2025-08-07 15:08:17,174 - neo4j.io - DEBUG - [#C540]  C: PULL {'n': 1000}
+2025-08-07 15:08:17,176 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'t_first': 1, 'fields': []}
+2025-08-07 15:08:17,176 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: READY > STREAMING
+2025-08-07 15:08:17,178 - neo4j.io - DEBUG - [#C540]  S: SUCCESS {'bookmark': 'FB:kcwQSIFfuxWlQKOJnCSjRpymhsoAARr5kA==', 'stats': {'contains-updates': True, 'nodes-deleted': 4, 'relationships-deleted': 8}, 'statuses': [{'gql_status': '00001', 'status_description': 'note: successful completion - omitted result'}], 'type': 'w', 't_last': 0, 'db': 'neo4j'}
+2025-08-07 15:08:17,178 - neo4j.io - DEBUG - [#C540]  _: <CONNECTION> server state: STREAMING > READY
+2025-08-07 15:08:17,178 - neo4j.pool - DEBUG - [#C540]  _: <POOL> released bolt-1768
+2025-08-07 15:08:17,178 - __main__ - INFO - ✅ Test data cleaned up successfully
+2025-08-07 15:08:17,178 - neo4j.pool - DEBUG - [#0000]  _: <POOL> close
+2025-08-07 15:08:17,178 - neo4j.io - DEBUG - [#C540]  C: GOODBYE
+2025-08-07 15:08:17,178 - neo4j.io - DEBUG - [#C540]  C: <CLOSE>

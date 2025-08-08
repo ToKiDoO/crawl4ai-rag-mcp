@@ -1,0 +1,178 @@
+{
+  // Python Configuration
+  "python.defaultInterpreterPath": "./venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.envFile": "${workspaceFolder}/.env",
+
+  // Use UV for Python execution
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["tests", "-v", "--tb=short"],
+  "python.testing.cwd": "${workspaceFolder}",
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+
+  // Ruff Configuration (Linting and Formatting)
+  "ruff.enable": true,
+  "ruff.lint.enable": true,
+  "ruff.format.enable": true,
+  "ruff.lint.args": ["--config", "pyproject.toml"],
+  "ruff.format.args": ["--config", "pyproject.toml"],
+
+  // Editor Settings
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    },
+    "editor.rulers": [88],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+
+  // JSON/YAML Configuration
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+
+  // Markdown Configuration
+  "[markdown]": {
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": false,
+      "strings": false,
+      "other": false
+    }
+  },
+
+  // Docker Configuration
+  "docker.defaultRegistry": "",
+  "docker.commands.build": "${containerCommand} build .",
+  "docker.commands.compose": "docker compose",
+
+  // File Associations
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.yaml": "yaml",
+    ".env*": "dotenv",
+    "Dockerfile*": "dockerfile",
+    "docker-compose*.yml": "yaml"
+  },
+
+  // Exclude patterns for better performance
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/htmlcov": true,
+    "**/.coverage": true,
+    "**/coverage.xml": true,
+    "**/.ruff_cache": true,
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true
+  },
+
+  // Search Configuration
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/htmlcov": true,
+    "**/.ruff_cache": true,
+    "**/logs": true,
+    "**/data": true
+  },
+
+  // Workspace Settings
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "vs-seti",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.cwd": "${workspaceFolder}",
+
+  // IntelliSense and Code Analysis
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.extraPaths": ["./src"],
+
+  // Git Configuration
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  "git.showProgress": false,
+
+  // Coverage Gutters (if extension installed)
+  "coverage-gutters.coverageFileNames": [
+    "coverage.xml",
+    "coverage.json",
+    "lcov.info"
+  ],
+  "coverage-gutters.showLineCoverage": true,
+  "coverage-gutters.showRulerCoverage": true,
+
+  // Error Lens (if extension installed)
+  "errorLens.enabledDiagnosticLevels": ["error", "warning", "info"],
+
+  // Auto-save and file watching
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true,
+    "**/__pycache__/**": true,
+    "**/.pytest_cache/**": true,
+    "**/htmlcov/**": true
+  },
+
+  // Task Configuration
+  "task.autoDetect": "on",
+  "task.showDecorations": true,
+
+  // Debugging
+  "debug.console.acceptSuggestionOnEnter": "off",
+  "debug.inlineValues": "on",
+  "debug.showBreakpointsInOverviewRuler": true,
+
+  // Extension specific settings
+  "python.linting.enabled": false, // Disabled in favor of Ruff
+  "python.formatting.provider": "none", // Use Ruff instead
+  "pylint.enabled": false,
+  "flake8.enabled": false,
+  "autopep8.enabled": false,
+  "yapf.enabled": false,
+  "black-formatter.enabled": false,
+
+  // Intellisense optimizations
+  "python.defaultInterpreterPath": "uv",
+  "python.terminal.executeInFileDir": true,
+
+  // Environment Variables
+  "python.experiments.enabled": false,
+  "python.experiments.optInto": [],
+
+  // MCP Specific Settings
+  "files.associations": {
+    "mcp-client-config.json": "jsonc"
+  },
+  "cursorpyright.analysis.autoImportCompletions": true,
+  "cursorpyright.analysis.autoSearchPaths": true,
+  "cursorpyright.analysis.diagnosticMode": "workspace",
+  "cursorpyright.analysis.extraPaths": ["./src"],
+  "cursorpyright.analysis.typeCheckingMode": "basic"
+}

@@ -1,9 +1,11 @@
 # Mock Simplification Summary
 
 ## Overview
+
 This document summarizes the mock simplification work done to reduce test complexity and improve maintainability.
 
 ## Problem
+
 - Initial mock complexity score: 23
 - Complex mock chains with 3-5 levels of nesting
 - Hard to understand and maintain tests
@@ -12,6 +14,7 @@ This document summarizes the mock simplification work done to reduce test comple
 ## Solution Implemented
 
 ### 1. Created Test Doubles (tests/test_doubles.py)
+
 - **FakeQdrantClient**: Simulates Qdrant vector database operations
 - **FakeSupabaseClient**: Simulates Supabase database operations with fluent API
 - **FakeEmbeddingService**: Simulates OpenAI embedding generation
@@ -20,20 +23,23 @@ This document summarizes the mock simplification work done to reduce test comple
 - **FakeCrossEncoder**: Simulates reranking operations
 
 ### 2. Created Simplified Test Versions
+
 - `test_supabase_adapter_simplified.py`: Replaces complex Supabase mocks with FakeSupabaseClient
 - `test_network_errors_simplified.py`: Uses NetworkErrorCrawler instead of complex mock chains
 - `test_integration_simplified.py`: Uses all test doubles for clean integration testing
 
 ### 3. Benefits of Test Doubles
 
-#### Before (Complex Mocks):
+#### Before (Complex Mocks)
+
 ```python
 # Hard to understand and maintain
 mock_supabase_client.rpc.return_value.execute.return_value = MagicMock(data=results)
 mock.update.return_value.eq.return_value.execute.return_value = MagicMock(data=[])
 ```
 
-#### After (Test Doubles):
+#### After (Test Doubles)
+
 ```python
 # Clear and simple
 fake_client = FakeSupabaseClient()
@@ -63,7 +69,7 @@ To fully benefit from these simplifications:
 1. Update remaining test files to use test doubles:
    - `test_searxng_integration.py`
    - `test_mcp_qdrant_integration.py`
-   - `test_utils_refactored.py`
+   - `test_utils.py`
 
 2. Create additional test doubles as needed:
    - FakeSearXNG for search integration

@@ -1,0 +1,209 @@
+{
+  "MCP Tool Template": {
+    "prefix": "mcptool",
+    "body": [
+      "@mcp.tool()",
+      "async def ${1:tool_name}(${2:param}: ${3:str}) -> ${4:str}:",
+      "    \"\"\"${5:Tool description}\"\"\"",
+      "    logger.info(f\"Executing ${1:tool_name} with {${2:param}=}\")",
+      "    ",
+      "    try:",
+      "        ${6:# Implementation}",
+      "        ${7:result = \"Success\"}",
+      "        ",
+      "        logger.info(f\"${1:tool_name} completed successfully\")",
+      "        return ${7:result}",
+      "    except Exception as e:",
+      "        logger.error(f\"Error in ${1:tool_name}: {e}\", exc_info=True)",
+      "        raise MCPToolError(f\"${1:tool_name} failed: {e}\")"
+    ],
+    "description": "Create a new MCP tool with error handling and logging"
+  },
+  
+  "Async Test Function": {
+    "prefix": "asynctest",
+    "body": [
+      "@pytest.mark.${1:unit}",
+      "async def test_${2:function_name}():",
+      "    \"\"\"Test ${3:description}\"\"\"",
+      "    # Arrange",
+      "    ${4:# Setup test data}",
+      "    ",
+      "    # Act", 
+      "    ${5:result = await some_function()}",
+      "    ",
+      "    # Assert",
+      "    assert ${6:result is not None}",
+      "    ${7:# Additional assertions}"
+    ],
+    "description": "Create an async test function with AAA pattern"
+  },
+  
+  "Mock Async Function": {
+    "prefix": "mockasync",
+    "body": [
+      "with patch('${1:module.function}') as mock_${2:function}:",
+      "    mock_${2:function}.return_value = ${3:expected_result}",
+      "    ${4:# Test code}",
+      "    mock_${2:function}.assert_called_once_with(${5:expected_args})"
+    ],
+    "description": "Mock an async function call"
+  },
+  
+  "Database Operation Template": {
+    "prefix": "dbop",
+    "body": [
+      "async def ${1:operation_name}(${2:params}) -> ${3:ReturnType}:",
+      "    \"\"\"${4:Database operation description}\"\"\"",
+      "    try:",
+      "        async with get_database_client() as client:",
+      "            ${5:# Database operation}",
+      "            ${6:result = await client.query(...)}",
+      "            ",
+      "            logger.info(f\"${1:operation_name} completed successfully\")",
+      "            return ${6:result}",
+      "    except Exception as e:",
+      "        logger.error(f\"Database error in ${1:operation_name}: {e}\")",
+      "        raise DatabaseError(f\"${1:operation_name} failed: {e}\")"
+    ],
+    "description": "Database operation with error handling"
+  },
+  
+  "Crawl4AI Async Session": {
+    "prefix": "crawlsession",
+    "body": [
+      "async with AsyncWebCrawler() as crawler:",
+      "    result = await crawler.arun(",
+      "        url=\"${1:url}\",",
+      "        ${2:word_count_threshold=10,}",
+      "        ${3:extraction_strategy=LLMExtractionStrategy(...)}",
+      "    )",
+      "    ",
+      "    if result.success:",
+      "        ${4:# Process successful result}",
+      "        ${5:content = result.cleaned_html}",
+      "        return ${5:content}",
+      "    else:",
+      "        raise CrawlError(f\"Failed to crawl {${1:url}}: {result.error_message}\")"
+    ],
+    "description": "Crawl4AI async session template"
+  },
+  
+  "Logger Setup": {
+    "prefix": "logger",
+    "body": [
+      "import logging",
+      "",
+      "logger = logging.getLogger('${1:crawl4ai-mcp}')",
+      "",
+      "# Add structured logging",
+      "logger.info(\"${2:Operation started}\", extra={",
+      "    \"${3:operation}\": \"${4:value}\",",
+      "    \"request_id\": \"${5:request_id}\"",
+      "})"
+    ],
+    "description": "Set up logger with structured logging"
+  },
+  
+  "Environment Variable": {
+    "prefix": "envvar",
+    "body": [
+      "${1:variable_name} = os.getenv('${2:ENV_VAR_NAME}', '${3:default_value}')"
+    ],
+    "description": "Get environment variable with default"
+  },
+  
+  "Pytest Fixture": {
+    "prefix": "fixture",
+    "body": [
+      "@pytest.fixture${1:(scope=\"function\")}",
+      "async def ${2:fixture_name}():",
+      "    \"\"\"${3:Fixture description}\"\"\"",
+      "    ${4:# Setup}",
+      "    ${5:resource = create_resource()}",
+      "    ",
+      "    yield ${5:resource}",
+      "    ",
+      "    ${6:# Cleanup}",
+      "    ${7:await resource.cleanup()}"
+    ],
+    "description": "Create a pytest fixture with setup and teardown"
+  },
+  
+  "Docker Health Check": {
+    "prefix": "healthcheck",
+    "body": [
+      "def check_${1:service}_health() -> bool:",
+      "    \"\"\"Check if ${1:service} is healthy\"\"\"",
+      "    try:",
+      "        ${2:# Health check implementation}",
+      "        ${3:response = requests.get('http://localhost:${4:port}/health', timeout=5)}",
+      "        return ${3:response}.status_code == 200",
+      "    except Exception as e:",
+      "        logger.warning(f\"${1:service} health check failed: {e}\")",
+      "        return False"
+    ],
+    "description": "Service health check function"
+  },
+  
+  "Type Hint Import": {
+    "prefix": "typing",
+    "body": [
+      "from typing import ${1:Optional, List, Dict, Any, Union, Callable, Awaitable}"
+    ],
+    "description": "Import common typing hints"
+  },
+  
+  "Exception Handler": {
+    "prefix": "tryexcept",
+    "body": [
+      "try:",
+      "    ${1:# Operation}",
+      "    ${2:result = await operation()}",
+      "except ${3:SpecificException} as e:",
+      "    logger.error(f\"${4:Operation failed}: {e}\", exc_info=True)",
+      "    ${5:# Handle specific exception}",
+      "except Exception as e:",
+      "    logger.error(f\"Unexpected error: {e}\", exc_info=True)",
+      "    ${6:# Handle general exception}",
+      "    raise"
+    ],
+    "description": "Exception handling with logging"
+  },
+  
+  "Pydantic Model": {
+    "prefix": "pydantic",
+    "body": [
+      "from pydantic import BaseModel, Field, validator",
+      "",
+      "class ${1:ModelName}(BaseModel):",
+      "    \"\"\"${2:Model description}\"\"\"",
+      "    ",
+      "    ${3:field_name}: ${4:str} = Field(..., description=\"${5:Field description}\")",
+      "    ",
+      "    @validator('${3:field_name}')",
+      "    def validate_${3:field_name}(cls, v):",
+      "        ${6:# Validation logic}",
+      "        return v",
+      "    ",
+      "    class Config:",
+      "        ${7:json_encoders = {...}}"
+    ],
+    "description": "Pydantic model with validation"
+  },
+  
+  "Async Context Manager": {
+    "prefix": "asyncwith",
+    "body": [
+      "class ${1:AsyncContextManager}:",
+      "    async def __aenter__(self):",
+      "        ${2:# Setup}",
+      "        return self",
+      "    ",
+      "    async def __aexit__(self, exc_type, exc_val, exc_tb):",
+      "        ${3:# Cleanup}",
+      "        pass"
+    ],
+    "description": "Async context manager template"
+  }
+}

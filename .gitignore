@@ -15,3 +15,12 @@ CLAUDE.md
 # Pre-commit and security scanning
 bandit-report.json
 .secrets.baseline.tmp
+
+# Script analysis directories
+analysis_scripts/user_scripts/*
+analysis_scripts/test_scripts/*
+analysis_scripts/validation_results/*
+# Keep directory structure
+!analysis_scripts/user_scripts/.gitkeep
+!analysis_scripts/test_scripts/.gitkeep
+!analysis_scripts/validation_results/.gitkeep

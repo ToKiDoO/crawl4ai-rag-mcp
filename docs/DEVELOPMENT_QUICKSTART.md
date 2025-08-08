@@ -45,6 +45,7 @@ make dev-bg
 ```
 
 This starts:
+
 - MCP Server with hot-reload
 - SearXNG (privacy-focused search)
 - Valkey (Redis-compatible cache)
@@ -109,6 +110,7 @@ make validate      # Run all checks
 ### Docker Watch Mode
 
 The development environment uses Docker's watch feature:
+
 - Changes to `./src` automatically restart the MCP server
 - Changes to `./pyproject.toml` trigger a rebuild
 - Changes to `./tests` sync without restarting
@@ -154,6 +156,7 @@ crawl4ai-mcp/
 ## Troubleshooting
 
 ### Services won't start
+
 ```bash
 # Check port conflicts
 lsof -i :8051 -i :6333 -i :7474
@@ -164,6 +167,7 @@ make dev
 ```
 
 ### Code changes not reflecting
+
 ```bash
 # Ensure watch is running
 docker compose ps  # Should show "running"
@@ -173,6 +177,7 @@ make dev-restart
 ```
 
 ### Database connection errors
+
 ```bash
 # Test connections
 make db-test

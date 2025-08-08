@@ -1,0 +1,369 @@
+# Production Docker Compose Configuration
+# Optimized for production deployment with security, monitoring, and performance settings
+
+services:
+  # MCP Crawl4AI Server - Production Configuration
+  mcp-crawl4ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: mcp-crawl4ai:prod
+    container_name: mcp-crawl4ai-prod
+    restart: unless-stopped
+    environment:
+      - TRANSPORT=${TRANSPORT:-http}
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${PORT:-8051}
+      - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-8051}:8051"
+    depends_on:
+      searxng:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - crawl4ai-network
+    volumes:
+      - ./data:/app/data:rw
+      - ./logs:/app/logs:rw
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; s = socket.socket(); s.settimeout(1); s.connect(('localhost', ${PORT:-8051})); s.close()\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "10"
+        labels: "service=mcp-crawl4ai,env=prod"
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      - "com.crawl4ai.environment=production"
+      - "com.crawl4ai.version=${VERSION:-latest}"
+
+  # Redis Alternative - Valkey (Production)
+  valkey:
+    container_name: valkey-prod
+    image: docker.io/valkey/valkey:8-alpine
+    command: >
+      valkey-server
+      --requirepass ${VALKEY_PASSWORD:-changeme}
+      --maxmemory ${VALKEY_MAX_MEMORY:-2gb}
+      --maxmemory-policy allkeys-lru
+      --save 60 1
+      --save 300 10
+      --save 900 100
+      --loglevel warning
+      --tcp-backlog 511
+      --timeout 300
+      --tcp-keepalive 300
+    restart: unless-stopped
+    networks:
+      - crawl4ai-network
+    volumes:
+      - valkey-data:/data:rw
+      - ./config/valkey/valkey.conf:/usr/local/etc/valkey/valkey.conf:ro
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "valkey-cli", "--pass", "${VALKEY_PASSWORD:-changeme}", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+        labels: "service=valkey,env=prod"
+    security_opt:
+      - no-new-privileges:true
+
+  # SearXNG Search Engine (Production)
+  searxng:
+    container_name: searxng-prod
+    image: docker.io/searxng/searxng:latest
+    restart: unless-stopped
+    networks:
+      - crawl4ai-network
+    expose:
+      - "8080"
+    volumes:
+      - ./searxng:/etc/searxng:ro
+      - searxng-data:/var/cache/searxng:rw
+    environment:
+      - SEARXNG_BASE_URL=https://${SEARXNG_HOSTNAME:-search.example.com}/
+      - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY}
+      - BIND_ADDRESS=0.0.0.0:8080
+      - SEARXNG_SETTINGS_PATH=/etc/searxng/settings.yml
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "30m"
+        max-file: "5"
+        labels: "service=searxng,env=prod"
+    depends_on:
+      valkey:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
+    security_opt:
+      - no-new-privileges:true
+
+  # Qdrant Vector Database (Production)
+  qdrant:
+    container_name: qdrant-prod
+    image: qdrant/qdrant:v1.11.3
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage:rw
+      - ./config/qdrant:/qdrant/config:ro
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+      - QDRANT__LOG_LEVEL=INFO
+      - QDRANT__STORAGE__PERFORMANCE__INDEXING_THRESHOLD=20000
+      - QDRANT__STORAGE__PERFORMANCE__MEMMAP_THRESHOLD=50000
+      - QDRANT__STORAGE__PERFORMANCE__PAYLOAD_INDEXING_THRESHOLD=20000
+      - QDRANT__STORAGE__PERFORMANCE__WAL_CAPACITY_MB=512
+      - QDRANT__SERVICE__MAX_REQUEST_SIZE_MB=32
+      - QDRANT__SERVICE__ENABLE_TLS=${QDRANT_ENABLE_TLS:-false}
+    networks:
+      - crawl4ai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "/usr/bin/bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6333 && echo -e 'GET /readyz HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q 'HTTP/1.1 200' <&3"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "10"
+        labels: "service=qdrant,env=prod"
+    security_opt:
+      - no-new-privileges:true
+
+  # Neo4j Graph Database (Production)
+  neo4j:
+    container_name: neo4j-prod
+    image: neo4j:5.25-enterprise
+    restart: unless-stopped
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"
+      - "${NEO4J_BOLT_PORT:-7687}:7687"
+    environment:
+      # Authentication
+      - NEO4J_AUTH=${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD}
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      # Memory settings
+      - NEO4J_server_memory_heap_initial__size=${NEO4J_HEAP_INITIAL:-2G}
+      - NEO4J_server_memory_heap_max__size=${NEO4J_HEAP_MAX:-4G}
+      - NEO4J_server_memory_pagecache_size=${NEO4J_PAGECACHE:-2G}
+      # Plugins
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      # Network settings
+      - NEO4J_server_default__listen__address=0.0.0.0
+      - NEO4J_server_bolt_advertised__address=${NEO4J_BOLT_ADDRESS:-localhost:7687}
+      # Security
+      - NEO4J_dbms_ssl_policy_bolt_enabled=${NEO4J_SSL_ENABLED:-false}
+      - NEO4J_dbms_ssl_policy_https_enabled=${NEO4J_SSL_ENABLED:-false}
+      # Performance
+      - NEO4J_db_checkpoint_interval_time=30m
+      - NEO4J_db_checkpoint_interval_tx=100000
+      - NEO4J_db_transaction_concurrent_maximum=64
+    volumes:
+      - neo4j-data:/data:rw
+      - neo4j-logs:/logs:rw
+      - neo4j-plugins:/plugins:rw
+      - neo4j-conf:/conf:rw
+      - ./config/neo4j:/config:ro
+    networks:
+      - crawl4ai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 16G
+        reservations:
+          cpus: '4'
+          memory: 8G
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7474"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+        labels: "service=neo4j,env=prod"
+    security_opt:
+      - no-new-privileges:true
+
+  # Nginx Reverse Proxy (Production Only)
+  nginx:
+    container_name: nginx-prod
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-cache:/var/cache/nginx:rw
+    networks:
+      - crawl4ai-network
+    depends_on:
+      - mcp-crawl4ai
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+        labels: "service=nginx,env=prod"
+    security_opt:
+      - no-new-privileges:true
+
+  # Prometheus Monitoring (Production Only)
+  prometheus:
+    container_name: prometheus-prod
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus:rw
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - crawl4ai-network
+    depends_on:
+      - mcp-crawl4ai
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+        labels: "service=prometheus,env=prod"
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  crawl4ai-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+
+volumes:
+  # Data volumes
+  valkey-data:
+    driver: local
+  searxng-data:
+    driver: local
+  qdrant-data:
+    driver: local
+  neo4j-data:
+    driver: local
+  neo4j-logs:
+    driver: local
+  neo4j-plugins:
+    driver: local
+  neo4j-conf:
+    driver: local
+  
+  # Infrastructure volumes
+  nginx-cache:
+    driver: local
+  prometheus-data:
+    driver: local

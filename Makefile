@@ -26,6 +26,7 @@ help:
 	@echo "  make dev-nobuild     - Start dev environment WITHOUT rebuilding (foreground)"
 	@echo "  make dev-bg-nobuild  - Start dev environment WITHOUT rebuilding (background)"
 	@echo "  make dev-logs        - View development logs (follow mode)"
+	@echo "  make dev-logs-grep   - Check all containers for patterns (last 100 lines)"
 	@echo "  make dev-down        - Stop development environment"
 	@echo "  make dev-restart     - Restart development services"
 	@echo "  make dev-rebuild     - Rebuild and restart development environment"
@@ -98,7 +99,7 @@ help:
 test: test-unit
 
 # Development Environment Commands
-.PHONY: dev dev-bg dev-logs dev-down dev-restart dev-rebuild watch
+.PHONY: dev dev-bg dev-logs dev-logs-grep dev-down dev-restart dev-rebuild watch
 .PHONY: dev-nobuild dev-bg-nobuild
 
 dev: env-check
@@ -124,6 +125,17 @@ dev-bg-nobuild: env-check
 
 dev-logs:
 	$(DOCKER_COMPOSE_DEV) logs -f mcp-crawl4ai
+
+dev-logs-grep:
+	@echo "$(COLOR_GREEN)Checking logs across all containers...$(COLOR_RESET)"
+	@PATTERN="$${PATTERN:-ERROR|WARNING|embedding|success}"; \
+	echo "$(COLOR_YELLOW)Searching for pattern: $$PATTERN$(COLOR_RESET)"; \
+	echo ""; \
+	for container in mcp-crawl4ai-dev valkey-dev searxng-dev qdrant-dev neo4j-dev mailhog-dev; do \
+		echo "$(COLOR_GREEN)=== $$container ===$(COLOR_RESET)"; \
+		docker logs --tail=100 $$container 2>&1 | grep -E "$$PATTERN" || echo "$(COLOR_YELLOW)No matches found$(COLOR_RESET)"; \
+		echo ""; \
+	done
 
 dev-down:
 	@echo "$(COLOR_YELLOW)Stopping development environment...$(COLOR_RESET)"

@@ -7,6 +7,7 @@ This directory contains comprehensive tests for the Crawl4AI MCP server with dat
 **Last Updated**: August 3, 2025
 
 ### Current Metrics
+
 - **Total Tests**: 216
 - **Passing Tests**: 155 (71.8% pass rate)
 - **Test Coverage**: 56.71% (Target: 80%)
@@ -16,17 +17,20 @@ This directory contains comprehensive tests for the Crawl4AI MCP server with dat
 ## Test Structure
 
 ### Unit Tests
-- `test_utils_refactored.py` - Tests for utility functions (24 tests, 94% coverage)
+
+- `test_utils.py` - Tests for utility functions (24 tests, 94% coverage)
 - `test_database_factory.py` - Tests for database factory and adapter creation (9 tests, 100% passing)
 - `test_crawl4ai_mcp.py` - Tests for MCP tool functions (77 comprehensive tests, 53% coverage)
 - `test_mcp_protocol.py` - Protocol compliance tests (16 tests, 100% passing)
 
 ### Adapter Tests
+
 - `test_supabase_adapter.py` - Supabase-specific adapter tests with mocks (14 tests, excluded from metrics)
 - `test_qdrant_adapter.py` - Qdrant-specific adapter tests with mocks (19 tests, 100% passing, 73% coverage)
 - `test_database_interface.py` - Interface contract tests that both adapters must pass (18 tests, 9/9 Qdrant tests passing)
 
 ### Integration Tests
+
 - `test_integration.py` - Full integration tests with real Docker containers (Docker port conflicts)
 - `test_integration_simple.py` - Integration tests with mocked dependencies (5 tests, 100% passing)
 - `test_integration_fixed.py` - Fixed integration tests for Qdrant (5 tests, 40% passing)
@@ -36,6 +40,7 @@ This directory contains comprehensive tests for the Crawl4AI MCP server with dat
 ## Running Tests
 
 ### Quick Start
+
 ```bash
 # Run all unit tests (excluding integration)
 uv run pytest tests/ -v -m "not integration"
@@ -44,13 +49,14 @@ uv run pytest tests/ -v -m "not integration"
 uv run pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=html
 
 # Run specific test file
-uv run pytest tests/test_utils_refactored.py -v
+uv run pytest tests/test_utils.py -v
 
 # Run only Qdrant tests
 uv run pytest tests/test_qdrant_adapter.py tests/test_database_interface.py -v
 ```
 
 ### Using Test Scripts
+
 ```bash
 # Run unit tests with coverage reporting
 ./scripts/run_tests_with_coverage.sh
@@ -62,24 +68,28 @@ uv run pytest tests/test_qdrant_adapter.py tests/test_database_interface.py -v
 ## Test Coverage
 
 ### Current Coverage Status
+
 - **Overall**: 56.71% (Target: 80%)
 - **qdrant_adapter.py**: 73% ✅
-- **utils_refactored.py**: 94% ✅
+- **utils.py**: 94% ✅
 - **crawl4ai_mcp.py**: 53% ✅
 - **database/base.py**: 100% ✅
 - **database/factory.py**: 35% ⚠️
 
 ### Coverage Targets
+
 - Overall: >80%
 - Critical paths: >90% (Achieved for Qdrant)
 - Error handling: >70%
 
 ### Coverage Reports
+
 - Terminal: Shown after test runs
 - HTML: Generated in `htmlcov/index.html`
 - XML: Generated as `coverage.xml` for CI/CD
 
 ### Viewing HTML Coverage
+
 ```bash
 # After running tests with coverage
 open htmlcov/index.html  # macOS
@@ -90,6 +100,7 @@ start htmlcov/index.html  # Windows
 ## Writing Tests
 
 ### Test Guidelines
+
 1. Use descriptive test names that explain what is being tested
 2. Follow the Arrange-Act-Assert pattern
 3. Mock external dependencies (databases, APIs)
@@ -100,6 +111,7 @@ start htmlcov/index.html  # Windows
 8. Mock OpenAI API responses with proper embedding dimensions
 
 ### Example Test Structure
+
 ```python
 @pytest.mark.asyncio
 async def test_feature_success_case(self, mock_dependency):
@@ -119,6 +131,7 @@ async def test_feature_success_case(self, mock_dependency):
 ## Test Fixtures
 
 Common fixtures are defined in `conftest.py`:
+
 - `get_adapter()` - Factory for creating database adapters
 - `mock_openai_embeddings()` - Mock OpenAI API responses (1536 dimensions)
 - `event_loop` - Async event loop for tests
@@ -129,6 +142,7 @@ Common fixtures are defined in `conftest.py`:
 ## Continuous Integration
 
 Tests run automatically on:
+
 - Push to main/develop branches
 - Pull requests
 - Manual workflow dispatch
@@ -138,6 +152,7 @@ See `.github/workflows/test-coverage.yml` for CI configuration.
 ## Recent Improvements (August 2025)
 
 ### Major Fixes
+
 1. **Qdrant Adapter**: Fixed all test failures (19/19 passing)
    - Vector dimensions updated to 1536
    - Missing methods implemented
@@ -168,6 +183,7 @@ See `.github/workflows/test-coverage.yml` for CI configuration.
 8. **Parameter mismatches**: Check `filter_metadata` vs `metadata_filter` naming
 
 ### Debug Mode
+
 ```bash
 # Run with verbose output and show print statements
 pytest tests/ -v -s
@@ -196,6 +212,7 @@ To achieve the remaining 23.29% coverage needed:
    - Cover all adapter initialization paths
 
 ### Key Areas Needing Tests
+
 - Error handling in MCP tools
 - Edge cases for batch operations
 - Environment-specific configurations

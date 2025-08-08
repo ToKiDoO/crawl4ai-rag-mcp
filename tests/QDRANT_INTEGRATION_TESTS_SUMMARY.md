@@ -9,9 +9,11 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 ## Test Files Created
 
 ### 1. `test_qdrant_integration_comprehensive.py`
+
 **Primary comprehensive integration tests covering core functionality**
 
 **Key Features:**
+
 - Environment detection (Docker vs localhost)
 - Real Qdrant connection testing
 - Complete crawl workflow testing
@@ -23,6 +25,7 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 - Code examples storage and retrieval
 
 **Test Coverage:**
+
 - ✅ Qdrant connection and initialization
 - ✅ Factory pattern database creation
 - ✅ Single document storage and search
@@ -38,9 +41,11 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 - ✅ Large content handling
 
 ### 2. `test_qdrant_error_handling.py`
+
 **Focused error handling and recovery scenarios**
 
 **Key Features:**
+
 - Connection timeout handling
 - Network interruption simulation
 - Malformed data handling
@@ -50,6 +55,7 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 - Resource cleanup verification
 
 **Test Coverage:**
+
 - ✅ Connection timeouts and refusals
 - ✅ Collection creation failures
 - ✅ Upsert operation failures
@@ -67,9 +73,11 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 - ✅ Resource cleanup on failures
 
 ### 3. `test_qdrant_mcp_tools_integration.py`
+
 **MCP tools integration testing with Qdrant backend**
 
 **Key Features:**
+
 - End-to-end MCP tool testing
 - Real tool invocation with Qdrant storage
 - Mock context management
@@ -78,6 +86,7 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 - Performance testing with larger datasets
 
 **Test Coverage:**
+
 - ✅ `search_crawled_pages` tool with Qdrant
 - ✅ `get_available_sources` tool functionality
 - ✅ `search_code_examples` tool integration
@@ -89,9 +98,11 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 - ✅ Qdrant-specific filtering features
 
 ### 4. `test_qdrant_config.py`
+
 **Configuration and environment management utilities**
 
 **Key Features:**
+
 - Automatic environment detection
 - Health checking with retries
 - Environment variable setup
@@ -99,6 +110,7 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 - Skip conditions for unavailable Qdrant
 
 **Functionality:**
+
 - ✅ Docker vs localhost detection
 - ✅ Qdrant health checking with retries
 - ✅ Automatic URL configuration
@@ -107,9 +119,11 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 - ✅ Skip conditions for missing Qdrant
 
 ### 5. `run_qdrant_tests.py`
+
 **Comprehensive test runner with environment setup**
 
 **Key Features:**
+
 - Dependency checking
 - Automatic Qdrant Docker setup
 - Environment detection and configuration
@@ -117,6 +131,7 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 - Command-line argument support
 
 **Capabilities:**
+
 - ✅ Dependency validation
 - ✅ Docker container management
 - ✅ Environment-specific configuration
@@ -127,16 +142,19 @@ The test suite provides comprehensive coverage of Qdrant database integration wi
 ## Environment Handling
 
 ### Docker Environment
+
 - **Detection**: Checks for `/.dockerenv`, `DOCKER_ENV` variable, or Qdrant availability at `qdrant:6333`
 - **URL**: `http://qdrant:6333`
 - **Usage**: Ideal for CI/CD pipelines and containerized development
 
 ### Localhost Environment  
+
 - **Detection**: Default when Docker indicators are absent
 - **URL**: `http://localhost:6333`
 - **Usage**: Local development with standalone Qdrant instance
 
 ### Environment Variables Set
+
 ```bash
 VECTOR_DATABASE=qdrant
 QDRANT_URL=http://localhost:6333  # or http://qdrant:6333
@@ -151,6 +169,7 @@ USE_AGENTIC_RAG=false
 ## Running the Tests
 
 ### Option 1: Using the Test Runner (Recommended)
+
 ```bash
 # Check dependencies and setup
 python tests/run_qdrant_tests.py --check-deps
@@ -166,6 +185,7 @@ python tests/run_qdrant_tests.py --setup-docker --cleanup-docker
 ```
 
 ### Option 2: Direct pytest Execution
+
 ```bash
 # Set environment (if needed)
 export VECTOR_DATABASE=qdrant
@@ -182,6 +202,7 @@ pytest tests/test_qdrant_*.py -v --asyncio-mode=auto
 ```
 
 ### Option 3: Docker Compose Environment
+
 ```bash
 # Start services
 docker-compose up -d qdrant
@@ -215,18 +236,21 @@ The tests include performance assertions:
 ## Error Scenarios Covered
 
 ### Connection Issues
+
 - Qdrant server unavailable
 - Connection timeouts
 - Network interruptions
 - Authentication failures
 
 ### Data Issues  
+
 - Invalid embedding dimensions
 - Malformed point data
 - Empty/None data handling
 - Large content processing
 
 ### Operational Issues
+
 - Upsert failures
 - Search failures  
 - Delete operation failures
@@ -237,16 +261,19 @@ The tests include performance assertions:
 ## Key Testing Patterns
 
 ### Mock Strategy
+
 - **OpenAI API**: Mocked to avoid API calls and costs
 - **Crawler Components**: Mocked for deterministic testing
 - **Network Operations**: Controlled for error simulation
 
 ### Data Cleanup
+
 - **Before Tests**: Clean existing test data
 - **After Tests**: Remove all test documents
 - **Isolation**: Each test is independent
 
 ### Async Handling
+
 - **Proper awaiting**: All async operations properly awaited
 - **Indexing delays**: Sleep periods for Qdrant indexing
 - **Concurrent testing**: asyncio.gather for parallel operations
@@ -254,6 +281,7 @@ The tests include performance assertions:
 ## Dependencies
 
 ### Required Python Packages
+
 ```
 pytest>=7.0.0
 pytest-asyncio>=0.21.0
@@ -263,22 +291,26 @@ openai>=1.0.0
 ```
 
 ### External Services
+
 - Qdrant server (Docker or standalone)
 - Optional: OpenAI API key for embedding tests
 
 ## Integration with Existing Codebase
 
 ### Database Abstraction
+
 - Tests work with the `VectorDatabase` interface
 - Compatible with existing `database.factory` patterns
-- Proper integration with `utils_refactored.py` functions
+- Proper integration with `utils.py` functions
 
 ### MCP Framework
+
 - Tests actual MCP tool implementations
 - Mock context management for tool testing
 - End-to-end workflow validation
 
 ### Error Propagation
+
 - Ensures errors are properly handled and reported
 - Validates error messages reach MCP tool responses
 - Tests recovery mechanisms
@@ -286,6 +318,7 @@ openai>=1.0.0
 ## Future Enhancements
 
 ### Potential Additions
+
 - Load testing with thousands of documents
 - Memory usage profiling
 - Network latency simulation
@@ -294,6 +327,7 @@ openai>=1.0.0
 - Security and authentication testing
 
 ### Monitoring Integration
+
 - Performance regression detection
 - Test execution time tracking
 - Resource usage monitoring
@@ -304,6 +338,7 @@ openai>=1.0.0
 ### Common Issues
 
 **Qdrant Not Available**
+
 ```bash
 # Check if Qdrant is running
 curl http://localhost:6333/healthz
@@ -313,16 +348,19 @@ docker run -p 6333:6333 qdrant/qdrant
 ```
 
 **Tests Skipped**
+
 - Verify Qdrant health endpoint
 - Check environment variable configuration
 - Ensure correct URL for environment
 
 **Connection Errors**
+
 - Verify firewall settings
 - Check Docker network configuration
 - Validate Qdrant container status
 
 **Permission Issues**
+
 - Ensure API key configuration (if required)
 - Check Qdrant container permissions
 - Validate network access rights

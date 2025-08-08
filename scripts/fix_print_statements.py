@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fix print statements in utils.py and utils_refactored.py to use stderr
+Fix print statements in utils.py and utils.py to use stderr
 """
 import re
 import sys
@@ -42,7 +42,7 @@ def main():
     
     files_to_fix = [
         src_dir / 'utils.py',
-        src_dir / 'utils_refactored.py'
+        src_dir / 'utils.py'
     ]
     
     total_changes = 0

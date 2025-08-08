@@ -1,0 +1,204 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run MCP Server (stdio)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/crawl4ai_mcp.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "MCP_DEBUG": "true",
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "args": [],
+      "purpose": ["debug-in-terminal"]
+    },
+    {
+      "name": "Run MCP Server (HTTP)",
+      "type": "python", 
+      "request": "launch",
+      "program": "${workspaceFolder}/src/crawl4ai_mcp.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "MCP_DEBUG": "true",
+        "MCP_TRANSPORT": "http",
+        "MCP_HOST": "localhost",
+        "MCP_PORT": "8000",
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "args": [],
+      "purpose": ["debug-in-terminal"]
+    },
+    {
+      "name": "Debug Current Test File",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${file}",
+        "-v",
+        "-s",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.test",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Debug All Unit Tests",
+      "type": "python",
+      "request": "launch", 
+      "module": "pytest",
+      "args": [
+        "tests/",
+        "-v",
+        "-m", "not integration",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.test",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Integration Tests",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest", 
+      "args": [
+        "tests/",
+        "-v",
+        "-m", "integration",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.test",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false,
+      "preLaunchTask": "Start Test Services"
+    },
+    {
+      "name": "Debug Test with Coverage",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests/",
+        "-v",
+        "--cov=src",
+        "--cov-report=html",
+        "--cov-report=term-missing",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.test",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Specific Test",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${input:testPath}",
+        "-v",
+        "-s",
+        "--tb=long"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.test",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Run MCP Client Test",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/test_mcp_client.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "MCP_DEBUG": "true",
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Neo4j Tools",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/test_neo4j_tools.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "MCP_DEBUG": "true",
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Knowledge Graph Test",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/knowledge_graphs/test_script.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/knowledge_graphs",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "MCP_DEBUG": "true",
+        "PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/knowledge_graphs"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Attach to Docker MCP Server",
+      "type": "python",
+      "request": "attach",
+      "port": 5678,
+      "host": "localhost",
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/app"
+        }
+      ],
+      "justMyCode": false
+    }
+  ],
+  "inputs": [
+    {
+      "id": "testPath",
+      "description": "Path to specific test file or test function",
+      "default": "tests/",
+      "type": "promptString"
+    }
+  ]
+}

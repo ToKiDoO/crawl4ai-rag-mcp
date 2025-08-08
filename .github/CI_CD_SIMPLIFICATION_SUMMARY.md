@@ -3,10 +3,12 @@
 ## Changes Made
 
 ### 1. Workflow Consolidation
+
 - **Before**: 6 workflow files (ci.yml, pr-validation.yml, test-coverage.yml, security-scan.yml, qdrant-qa.yml, test-qdrant-simple.yml)
 - **After**: 2 workflow files (ci.yml, deploy.yml)
 
 ### 2. Simplified CI Workflow (`ci.yml`)
+
 - Triggers on push to main/develop and PRs to main
 - Single Python version (3.12) instead of matrix testing
 - Focused on core functionality:
@@ -16,12 +18,14 @@
   - Simple coverage reporting on PRs
 
 ### 3. Deploy Workflow (`deploy.yml`)
+
 - Only triggers on push to main branch
 - Handles Docker build and security scanning
 - Pushes to GitHub Container Registry
 - No Docker builds on PRs to non-main branches
 
 ### 4. Removed Features
+
 - PR title format validation
 - Branch naming enforcement
 - Complex PR metadata checks
@@ -31,12 +35,15 @@
 - Dependency caching (UV is fast enough)
 
 ### 5. Test Structure Recommendations
+
 Created a test consolidation plan to reduce redundant test files from ~50+ to ~10 core test files focusing on:
+
 - Unit tests for MCP server, database adapters, and utilities
 - Integration tests for Qdrant, Neo4j, and end-to-end workflows
 - Removal of duplicate test files with overlapping coverage
 
 ### 6. Makefile Updates
+
 - Added `test-ci` target that mimics the CI workflow
 - Added `ci-lint` target for linting checks
 - Integrated ruff as a make variable
@@ -59,6 +66,7 @@ Created a test consolidation plan to reduce redundant test files from ~50+ to ~1
 ## Testing the New Setup
 
 To test locally before pushing:
+
 ```bash
 # Run the exact CI test suite
 make test-ci

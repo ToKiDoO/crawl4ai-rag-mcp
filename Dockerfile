@@ -4,6 +4,11 @@ ARG PORT=8051
 
 WORKDIR /app
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install uv
 RUN pip install uv
 
@@ -18,4 +23,4 @@ RUN uv pip install --system -e . && \
 EXPOSE ${PORT}
 
 # Command to run the MCP server
-CMD ["python", "src/crawl4ai_mcp.py"]
+CMD ["python", "src/main.py"]

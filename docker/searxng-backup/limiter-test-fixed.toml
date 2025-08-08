@@ -1,0 +1,12 @@
+# Minimal limiter configuration for testing
+# Disable all rate limiting and bot detection for test environment
+
+[botdetection.ip_limit]
+link_token = false
+filter_link_local = false
+pass_ip = ["0.0.0.0/0"]  # Allow all IPs
+pass_searxng_org = false
+
+[real_ip]
+# Trust all X-Forwarded-For headers in test environment
+x_for = 1

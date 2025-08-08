@@ -1,0 +1,70 @@
+{
+  "recommendations": [
+    // Essential Python Development
+    "ms-python.python",
+    "ms-python.debugpy",
+    "charliermarsh.ruff",
+    
+    // Testing and Coverage
+    "ms-python.pytest",
+    "ryanluker.vscode-coverage-gutters",
+    "hbenl.vscode-test-explorer",
+    
+    // Docker and Container Support
+    "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-containers",
+    
+    // JSON and Configuration Files
+    "ms-vscode.vscode-json",
+    "esbenp.prettier-vscode",
+    "redhat.vscode-yaml",
+    
+    // Environment and Configuration
+    "mikestead.dotenv",
+    "ms-vscode.makefile-tools",
+    
+    // Git and Version Control
+    "eamodio.gitlens",
+    "GitHub.vscode-pull-request-github",
+    "mhutchie.git-graph",
+    
+    // Enhanced Development Experience
+    "usernamehw.errorlens",
+    "oderwat.indent-rainbow",
+    "christian-kohler.path-intellisense",
+    "ms-vscode.vscode-typescript-next",
+    
+    // Documentation and Markdown
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    "bierner.markdown-mermaid",
+    
+    // Code Quality and Analysis
+    "sonarsource.sonarlint-vscode",
+    "ms-vscode.vscode-pylint",
+    
+    // Database and API Tools
+    "mtxr.sqltools",
+    "humao.rest-client",
+    
+    // Productivity Tools
+    "alefragnani.Bookmarks",
+    "formulahendry.auto-rename-tag",
+    "ms-vscode.vscode-todo-highlight",
+    
+    // Themes and Visual Enhancements (Optional)
+    "PKief.material-icon-theme",
+    "GitHub.github-vscode-theme"
+  ],
+  "unwantedRecommendations": [
+    // Conflicting Python Extensions
+    "ms-python.flake8",
+    "ms-python.autopep8",
+    "ms-python.black-formatter",
+    "ms-python.yapf",
+    
+    // Conflicting Linters (we use Ruff)
+    "ms-python.pylint",
+    "ms-python.mypy-type-checker"
+  ]
+}

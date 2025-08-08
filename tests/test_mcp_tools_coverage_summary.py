@@ -1,7 +1,7 @@
 """
 MCP Tools Test Coverage Summary
 
-This file documents comprehensive tests created for the 9 MCP tool functions 
+This file documents comprehensive tests created for the 9 MCP tool functions
 in crawl4ai_mcp.py to improve coverage from 0% to 37%+ (targeting 50%+).
 
 SUCCESSFULLY TESTED MCP TOOLS (5/9):
@@ -9,12 +9,12 @@ SUCCESSFULLY TESTED MCP TOOLS (5/9):
 
 1. search() - Main SearXNG integration tool
    ✅ Environment validation (SEARXNG_URL missing)
-   ✅ Network error handling 
+   ✅ Network error handling
    ✅ Invalid input handling
    ✅ Successful URL extraction and processing
    ✅ Raw markdown mode support
 
-2. scrape_urls() - Web scraping functionality  
+2. scrape_urls() - Web scraping functionality
    ✅ Invalid input validation (empty/None URLs)
    ✅ Single URL scraping success
    ✅ Multiple URL batch processing
@@ -25,7 +25,7 @@ SUCCESSFULLY TESTED MCP TOOLS (5/9):
 3. perform_rag_query() - RAG pipeline testing
    ✅ Successful vector search queries
    ✅ No results scenarios
-   ✅ Database error handling  
+   ✅ Database error handling
    ✅ Source filtering capabilities
    ✅ Result format validation
 
@@ -70,7 +70,7 @@ KEY TESTING PATTERNS ESTABLISHED:
    - Using patch.dict(os.environ, {}) for config testing
    - Testing both enabled and disabled feature states
 
-2. Context Mocking Strategy  
+2. Context Mocking Strategy
    - Proper FastMCP Context structure mocking
    - Database client and crawler mocking
    - Async operation support
@@ -89,7 +89,7 @@ KEY TESTING PATTERNS ESTABLISHED:
 
 5. Integration Mocking
    - Database adapter operations
-   - Crawl4AI crawler responses  
+   - Crawl4AI crawler responses
    - Neo4j knowledge graph interactions
    - SearXNG search responses
 
@@ -108,7 +108,7 @@ PRODUCTION-READY FEATURES:
 TOOLS WITH WORKING TESTS:
 =========================
 - search() with SearXNG integration
-- scrape_urls() with batch processing  
+- scrape_urls() with batch processing
 - perform_rag_query() with vector search
 - smart_crawl_url() with type detection
 - get_available_sources() with database queries
@@ -123,47 +123,47 @@ This test suite provides a solid foundation for:
 5. Feature development confidence
 """
 
-import pytest
-import json
-from unittest.mock import Mock, patch, AsyncMock
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
 
 def test_coverage_summary():
     """Verify test coverage summary is accurate."""
     # This test documents the coverage achievements
     mcp_tools = [
         "search",
-        "scrape_urls", 
+        "scrape_urls",
         "smart_crawl_url",
         "get_available_sources",
         "perform_rag_query",
         "search_code_examples",
         "check_ai_script_hallucinations",
         "query_knowledge_graph",
-        "parse_github_repository"
+        "parse_github_repository",
     ]
-    
+
     assert len(mcp_tools) == 9
-    
+
     # Tools with comprehensive tests
     tested_tools = [
         "search",
         "scrape_urls",
-        "perform_rag_query", 
+        "perform_rag_query",
         "smart_crawl_url",
         "check_ai_script_hallucinations",
         "get_available_sources",
-        "search_code_examples"
+        "search_code_examples",
     ]
-    
+
     coverage_percentage = len(tested_tools) / len(mcp_tools) * 100
     assert coverage_percentage >= 75  # 7/9 = 77.8%
-    
-    print(f"MCP Tools Coverage: {coverage_percentage:.1f}% ({len(tested_tools)}/{len(mcp_tools)})")
+
+    print(
+        f"MCP Tools Coverage: {coverage_percentage:.1f}% ({len(tested_tools)}/{len(mcp_tools)})",
+    )
 
 
 if __name__ == "__main__":

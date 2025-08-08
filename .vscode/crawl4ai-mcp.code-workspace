@@ -1,0 +1,114 @@
+{
+  "folders": [
+    {
+      "name": "Crawl4AI MCP",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+      "tests",
+      "-v",
+      "--tb=short"
+    ],
+    "ruff.enable": true,
+    "ruff.lint.enable": true,
+    "ruff.format.enable": true,
+    "files.associations": {
+      "*.yml": "yaml",
+      "*.yaml": "yaml",
+      ".env*": "dotenv",
+      "Dockerfile*": "dockerfile",
+      "docker-compose*.yml": "yaml",
+      "mcp-client-config.json": "jsonc"
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/bower_components": true,  
+      "**/*.code-search": true,
+      "**/__pycache__": true,
+      "**/.pytest_cache": true,
+      "**/htmlcov": true,
+      "**/.ruff_cache": true,
+      "**/logs": true,
+      "**/data": true
+    },
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/.pytest_cache": true,
+      "**/htmlcov": true,
+      "**/.coverage": true,
+      "**/coverage.xml": true,
+      "**/.ruff_cache": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "charliermarsh.ruff",
+      "ms-python.pytest",
+      "ms-azuretools.vscode-docker",
+      "ryanluker.vscode-coverage-gutters",
+      "eamodio.gitlens",
+      "usernamehw.errorlens",
+      "mikestead.dotenv",
+      "yzhang.markdown-all-in-one",
+      "redhat.vscode-yaml"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "MCP Server Debug",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/src/crawl4ai_mcp.py",
+        "console": "integratedTerminal",
+        "cwd": "${workspaceFolder}",
+        "envFile": "${workspaceFolder}/.env",
+        "env": {
+          "MCP_DEBUG": "true",
+          "PYTHONPATH": "${workspaceFolder}/src"
+        },
+        "justMyCode": false
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Start Dev Environment",
+        "type": "shell",
+        "command": "make",
+        "args": ["dev-bg"],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "panel": "new"
+        }
+      },
+      {
+        "label": "Run Tests",  
+        "type": "shell",
+        "command": "make",
+        "args": ["test-unit"],
+        "group": {
+          "kind": "test",
+          "isDefault": true
+        },
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "panel": "shared"
+        }
+      }
+    ]
+  }
+}

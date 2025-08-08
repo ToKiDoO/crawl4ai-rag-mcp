@@ -21,7 +21,7 @@ async def run_simple_test():
     
     try:
         from database.factory import create_database_client
-        from utils_refactored import (
+        from utils import (
             create_embeddings_batch,
             add_documents_to_database,
             search_documents

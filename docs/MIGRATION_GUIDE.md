@@ -5,6 +5,7 @@ This guide helps existing users migrate to the new database abstraction layer th
 ## Overview
 
 The latest update introduces a database abstraction layer that allows you to choose between:
+
 - **Supabase** (default, no changes needed)
 - **Qdrant** (new option, self-hosted)
 
@@ -92,13 +93,14 @@ src/
 │   ├── factory.py        # Database factory
 │   ├── supabase_adapter.py
 │   └── qdrant_adapter.py
-├── utils_refactored.py   # Database-agnostic utilities
+├── utils.py   # Database-agnostic utilities
 └── crawl4ai_mcp.py      # Updated to use abstraction
 ```
 
 ### API Compatibility
 
 All MCP tools maintain the same interface. No changes needed in:
+
 - Claude Desktop configuration
 - MCP client integration
 - Tool parameters
@@ -110,16 +112,19 @@ All MCP tools maintain the same interface. No changes needed in:
 If Qdrant fails to connect:
 
 1. Check if the container is running:
+
    ```bash
    docker ps | grep qdrant
    ```
 
 2. Verify the URL in `.env`:
+
    ```env
    QDRANT_URL=http://qdrant:6333  # For Docker internal network
    ```
 
 3. Check logs:
+
    ```bash
    docker compose logs qdrant
    ```
@@ -144,6 +149,7 @@ If you encounter issues:
 ## Future Enhancements
 
 Planned improvements:
+
 - Automated data migration tools
 - Support for additional databases (Weaviate, Pinecone)
 - Performance benchmarking tools

@@ -1,22 +1,26 @@
 # Test Helpers Reference Guide
 
 ## Overview
+
 This document describes the test helper utilities created to improve test quality and reduce duplication in the Crawl4AI MCP test suite.
 
 ## Test Helpers (`tests/test_helpers.py`)
 
 ### TestDataBuilder
+
 Builder pattern for creating consistent test data with sensible defaults.
 
 #### Methods
 
 **`random_string(length: int = 10) -> str`**
+
 ```python
 # Generate random string for unique test data
 unique_id = TestDataBuilder.random_string(8)  # "a3B9xY2m"
 ```
 
 **`document(**kwargs) -> Dict[str, Any]`**
+
 ```python
 # Create a test document with defaults
 doc = TestDataBuilder.document(
@@ -29,6 +33,7 @@ doc = TestDataBuilder.document(
 ```
 
 **`search_result(score: float = 0.9, **kwargs) -> Dict[str, Any]`**
+
 ```python
 # Create a search result
 result = TestDataBuilder.search_result(
@@ -39,6 +44,7 @@ result = TestDataBuilder.search_result(
 ```
 
 **`code_example(language: str = "python", **kwargs) -> Dict[str, Any]`**
+
 ```python
 # Create a code example
 example = TestDataBuilder.code_example(
@@ -49,17 +55,20 @@ example = TestDataBuilder.code_example(
 ```
 
 **`batch_documents(count: int = 10, **kwargs) -> List[Dict[str, Any]]`**
+
 ```python
 # Create multiple documents
 docs = TestDataBuilder.batch_documents(100)  # 100 test documents
 ```
 
 ### TestAssertions
+
 Custom assertions with detailed error messages for better test debugging.
 
 #### Methods
 
 **`assert_search_result_valid(result: Dict[str, Any]) -> None`**
+
 ```python
 # Validate search result structure
 TestAssertions.assert_search_result_valid(search_result)
@@ -67,6 +76,7 @@ TestAssertions.assert_search_result_valid(search_result)
 ```
 
 **`assert_embedding_valid(embedding: List[float], expected_dim: int = 1536) -> None`**
+
 ```python
 # Validate embedding structure
 TestAssertions.assert_embedding_valid(embedding, 1536)
@@ -74,6 +84,7 @@ TestAssertions.assert_embedding_valid(embedding, 1536)
 ```
 
 **`assert_api_response_valid(response: Dict[str, Any]) -> None`**
+
 ```python
 # Validate API response structure
 TestAssertions.assert_api_response_valid(response)
@@ -81,17 +92,20 @@ TestAssertions.assert_api_response_valid(response)
 ```
 
 **`assert_async_callable(func) -> None`**
+
 ```python
 # Verify function is async
 TestAssertions.assert_async_callable(adapter.search_documents)
 ```
 
 ### TestFixtures
+
 Reusable test fixtures for common testing scenarios.
 
 #### Methods
 
 **`create_test_database(adapter_class, **kwargs)`**
+
 ```python
 # Create and initialize a test database adapter
 adapter = await TestFixtures.create_test_database(
@@ -101,6 +115,7 @@ adapter = await TestFixtures.create_test_database(
 ```
 
 **`load_test_config(env_file: str = ".env.test") -> Dict[str, str]`**
+
 ```python
 # Load test configuration
 config = TestFixtures.load_test_config()
@@ -108,6 +123,7 @@ api_key = config.get("OPENAI_API_KEY")
 ```
 
 **`mock_async_response(data: Any, delay: float = 0.0)`**
+
 ```python
 # Create mock async response with optional delay
 mock_response = TestFixtures.mock_async_response(
@@ -117,9 +133,11 @@ mock_response = TestFixtures.mock_async_response(
 ```
 
 ### TestMetrics
+
 Track and report test performance metrics.
 
 #### Usage Example
+
 ```python
 metrics = TestMetrics()
 
@@ -145,14 +163,17 @@ report = metrics.report()
 ## Test Doubles (`tests/test_doubles.py`)
 
 ### FakeQdrantClient
+
 Test double for Qdrant client with controllable behavior.
 
 #### Features
+
 - In-memory storage for testing
 - Controllable failure modes
 - Consistent behavior across tests
 
 #### Usage
+
 ```python
 fake_client = FakeQdrantClient(
     search_results=[
@@ -170,14 +191,17 @@ fake_client.should_fail = True
 ```
 
 ### FakeEmbeddingService
+
 Test double for embedding generation.
 
 #### Features
+
 - Consistent fake embeddings
 - Configurable embedding dimension
 - Controllable failures
 
 #### Usage
+
 ```python
 fake_service = FakeEmbeddingService(
     embedding_dim=1536,
@@ -189,14 +213,17 @@ embeddings = fake_service.create_embeddings(["text1", "text2"])
 ```
 
 ### FakeCrawler
+
 Test double for web crawler operations.
 
 #### Features
+
 - Predefined responses per URL
 - Default content for unknown URLs
 - Controllable failures
 
 #### Usage
+
 ```python
 fake_crawler = FakeCrawler(
     responses={
@@ -212,6 +239,7 @@ result = await fake_crawler.arun("https://example.com")
 ## Test Data Fixtures (`tests/fixtures/test_data.json`)
 
 ### Sample Documents
+
 ```json
 {
   "sample_documents": [
@@ -225,6 +253,7 @@ result = await fake_crawler.arun("https://example.com")
 ```
 
 ### Sample Queries
+
 ```json
 {
   "sample_queries": [
@@ -236,6 +265,7 @@ result = await fake_crawler.arun("https://example.com")
 ```
 
 ### Sample Code Blocks
+
 ```json
 {
   "sample_code_blocks": [
@@ -250,6 +280,7 @@ result = await fake_crawler.arun("https://example.com")
 ## Usage Patterns
 
 ### 1. Reducing Mock Complexity
+
 ```python
 # Instead of complex nested mocks
 mock_client = MagicMock()
@@ -260,6 +291,7 @@ fake_client = FakeQdrantClient(search_results=[...])
 ```
 
 ### 2. Consistent Test Data
+
 ```python
 # Create consistent test documents
 docs = TestDataBuilder.batch_documents(
@@ -273,6 +305,7 @@ for doc in docs:
 ```
 
 ### 3. Performance Tracking
+
 ```python
 def test_with_metrics():
     metrics = TestMetrics()
@@ -332,6 +365,7 @@ class TestSearchFunctionality:
 ## Conclusion
 
 These test helpers significantly improve test quality by:
+
 - Reducing code duplication
 - Providing consistent test data
 - Simplifying mock creation

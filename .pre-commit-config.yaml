@@ -1,0 +1,183 @@
+# Pre-commit hooks configuration for crawl4ai-mcp
+# https://pre-commit.com/
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+
+repos:
+  # ========================================
+  # GENERAL HOUSEKEEPING
+  # ========================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # File formatting and cleanup
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      
+      # JSON/YAML validation
+      - id: check-json
+      - id: check-yaml
+        args: [--unsafe]  # Allow custom YAML tags (for docker-compose)
+      - id: check-toml
+      
+      # Code safety checks
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      
+      # Python-specific checks
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-docstring-first
+      - id: debug-statements
+
+  # ========================================
+  # PYTHON CODE QUALITY (RUFF)
+  # ========================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      # Fast linting (replaces flake8, isort, etc.)
+      - id: ruff
+        name: ruff lint
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+        
+      # Fast formatting (replaces black)
+      - id: ruff-format
+        name: ruff format
+        types_or: [python, pyi]
+
+  # ========================================
+  # SECURITY SCANNING
+  # ========================================
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        name: bandit security check
+        args: [-r, src/, -f, json, -o, bandit-report.json]
+        pass_filenames: false
+        additional_dependencies: [".[toml]"]
+
+  # ========================================
+  # SECRETS DETECTION
+  # ========================================
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: detect secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: ^(uv\.lock|.*\.md|.*\.json|.*\.sql)$
+
+  # ========================================
+  # DOCKERFILE LINTING
+  # ========================================
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        name: hadolint dockerfile
+        args: [--ignore, DL3008, --ignore, DL3009]  # Ignore pinning apt packages
+
+  # ========================================
+  # COMMIT MESSAGE VALIDATION
+  # ========================================
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        name: conventional commit check
+        stages: [commit-msg]
+
+  # ========================================
+  # PYTHON TYPE CHECKING (Optional)
+  # ========================================
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        name: mypy type check
+        additional_dependencies: [types-requests, types-redis]
+        args: [--ignore-missing-imports, --install-types, --non-interactive]
+        exclude: ^(tests/|scripts/|docs/)
+        pass_filenames: false
+
+  # ========================================
+  # DOCUMENTATION CHECKS
+  # ========================================
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        name: pydocstyle docstring check
+        args: [--convention=google, --add-ignore=D100,D104,D105,D107]
+        exclude: ^(tests/|scripts/)
+
+  # ========================================
+  # PYTHON IMPORTS ORGANIZATION
+  # ========================================
+  # Note: Ruff handles import sorting, but keeping this as backup
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort import sorting
+        args: [--profile, black, --line-length, "88"]
+        exclude: ^(tests/conftest\.py)$
+
+  # ========================================
+  # PRE-PUSH HOOKS (More intensive checks)
+  # ========================================
+  - repo: local
+    hooks:
+      # UV lock file consistency check
+      - id: uv-lock-check
+        name: uv lock file check
+        entry: uv
+        args: [lock, --check]
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
+        stages: [pre-push]
+
+      # Test execution before push
+      - id: pytest-check
+        name: pytest quick test
+        entry: uv
+        args: [run, pytest, tests/, -x, -v, --tb=short, -m, "not integration"]
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      # Docker build test
+      - id: docker-build-test
+        name: docker build test
+        entry: docker
+        args: [build, --target, development, -t, crawl4ai-mcp:pre-commit-test, .]
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+        verbose: true
+
+# ========================================
+# GLOBAL CONFIGURATION
+# ========================================
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [pytest-check, docker-build-test, mypy]  # Skip slow hooks in CI
+  submodules: false

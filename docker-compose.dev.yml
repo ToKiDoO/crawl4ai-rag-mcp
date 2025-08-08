@@ -4,6 +4,7 @@
 services:
   # MCP Crawl4AI Server - Development Configuration
   mcp-crawl4ai:
+    image: crawl4aimcp-mcp-crawl4ai-fixed
     build:
       context: .
       dockerfile: Dockerfile
@@ -64,6 +65,9 @@ services:
       - ./logs:/app/logs:rw
       # Python cache for faster startup
       - python-cache:/root/.cache
+      # Script analysis directories for hallucination detection
+      - ./analysis_scripts:/app/analysis_scripts:rw
+      - /tmp:/app/tmp_scripts:ro  # Optional: read-only mount of /tmp for convenience
     develop:
       watch:
         # Watch src directory with sync+restart
@@ -178,7 +182,7 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
-      - ./searxng:/etc/searxng:rw
+      - ./docker/searxng:/etc/searxng:rw
       - searxng-data:/var/cache/searxng:rw
     environment:
       - SEARXNG_BASE_URL=http://localhost:8080/

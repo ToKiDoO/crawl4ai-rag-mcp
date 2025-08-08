@@ -1,4 +1,5 @@
 """Test setup to ensure environment is configured before imports."""
+
 import os
 
 # Set test environment variables BEFORE any other imports

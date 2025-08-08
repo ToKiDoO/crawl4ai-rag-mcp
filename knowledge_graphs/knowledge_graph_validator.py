@@ -115,10 +115,23 @@ class KnowledgeGraphValidator:
     
     async def initialize(self):
         """Initialize Neo4j connection"""
-        self.driver = AsyncGraphDatabase.driver(
-            self.neo4j_uri, 
-            auth=(self.neo4j_user, self.neo4j_password)
-        )
+        # Import notification suppression (available in neo4j>=5.21.0)
+        try:
+            from neo4j import NotificationMinimumSeverity
+            # Create Neo4j driver with notification suppression
+            self.driver = AsyncGraphDatabase.driver(
+                self.neo4j_uri, 
+                auth=(self.neo4j_user, self.neo4j_password),
+                warn_notification_severity=NotificationMinimumSeverity.OFF
+            )
+        except (ImportError, AttributeError):
+            # Fallback for older versions - use logging suppression
+            import logging
+            logging.getLogger('neo4j.notifications').setLevel(logging.ERROR)
+            self.driver = AsyncGraphDatabase.driver(
+                self.neo4j_uri, 
+                auth=(self.neo4j_user, self.neo4j_password)
+            )
         logger.info("Knowledge graph validator initialized")
     
     async def close(self):

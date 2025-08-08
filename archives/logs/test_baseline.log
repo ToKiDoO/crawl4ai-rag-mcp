@@ -1,0 +1,304 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.5, pluggy-1.5.0 -- /home/krashnicov/crawl4aimcp/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/krashnicov/crawl4aimcp
+configfile: pytest.ini
+plugins: anyio-4.9.0, asyncio-1.1.0, mock-3.14.0, cov-6.2.1
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 44 items
+
+tests/test_mcp_tools_unit.py::TestSearchTool::test_search_success_with_rag PASSED [  2%]
+tests/test_mcp_tools_unit.py::TestSearchTool::test_search_success_with_raw_markdown PASSED [  4%]
+tests/test_mcp_tools_unit.py::TestSearchTool::test_search_missing_searxng_url PASSED [  6%]
+tests/test_mcp_tools_unit.py::TestSearchTool::test_search_http_timeout PASSED [  9%]
+tests/test_mcp_tools_unit.py::TestSearchTool::test_search_connection_error PASSED [ 11%]
+tests/test_mcp_tools_unit.py::TestSearchTool::test_search_no_results PASSED [ 13%]
+tests/test_mcp_tools_unit.py::TestScrapeUrlsTool::test_scrape_single_url_success PASSED [ 15%]
+tests/test_mcp_tools_unit.py::TestScrapeUrlsTool::test_scrape_multiple_urls_success PASSED [ 18%]
+tests/test_mcp_tools_unit.py::TestScrapeUrlsTool::test_scrape_invalid_url PASSED [ 20%]
+tests/test_mcp_tools_unit.py::TestScrapeUrlsTool::test_scrape_crawler_failure PASSED [ 22%]
+tests/test_mcp_tools_unit.py::TestScrapeUrlsTool::test_scrape_with_raw_markdown PASSED [ 25%]
+tests/test_mcp_tools_unit.py::TestSmartCrawlUrlTool::test_smart_crawl_regular_url PASSED [ 27%]
+tests/test_mcp_tools_unit.py::TestSmartCrawlUrlTool::test_smart_crawl_sitemap_url PASSED [ 29%]
+tests/test_mcp_tools_unit.py::TestSmartCrawlUrlTool::test_smart_crawl_robots_txt PASSED [ 31%]
+tests/test_mcp_tools_unit.py::TestSmartCrawlUrlTool::test_smart_crawl_invalid_sitemap PASSED [ 34%]
+tests/test_mcp_tools_unit.py::TestSmartCrawlUrlTool::test_smart_crawl_max_depth_limit PASSED [ 36%]
+tests/test_mcp_tools_unit.py::TestGetAvailableSourcesTool::test_get_available_sources_success PASSED [ 38%]
+tests/test_mcp_tools_unit.py::TestGetAvailableSourcesTool::test_get_available_sources_empty PASSED [ 40%]
+tests/test_mcp_tools_unit.py::TestGetAvailableSourcesTool::test_get_available_sources_database_error PASSED [ 43%]
+tests/test_mcp_tools_unit.py::TestPerformRagQueryTool::test_rag_query_success FAILED [ 45%]
+tests/test_mcp_tools_unit.py::TestPerformRagQueryTool::test_rag_query_no_results PASSED [ 47%]
+tests/test_mcp_tools_unit.py::TestPerformRagQueryTool::test_rag_query_with_source_filter FAILED [ 50%]
+tests/test_mcp_tools_unit.py::TestPerformRagQueryTool::test_rag_query_database_error FAILED [ 52%]
+tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_success FAILED [ 54%]
+tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_with_source_filter FAILED [ 56%]
+tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_no_results PASSED [ 59%]
+tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_error FAILED [ 61%]
+tests/test_mcp_tools_unit.py::TestCheckAiScriptHallucinationsTool::test_check_hallucinations_success FAILED [ 63%]
+tests/test_mcp_tools_unit.py::TestCheckAiScriptHallucinationsTool::test_check_hallucinations_no_issues FAILED [ 65%]
+tests/test_mcp_tools_unit.py::TestCheckAiScriptHallucinationsTool::test_check_hallucinations_file_not_found FAILED [ 68%]
+tests/test_mcp_tools_unit.py::TestCheckAiScriptHallucinationsTool::test_check_hallucinations_analyzer_error PASSED [ 70%]
+tests/test_mcp_tools_unit.py::TestQueryKnowledgeGraphTool::test_query_knowledge_graph_success FAILED [ 72%]
+tests/test_mcp_tools_unit.py::TestQueryKnowledgeGraphTool::test_query_knowledge_graph_empty_result FAILED [ 75%]
+tests/test_mcp_tools_unit.py::TestQueryKnowledgeGraphTool::test_query_knowledge_graph_connection_error FAILED [ 77%]
+tests/test_mcp_tools_unit.py::TestQueryKnowledgeGraphTool::test_query_knowledge_graph_invalid_query FAILED [ 79%]
+tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_success FAILED [ 81%]
+tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_invalid_url FAILED [ 84%]
+tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_private_repo FAILED [ 86%]
+tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_network_error FAILED [ 88%]
+tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_neo4j_error FAILED [ 90%]
+tests/test_mcp_tools_unit.py::TestMCPToolsIntegration::test_search_to_rag_query_integration PASSED [ 93%]
+tests/test_mcp_tools_unit.py::TestMCPToolsIntegration::test_error_propagation FAILED [ 95%]
+tests/test_mcp_tools_unit.py::TestMCPToolsPerformance::test_concurrent_requests_handling PASSED [ 97%]
+tests/test_mcp_tools_unit.py::TestMCPToolsPerformance::test_large_batch_processing PASSED [100%]
+ERROR: Coverage failure: total of 36 is less than fail-under=80
+
+
+=================================== FAILURES ===================================
+________________ TestPerformRagQueryTool.test_rag_query_success ________________
+tests/test_mcp_tools_unit.py:675: in test_rag_query_success
+    assert len(result_data['results']) == 1
+E   assert 0 == 1
+E    +  where 0 = len([])
+__________ TestPerformRagQueryTool.test_rag_query_with_source_filter ___________
+/usr/lib/python3.12/unittest/mock.py:923: in assert_called_once
+    raise AssertionError(msg)
+E   AssertionError: Expected 'search_documents' to have been called once. Called 0 times.
+
+During handling of the above exception, another exception occurred:
+tests/test_mcp_tools_unit.py:713: in test_rag_query_with_source_filter
+    mock_external_dependencies['mock_search_docs'].assert_called_once()
+E   AssertionError: Expected 'search_documents' to have been called once. Called 0 times.
+----------------------------- Captured stdout call -----------------------------
+Error creating batch embeddings (attempt 1/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-moc**********real. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Error creating batch embeddings (attempt 2/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-moc**********real. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+----------------------------- Captured stderr call -----------------------------
+Retrying in 1.0 seconds...
+Retrying in 2.0 seconds...
+Failed to create batch embeddings after 3 attempts: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-moc**********real. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Attempting to create embeddings individually...
+Failed to create embedding for text 0: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-moc**********real. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Successfully created 0/1 embeddings individually
+____________ TestPerformRagQueryTool.test_rag_query_database_error _____________
+tests/test_mcp_tools_unit.py:728: in test_rag_query_database_error
+    assert result_data['success'] is False
+E   assert True is False
+----------------------------- Captured stdout call -----------------------------
+Error creating batch embeddings (attempt 1/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-moc**********real. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Error creating batch embeddings (attempt 2/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-moc**********real. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+----------------------------- Captured stderr call -----------------------------
+Retrying in 1.0 seconds...
+Retrying in 2.0 seconds...
+Failed to create batch embeddings after 3 attempts: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-moc**********real. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Attempting to create embeddings individually...
+Failed to create embedding for text 0: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-moc**********real. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Successfully created 0/1 embeddings individually
+_________ TestSearchCodeExamplesTool.test_search_code_examples_success _________
+tests/test_mcp_tools_unit.py:757: in test_search_code_examples_success
+    assert len(result_data['results']) == 1
+E   assert 0 == 1
+E    +  where 0 = len([])
+----------------------------- Captured stdout call -----------------------------
+Error creating batch embeddings (attempt 1/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Error creating batch embeddings (attempt 2/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+----------------------------- Captured stderr call -----------------------------
+Retrying in 1.0 seconds...
+Retrying in 2.0 seconds...
+Failed to create batch embeddings after 3 attempts: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Attempting to create embeddings individually...
+Failed to create embedding for text 0: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Error creating embedding: len() takes no keyword arguments
+Error searching code examples: 'coroutine' object has no attribute 'execute'
+___ TestSearchCodeExamplesTool.test_search_code_examples_with_source_filter ____
+/usr/lib/python3.12/unittest/mock.py:923: in assert_called_once
+    raise AssertionError(msg)
+E   AssertionError: Expected 'extract_code_blocks' to have been called once. Called 0 times.
+
+During handling of the above exception, another exception occurred:
+tests/test_mcp_tools_unit.py:776: in test_search_code_examples_with_source_filter
+    mock_external_dependencies['mock_extract_code'].assert_called_once()
+E   AssertionError: Expected 'extract_code_blocks' to have been called once. Called 0 times.
+----------------------------- Captured stdout call -----------------------------
+Error creating batch embeddings (attempt 1/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Error creating batch embeddings (attempt 2/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+----------------------------- Captured stderr call -----------------------------
+Retrying in 1.0 seconds...
+Retrying in 2.0 seconds...
+Failed to create batch embeddings after 3 attempts: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Attempting to create embeddings individually...
+Failed to create embedding for text 0: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Error creating embedding: len() takes no keyword arguments
+Error searching code examples: 'coroutine' object has no attribute 'execute'
+__________ TestSearchCodeExamplesTool.test_search_code_examples_error __________
+tests/test_mcp_tools_unit.py:803: in test_search_code_examples_error
+    assert result_data['success'] is False
+E   assert True is False
+----------------------------- Captured stdout call -----------------------------
+Error creating batch embeddings (attempt 1/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Error creating batch embeddings (attempt 2/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+----------------------------- Captured stderr call -----------------------------
+Retrying in 1.0 seconds...
+Retrying in 2.0 seconds...
+Failed to create batch embeddings after 3 attempts: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Attempting to create embeddings individually...
+Failed to create embedding for text 0: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Error creating embedding: len() takes no keyword arguments
+Error searching code examples: 'coroutine' object has no attribute 'execute'
+____ TestCheckAiScriptHallucinationsTool.test_check_hallucinations_success _____
+tests/test_mcp_tools_unit.py:871: in test_check_hallucinations_success
+    assert result_data['success'] is True
+E   assert False is True
+----------------------------- Captured stdout call -----------------------------
+Debug - AI hallucination check result: {
+  "success": false,
+  "script_path": "/path/to/script.py",
+  "error": "Analysis failed: 'Mock' object is not iterable"
+}
+------------------------------ Captured log call -------------------------------
+ERROR    ai_script_analyzer:ai_script_analyzer.py:129 Failed to analyze script /path/to/script.py: invalid syntax (<unknown>, line 1)
+WARNING  crawl4ai-mcp:crawl4ai_mcp.py:1833 Analysis warnings for /path/to/script.py: ['Failed to analyze script /path/to/script.py: invalid syntax (<unknown>, line 1)']
+___ TestCheckAiScriptHallucinationsTool.test_check_hallucinations_no_issues ____
+tests/test_mcp_tools_unit.py:893: in test_check_hallucinations_no_issues
+    assert result_data['success'] is True
+E   assert False is True
+------------------------------ Captured log call -------------------------------
+ERROR    ai_script_analyzer:ai_script_analyzer.py:129 Failed to analyze script /path/to/clean_script.py: invalid syntax (<unknown>, line 1)
+WARNING  crawl4ai-mcp:crawl4ai_mcp.py:1833 Analysis warnings for /path/to/clean_script.py: ['Failed to analyze script /path/to/clean_script.py: invalid syntax (<unknown>, line 1)']
+_ TestCheckAiScriptHallucinationsTool.test_check_hallucinations_file_not_found _
+tests/test_mcp_tools_unit.py:913: in test_check_hallucinations_file_not_found
+    assert "Script file not found" in result_data['error']
+E   assert 'Script file not found' in "Analysis failed: '<' not supported between instances of 'AsyncMock' and 'float'"
+------------------------------ Captured log call -------------------------------
+ERROR    ai_script_analyzer:ai_script_analyzer.py:129 Failed to analyze script /nonexistent/script.py: invalid syntax (<unknown>, line 1)
+WARNING  crawl4ai-mcp:crawl4ai_mcp.py:1833 Analysis warnings for /nonexistent/script.py: ['Failed to analyze script /nonexistent/script.py: invalid syntax (<unknown>, line 1)']
+________ TestQueryKnowledgeGraphTool.test_query_knowledge_graph_success ________
+tests/test_mcp_tools_unit.py:957: in test_query_knowledge_graph_success
+    assert result_data['success'] is True
+E   assert False is True
+_____ TestQueryKnowledgeGraphTool.test_query_knowledge_graph_empty_result ______
+tests/test_mcp_tools_unit.py:977: in test_query_knowledge_graph_empty_result
+    assert result_data['success'] is True
+E   assert False is True
+___ TestQueryKnowledgeGraphTool.test_query_knowledge_graph_connection_error ____
+tests/test_mcp_tools_unit.py:997: in test_query_knowledge_graph_connection_error
+    assert "Neo4j connection failed" in result_data['error']
+E   assert 'Neo4j connection failed' in "Unknown command 'match'. Available commands: repos, explore <repo>, classes [repo], class <name>, method <name> [class], query <cypher>"
+_____ TestQueryKnowledgeGraphTool.test_query_knowledge_graph_invalid_query _____
+tests/test_mcp_tools_unit.py:1016: in test_query_knowledge_graph_invalid_query
+    assert "Invalid Cypher syntax" in result_data['error']
+E   assert 'Invalid Cypher syntax' in "Unknown command 'invalid'. Available commands: repos, explore <repo>, classes [repo], class <name>, method <name> [class], query <cypher>"
+______ TestParseGithubRepositoryTool.test_parse_github_repository_success ______
+tests/test_mcp_tools_unit.py:1043: in test_parse_github_repository_success
+    assert result_data['success'] is True
+E   assert False is True
+____ TestParseGithubRepositoryTool.test_parse_github_repository_invalid_url ____
+tests/test_mcp_tools_unit.py:1059: in test_parse_github_repository_invalid_url
+    assert "Invalid GitHub repository URL" in result_data['error']
+E   AssertionError: assert 'Invalid GitHub repository URL' in 'Please provide a valid GitHub repository URL'
+___ TestParseGithubRepositoryTool.test_parse_github_repository_private_repo ____
+tests/test_mcp_tools_unit.py:1078: in test_parse_github_repository_private_repo
+    assert "Access denied" in result_data['error']
+E   AssertionError: assert 'Access denied' in 'Repository parsing failed: Object of type MagicMock is not JSON serializable'
+___ TestParseGithubRepositoryTool.test_parse_github_repository_network_error ___
+tests/test_mcp_tools_unit.py:1097: in test_parse_github_repository_network_error
+    assert "Network timeout" in result_data['error']
+E   AssertionError: assert 'Network timeout' in 'Repository parsing failed: Object of type MagicMock is not JSON serializable'
+____ TestParseGithubRepositoryTool.test_parse_github_repository_neo4j_error ____
+tests/test_mcp_tools_unit.py:1116: in test_parse_github_repository_neo4j_error
+    assert "Neo4j connection failed" in result_data['error']
+E   AssertionError: assert 'Neo4j connection failed' in 'Repository parsing failed: Object of type MagicMock is not JSON serializable'
+________________ TestMCPToolsIntegration.test_error_propagation ________________
+tests/test_mcp_tools_unit.py:1166: in test_error_propagation
+    assert result_data['success'] is False
+E   assert True is False
+----------------------------- Captured stdout call -----------------------------
+Error creating batch embeddings (attempt 1/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Error creating batch embeddings (attempt 2/3, file=sys.stderr): Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+----------------------------- Captured stderr call -----------------------------
+Retrying in 1.0 seconds...
+Retrying in 2.0 seconds...
+Failed to create batch embeddings after 3 attempts: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Attempting to create embeddings individually...
+Failed to create embedding for text 0: Error code: 401 - {'error': {'message': 'Incorrect API key provided: test-ope***-key. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+Successfully created 0/1 embeddings individually
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/pydantic/_internal/_config.py:323
+  /home/krashnicov/crawl4aimcp/.venv/lib/python3.12/site-packages/pydantic/_internal/_config.py:323: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.11/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+.venv/lib/python3.12/site-packages/fake_http_header/constants.py:5
+  /home/krashnicov/crawl4aimcp/.venv/lib/python3.12/site-packages/fake_http_header/constants.py:5: DeprecationWarning: read_text is deprecated. Use files() instead. Refer to https://importlib-resources.readthedocs.io/en/latest/using.html#migrating-from-legacy for migration advice.
+    domain_to_search_engine_binary = read_text("fake_http_header.data", "top-level-domain-to-search-engines.json")
+
+../../../usr/lib/python3.12/importlib/resources/_legacy.py:79
+  /usr/lib/python3.12/importlib/resources/_legacy.py:79: DeprecationWarning: open_text is deprecated. Use files() instead. Refer to https://importlib-resources.readthedocs.io/en/latest/using.html#migrating-from-legacy for migration advice.
+    with open_text(package, resource, encoding, errors) as fp:
+
+.venv/lib/python3.12/site-packages/fake_http_header/constants.py:6
+  /home/krashnicov/crawl4aimcp/.venv/lib/python3.12/site-packages/fake_http_header/constants.py:6: DeprecationWarning: read_text is deprecated. Use files() instead. Refer to https://importlib-resources.readthedocs.io/en/latest/using.html#migrating-from-legacy for migration advice.
+    domain_to_languages_binary = read_text("fake_http_header.data", "top-level-domain-to-languages.json")
+
+.venv/lib/python3.12/site-packages/fake_http_header/constants.py:7
+  /home/krashnicov/crawl4aimcp/.venv/lib/python3.12/site-packages/fake_http_header/constants.py:7: DeprecationWarning: read_text is deprecated. Use files() instead. Refer to https://importlib-resources.readthedocs.io/en/latest/using.html#migrating-from-legacy for migration advice.
+    browser_to_user_agent = read_text("fake_http_header.data", "browser-to-user-agent.json")
+
+.venv/lib/python3.12/site-packages/fake_http_header/constants.py:8
+  /home/krashnicov/crawl4aimcp/.venv/lib/python3.12/site-packages/fake_http_header/constants.py:8: DeprecationWarning: read_text is deprecated. Use files() instead. Refer to https://importlib-resources.readthedocs.io/en/latest/using.html#migrating-from-legacy for migration advice.
+    encoding_values_dict_binary = read_text("fake_http_header.data", "encoding-values.json")
+
+.venv/lib/python3.12/site-packages/fake_http_header/constants.py:9
+  /home/krashnicov/crawl4aimcp/.venv/lib/python3.12/site-packages/fake_http_header/constants.py:9: DeprecationWarning: read_text is deprecated. Use files() instead. Refer to https://importlib-resources.readthedocs.io/en/latest/using.html#migrating-from-legacy for migration advice.
+    browser_to_accept_value_binary = read_text("fake_http_header.data", "browser-to-accept-values.json")
+
+tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_success
+tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_with_source_filter
+tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_no_results
+tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_error
+  /home/krashnicov/crawl4aimcp/src/utils.py:739: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    return []
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.3-final-0 ________________
+
+Name                                   Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------
+src/crawl4ai_mcp.py                      998    439    56%   29-30, 35-37, 40-41, 46-48, 67-71, 80-83, 104-107, 113-116, 128-131, 152-153, 163, 173, 181-189, 194, 197, 200, 207-208, 213, 223, 249-327, 337, 345-348, 366-386, 426-430, 450-475, 509-510, 572, 597-603, 611-612, 634, 649-657, 685-688, 714-717, 743-745, 781, 790, 798, 811, 826-828, 886, 986-999, 1057-1079, 1083-1092, 1155-1166, 1231, 1239-1246, 1338-1364, 1368, 1380-1415, 1438-1439, 1549-1557, 1562-1563, 1567-1578, 1585, 1600-1609, 1620-1621, 1650, 1695-1703, 1707-1709, 1713-1725, 1732-1734, 1749-1760, 1771-1772, 1805, 1814, 1822, 1843, 1944, 1952, 1960, 1973, 1975-1981, 1983-1984, 1986-1992, 1994-2002, 2004-2011, 2019-2020, 2029-2036, 2052-2095, 2116-2142, 2159-2213, 2235-2277, 2293-2319, 2355, 2364, 2431, 2469-2477, 2491-2500, 2515-2552, 2556-2576, 2579-2585
+src/database/__init__.py                   3      0   100%
+src/database/base.py                      15      0   100%
+src/database/factory.py                   20     13    35%   21-34, 48-50
+src/database/qdrant_adapter.py           284    254    11%   32-40, 44-48, 52-74, 78-79, 91-147, 158-202, 211-252, 256-289, 293-322, 340-380, 396-440, 444-473, 487-528, 541-556, 569-588, 597-627, 641-689, 705-748, 752-800
+src/database/qdrant_adapter_fixed.py     180    180     0%   6-503
+src/database/supabase_adapter.py         180    159    12%   20-23, 27-34, 46-83, 93-115, 119-122, 135-171, 181-203, 207-214, 223-246, 250-258, 267-282, 291-306, 310-318, 324-335, 339-366
+src/utils.py                             294    231    21%   25-31, 44, 55, 75-76, 83, 97, 116-150, 165-166, 191-316, 337-356, 370-438, 453-486, 510-595, 608-628, 646-688, 732, 736
+src/utils_refactored.py                  184     97    47%   31, 42, 62-63, 86-89, 105-139, 155-156, 187-216, 299-300, 305-348, 365-398, 422-447, 476, 505-511, 539-545
+--------------------------------------------------------------------
+TOTAL                                   2158   1373    36%
+Coverage HTML written to dir htmlcov
+Coverage XML written to file coverage.xml
+FAIL Required test coverage of 80% not reached. Total coverage: 36.38%
+=========================== short test summary info ============================
+FAILED tests/test_mcp_tools_unit.py::TestPerformRagQueryTool::test_rag_query_success - assert 0 == 1
+ +  where 0 = len([])
+FAILED tests/test_mcp_tools_unit.py::TestPerformRagQueryTool::test_rag_query_with_source_filter - AssertionError: Expected 'search_documents' to have been called once. Called 0 times.
+FAILED tests/test_mcp_tools_unit.py::TestPerformRagQueryTool::test_rag_query_database_error - assert True is False
+FAILED tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_success - assert 0 == 1
+ +  where 0 = len([])
+FAILED tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_with_source_filter - AssertionError: Expected 'extract_code_blocks' to have been called once. Called 0 times.
+FAILED tests/test_mcp_tools_unit.py::TestSearchCodeExamplesTool::test_search_code_examples_error - assert True is False
+FAILED tests/test_mcp_tools_unit.py::TestCheckAiScriptHallucinationsTool::test_check_hallucinations_success - assert False is True
+FAILED tests/test_mcp_tools_unit.py::TestCheckAiScriptHallucinationsTool::test_check_hallucinations_no_issues - assert False is True
+FAILED tests/test_mcp_tools_unit.py::TestCheckAiScriptHallucinationsTool::test_check_hallucinations_file_not_found - assert 'Script file not found' in "Analysis failed: '<' not supported between instances of 'AsyncMock' and 'float'"
+FAILED tests/test_mcp_tools_unit.py::TestQueryKnowledgeGraphTool::test_query_knowledge_graph_success - assert False is True
+FAILED tests/test_mcp_tools_unit.py::TestQueryKnowledgeGraphTool::test_query_knowledge_graph_empty_result - assert False is True
+FAILED tests/test_mcp_tools_unit.py::TestQueryKnowledgeGraphTool::test_query_knowledge_graph_connection_error - assert 'Neo4j connection failed' in "Unknown command 'match'. Available commands: repos, explore <repo>, classes [repo], class <name>, method <name> [class], query <cypher>"
+FAILED tests/test_mcp_tools_unit.py::TestQueryKnowledgeGraphTool::test_query_knowledge_graph_invalid_query - assert 'Invalid Cypher syntax' in "Unknown command 'invalid'. Available commands: repos, explore <repo>, classes [repo], class <name>, method <name> [class], query <cypher>"
+FAILED tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_success - assert False is True
+FAILED tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_invalid_url - AssertionError: assert 'Invalid GitHub repository URL' in 'Please provide a valid GitHub repository URL'
+FAILED tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_private_repo - AssertionError: assert 'Access denied' in 'Repository parsing failed: Object of type MagicMock is not JSON serializable'
+FAILED tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_network_error - AssertionError: assert 'Network timeout' in 'Repository parsing failed: Object of type MagicMock is not JSON serializable'
+FAILED tests/test_mcp_tools_unit.py::TestParseGithubRepositoryTool::test_parse_github_repository_neo4j_error - AssertionError: assert 'Neo4j connection failed' in 'Repository parsing failed: Object of type MagicMock is not JSON serializable'
+FAILED tests/test_mcp_tools_unit.py::TestMCPToolsIntegration::test_error_propagation - assert True is False
+============ 19 failed, 25 passed, 11 warnings in 104.64s (0:01:44) ============

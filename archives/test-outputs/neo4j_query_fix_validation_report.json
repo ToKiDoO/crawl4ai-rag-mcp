@@ -1,0 +1,60 @@
+{
+  "test_datetime": "2025-08-07T15:08:16.915128",
+  "test_cases": [
+    {
+      "test_name": "Repository with valid line_count values",
+      "result": {
+        "repo_name": "test_repo_valid_lines",
+        "file_count": 3,
+        "total_lines": 350,
+        "execution_time_ms": 77.93,
+        "status": "SUCCESS",
+        "expected_lines": 350,
+        "lines_match": true
+      }
+    },
+    {
+      "test_name": "Repository with null line_count values",
+      "result": {
+        "repo_name": "test_repo_null_lines",
+        "file_count": 2,
+        "total_lines": 0,
+        "execution_time_ms": 3.07,
+        "status": "SUCCESS",
+        "expected_lines": 0,
+        "lines_match": true
+      }
+    },
+    {
+      "test_name": "Repository with mixed line_count values",
+      "result": {
+        "repo_name": "test_repo_mixed_lines",
+        "file_count": 3,
+        "total_lines": 200,
+        "execution_time_ms": 3.39,
+        "status": "SUCCESS",
+        "expected_lines": 200,
+        "lines_match": true
+      }
+    },
+    {
+      "test_name": "Empty repository (no files)",
+      "result": {
+        "repo_name": "test_repo_empty",
+        "status": "NO_RESULTS",
+        "execution_time_ms": 2.03
+      }
+    }
+  ],
+  "warnings_detected": [],
+  "performance_metrics": {
+    "avg_execution_time_ms": 21.61,
+    "max_execution_time_ms": 77.93,
+    "min_execution_time_ms": 2.03
+  },
+  "overall_status": "\u274c FAILED",
+  "json_validation": {
+    "status": "PASSED",
+    "structure": "VALID"
+  }
+}

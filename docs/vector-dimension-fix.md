@@ -19,6 +19,7 @@ The Qdrant adapter was creating embeddings with inconsistent dimensions:
 ## Technical Details
 
 ### Original Code (Buggy)
+
 ```python
 # Convert first 384 bytes to floats between -1 and 1
 embedding = [(b - 128) / 128.0 for b in hash_bytes[:384]]
@@ -28,11 +29,13 @@ while len(embedding) < 384:
 ```
 
 **Problems**:
+
 - SHA256 produces only 32 bytes, not 384
 - The code was trying to access `hash_bytes[:384]` which would only get 32 values
 - It was padding to 384 dimensions instead of the required 1536
 
 ### Fixed Code
+
 ```python
 # Convert hash bytes to floats between -1 and 1
 # Use all 32 bytes from SHA256 and repeat to get 1536 dimensions
@@ -46,6 +49,7 @@ embedding = embedding[:1536]
 ```
 
 **Solution**:
+
 - Uses all 32 bytes from SHA256 hash
 - Converts each byte (0-255) to a float in range [-1, 1]
 - Repeats the 32-value pattern to fill 1536 dimensions
@@ -94,6 +98,7 @@ assert all(-1 <= v <= 1 for v in embedding)
 ## Impact
 
 This fix ensures:
+
 1. All embeddings stored in Qdrant have consistent 1536 dimensions
 2. No more dimension mismatch errors during search operations
 3. Source metadata can be properly stored and retrieved
