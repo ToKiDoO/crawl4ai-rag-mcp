@@ -1,0 +1,117 @@
+# SearXNG Configuration
+# see https://docs.searxng.org/admin/settings/index.html
+
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: "SearXNG for MCP Crawl4AI"
+  contact_url: false
+  enable_metrics: true
+
+brand:
+  new_issue_url: https://github.com/searxng/searxng/issues/new
+  docs_url: https://docs.searxng.org/
+  public_instances: https://searx.space
+  wiki_url: https://github.com/searxng/searxng/wiki
+  issue_url: https://github.com/searxng/searxng/issues
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  autocomplete_min: 4
+  default_lang: ""
+  ban_time_on_fail: 5
+  max_ban_time_on_fail: 120
+  formats:
+    - html
+    - json  # Enable JSON format for API access
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "randomkey"  # Change this in production
+  base_url: false
+  image_proxy: false
+  method: "POST"
+  default_http_headers:
+    X-Content-Type-Options: nosniff
+    X-XSS-Protection: 1; mode=block
+    X-Download-Options: noopen
+    X-Robots-Tag: noindex, nofollow
+    Referrer-Policy: no-referrer
+
+ui:
+  static_use_hash: false
+  default_locale: ""
+  query_in_title: false
+  infinite_scroll: false
+  center_alignment: false
+  cache_url: https://web.archive.org/web/
+  search_on_category_select: true
+  hotkeys: default
+
+# Valkey configuration for caching (Redis alternative)
+valkey:
+  url: redis://valkey:6379/0
+
+# Outgoing request configuration  
+outgoing:
+  request_timeout: 3.0
+  useragent_suffix: ""
+  pool_connections: 100
+  pool_maxsize: 20
+  enable_http2: true
+
+# Enable engines suitable for API usage
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+    use_mobile_ui: false
+
+  - name: bing
+    engine: bing
+    shortcut: b
+    
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    base_url: 'https://{language}.wikipedia.org/'
+    
+  - name: github
+    engine: github
+    shortcut: gh
+    
+  - name: reddit
+    engine: reddit
+    shortcut: re
+    
+  - name: arxiv
+    engine: arxiv
+    shortcut: arx
+    
+  - name: scholar
+    engine: google_scholar
+    shortcut: gs
+
+# Disable engines that might cause issues in API usage
+disabled_engines:
+  - 'Ahmia'
+  - 'Annas Archive'
+  - 'Dictzone'
+  - 'Lingva'
+  - 'Wikidata'
+  - 'Wikimini'
+  - 'Wikiquote'
+  - 'Wiktionary'
+  - 'Wikinews'
+  - 'Wikisource'
+  - 'Wikibooks'
+  - 'Wikiversity'
+  - 'Wikivoyage'
+  - 'Wolfram|Alpha'

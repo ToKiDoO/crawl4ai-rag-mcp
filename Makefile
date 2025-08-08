@@ -113,8 +113,8 @@ dev-bg: env-check
 
 # Development without rebuilding images
 dev-nobuild: env-check
-	@echo "$(COLOR_GREEN)Starting development environment (no rebuild) with watch mode...$(COLOR_RESET)"
-	$(DOCKER_COMPOSE_DEV) up --watch --no-build
+	@echo "$(COLOR_GREEN)Starting development environment (no rebuild)...$(COLOR_RESET)"
+	$(DOCKER_COMPOSE_DEV) up --no-build
 
 dev-bg-nobuild: env-check
 	@echo "$(COLOR_GREEN)Starting development environment in background (no rebuild)...$(COLOR_RESET)"
