@@ -6,10 +6,10 @@ These tests verify that both Supabase and Qdrant work correctly in a real enviro
 import os
 import time
 
-import docker
 import pytest
 from dotenv import load_dotenv
 
+import docker
 from database.factory import create_database_client
 from utils import (
     add_code_examples_to_database,
@@ -167,7 +167,9 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Test 1: Search by similarity
         results = await search_documents(
-            database=db, query="Python programming guide", match_count=5,
+            database=db,
+            query="Python programming guide",
+            match_count=5,
         )
 
         assert len(results) > 0
@@ -180,7 +182,8 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Test 3: Keyword search
         keyword_results = await db.search_documents_by_keyword(
-            keyword="machine learning", match_count=5,
+            keyword="machine learning",
+            match_count=5,
         )
 
         # Note: Keyword search implementation varies between databases
@@ -194,7 +197,10 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
     @pytest.mark.asyncio
     @pytest.mark.parametrize("db_fixture", ["supabase_db", "qdrant_db"])
     async def test_code_example_operations(
-        self, request, db_fixture, sample_code_examples,
+        self,
+        request,
+        db_fixture,
+        sample_code_examples,
     ):
         """Test code example addition and retrieval"""
         db = await request.getfixturevalue(db_fixture)
@@ -218,7 +224,9 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Test 1: Search code examples by query
         results = await search_code_examples(
-            database=db, query="fibonacci recursive", match_count=5,
+            database=db,
+            query="fibonacci recursive",
+            match_count=5,
         )
 
         assert len(results) > 0
@@ -230,7 +238,8 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Test 2: Keyword search in code examples
         keyword_results = await db.search_code_examples_by_keyword(
-            keyword="async", match_count=5,
+            keyword="async",
+            match_count=5,
         )
 
         assert isinstance(keyword_results, list)
@@ -256,7 +265,8 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Find our test source
         test_source = next(
-            (s for s in sources if s["source_id"] == "example.com"), None,
+            (s for s in sources if s["source_id"] == "example.com"),
+            None,
         )
         assert test_source is not None
         assert test_source["summary"] == "Example domain for testing purposes"
@@ -295,12 +305,15 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Vector search
         vector_results = await search_documents(
-            database=db, query=query, match_count=10,
+            database=db,
+            query=query,
+            match_count=10,
         )
 
         # Keyword search
         keyword_results = await db.search_documents_by_keyword(
-            keyword="functions", match_count=10,
+            keyword="functions",
+            match_count=10,
         )
 
         # Both searches should return results

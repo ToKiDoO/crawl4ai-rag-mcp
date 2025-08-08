@@ -1,9 +1,11 @@
 # PR #6 Modularization Plan
 
 ## Overview
+
 This document outlines the plan to incorporate the complete modularization refactoring into PR #6 to fix CI failures and improve the codebase architecture.
 
 ## Current Situation
+
 - **PR #6 Status**: OPEN, failing CI due to linting errors in old monolithic code
 - **Branch**: `fix/ci-failures-qdrant-tests`
 - **Backup Branch**: `backup/pre-cleanup-2025-01-08` contains all modularization work
@@ -12,6 +14,7 @@ This document outlines the plan to incorporate the complete modularization refac
 ## Execution Plan
 
 ### Phase 1: Restore Modularized Code
+
 ```bash
 # Cherry-pick the modularization commit from backup branch
 git cherry-pick backup/pre-cleanup-2025-01-08
@@ -23,7 +26,8 @@ git cherry-pick --continue
 
 ### Phase 2: Clean Up Structure (No Backward Compatibility)
 
-#### Files to DELETE:
+#### Files to DELETE
+
 - `src/crawl4ai_mcp.py` - replaced by modular structure
 - `src/utils.py` - replaced by utils/ module
 - `src/utils_refactored.py` - temporary file
@@ -32,7 +36,8 @@ git cherry-pick --continue
 - `src/database/qdrant_adapter_fixed.py` - duplicate
 - Any `.backup` files
 
-#### Final Structure:
+#### Final Structure
+
 ```
 src/
 ├── main.py                 # Entry point
@@ -78,19 +83,22 @@ src/
 
 ### Phase 3: Update Configuration Files
 
-#### 1. Update `pyproject.toml`:
+#### 1. Update `pyproject.toml`
+
 ```toml
 [project.scripts]
 crawl4ai-mcp = "src.main:main"
 ```
 
-#### 2. Update Docker files:
+#### 2. Update Docker files
+
 - **Dockerfile**: `CMD ["python", "-m", "src.main"]`
 - **docker-compose.yml**: Update command if needed
 
 ### Phase 4: Code Quality Checks
 
-#### 1. Install Tools:
+#### 1. Install Tools
+
 ```bash
 # Install markdown linter
 npm install -g markdownlint-cli
@@ -99,7 +107,8 @@ npm install -g markdownlint-cli
 uv sync
 ```
 
-#### 2. Python Linting (Ruff):
+#### 2. Python Linting (Ruff)
+
 ```bash
 # Check for issues
 uv run ruff check src/ tests/
@@ -111,7 +120,8 @@ uv run ruff check src/ tests/ --fix
 uv run ruff format src/ tests/
 ```
 
-#### 3. Markdown Linting:
+#### 3. Markdown Linting
+
 ```bash
 # Check all markdown files
 markdownlint '**/*.md' --ignore node_modules
@@ -123,14 +133,16 @@ markdownlint '**/*.md' --fix --ignore node_modules
 markdownlint README.md CHANGELOG.md 'docs/**/*.md' --fix
 ```
 
-#### 4. Type Checking (optional):
+#### 4. Type Checking (optional)
+
 ```bash
 uv run mypy src/ --ignore-missing-imports
 ```
 
 ### Phase 5: Test Updates
 
-#### Import Updates Required:
+#### Import Updates Required
+
 ```python
 # Old imports (REMOVE):
 from crawl4ai_mcp import some_function
@@ -145,9 +157,10 @@ from src.utils.validation import validate_function
 
 ### Phase 6: CI/CD Updates
 
-#### Update `.github/workflows/ci.yml`:
+#### Update `.github/workflows/ci.yml`
 
 Add markdown linting step:
+
 ```yaml
 - name: Lint Markdown files
   run: |
@@ -156,6 +169,7 @@ Add markdown linting step:
 ```
 
 Ensure Python paths are correct:
+
 ```yaml
 env:
   PYTHONPATH: ${{ github.workspace }}
@@ -247,6 +261,7 @@ This PR includes a complete modularization of the codebase to fix CI issues and 
 
 ## File Structure
 ```
+
 src/
 ├── main.py                 # Entry point
 ├── tools.py                # MCP tool definitions
@@ -256,6 +271,7 @@ src/
 ├── knowledge_graph/        # Neo4j integration
 ├── services/               # Business logic
 └── utils/                  # Utilities
+
 ```
 
 ## Testing
@@ -275,6 +291,7 @@ For developers updating existing code:
 ## Post-Merge Tasks
 
 1. **Clean up branches**:
+
 ```bash
 # Delete backup branch locally
 git branch -D backup/pre-cleanup-2025-01-08
@@ -284,17 +301,19 @@ git push origin --delete backup/pre-cleanup-2025-01-08
 ```
 
 2. **Archive remaining work**:
+
 - Create feature branches for documentation updates
 - File issues for any discovered improvements
 
 3. **Update documentation**:
+
 - Update README.md with new structure
 - Update CONTRIBUTING.md with new development workflow
 - Create ARCHITECTURE.md explaining the modular design
 
 ## Troubleshooting
 
-### If CI Still Fails:
+### If CI Still Fails
 
 1. **Check logs carefully** for specific errors
 2. **Common issues**:
@@ -304,6 +323,7 @@ git push origin --delete backup/pre-cleanup-2025-01-08
    - Linting: Run locally with --fix flag
 
 3. **Rollback if needed**:
+
 ```bash
 git reset --hard origin/fix/ci-failures-qdrant-tests
 ```
@@ -321,4 +341,4 @@ git reset --hard origin/fix/ci-failures-qdrant-tests
 
 - Created: 2025-01-08
 - Backup branch: `backup/pre-cleanup-2025-01-08`
-- PR URL: https://github.com/Deimos-AI/crawl4ai-rag-mcp/pull/6
+- PR URL: <https://github.com/Deimos-AI/crawl4ai-rag-mcp/pull/6>

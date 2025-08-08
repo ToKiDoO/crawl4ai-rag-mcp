@@ -91,7 +91,10 @@ class TestScrapeUrls:
     @patch("crawl4ai_mcp.add_documents_to_database")
     @patch("crawl4ai_mcp.crawl_batch")
     async def test_scrape_single_url_success(
-        self, mock_crawl_batch, mock_add_docs, mock_summary,
+        self,
+        mock_crawl_batch,
+        mock_add_docs,
+        mock_summary,
     ):
         """Test scraping a single URL successfully"""
         # Setup
@@ -113,7 +116,9 @@ class TestScrapeUrls:
 
         # Test
         result = await scrape_urls(
-            ctx, url="https://example.com", return_raw_markdown=False,
+            ctx,
+            url="https://example.com",
+            return_raw_markdown=False,
         )
 
         # Verify
@@ -159,7 +164,8 @@ class TestScrapeUrls:
 
         # Test
         result = await scrape_urls(
-            ctx, url=["https://example.com/1", "https://example.com/2"],
+            ctx,
+            url=["https://example.com/1", "https://example.com/2"],
         )
 
         # Verify
@@ -196,7 +202,9 @@ class TestScrapeUrls:
 
         # Test
         result = await scrape_urls(
-            ctx, url="https://example.com", return_raw_markdown=True,
+            ctx,
+            url="https://example.com",
+            return_raw_markdown=True,
         )
 
         # Verify
@@ -246,7 +254,9 @@ class TestSmartCrawlUrl:
 
         # Test
         result = await smart_crawl_url(
-            ctx, url="https://example.com/sitemap.xml", return_raw_markdown=True,
+            ctx,
+            url="https://example.com/sitemap.xml",
+            return_raw_markdown=True,
         )
 
         # Verify
@@ -298,7 +308,10 @@ class TestSmartCrawlUrl:
 
         # Test
         result = await smart_crawl_url(
-            ctx, url="https://example.com", max_depth=2, return_raw_markdown=True,
+            ctx,
+            url="https://example.com",
+            max_depth=2,
+            return_raw_markdown=True,
         )
 
         # Verify
@@ -860,7 +873,8 @@ class TestAsyncHelperFunctions:
         mock_crawler.arun.return_value = mock_result
 
         results = await crawl_markdown_file(
-            mock_crawler, "https://example.com/file.txt",
+            mock_crawler,
+            "https://example.com/file.txt",
         )
 
         assert len(results) == 1
@@ -877,7 +891,8 @@ class TestAsyncHelperFunctions:
         mock_crawler.arun.return_value = mock_result
 
         results = await crawl_markdown_file(
-            mock_crawler, "https://example.com/file.txt",
+            mock_crawler,
+            "https://example.com/file.txt",
         )
 
         assert len(results) == 0
@@ -956,7 +971,9 @@ class TestAsyncHelperFunctions:
         mock_crawler.arun_many.side_effect = [[mock_result1], [mock_result2]]
 
         results = await crawl_recursive_internal_links(
-            mock_crawler, ["https://example.com/start"], max_depth=2,
+            mock_crawler,
+            ["https://example.com/start"],
+            max_depth=2,
         )
 
         assert len(results) == 2
@@ -981,7 +998,10 @@ class TestCheckAiScriptHallucinations:
     @patch("crawl4ai_mcp.AIScriptAnalyzer")
     @patch("crawl4ai_mcp.HallucinationReporter")
     async def test_check_hallucinations_success(
-        self, mock_reporter, mock_analyzer, mock_validator,
+        self,
+        mock_reporter,
+        mock_analyzer,
+        mock_validator,
     ):
         """Test successful hallucination check"""
         # Setup mocks
@@ -1453,7 +1473,9 @@ class TestMCPToolIntegration:
     @patch("crawl4ai_mcp.parse_sitemap")
     @patch("crawl4ai_mcp.crawl_batch")
     async def test_smart_crawl_url_empty_sitemap(
-        self, mock_crawl_batch, mock_parse_sitemap,
+        self,
+        mock_crawl_batch,
+        mock_parse_sitemap,
     ):
         """Test smart crawl with empty sitemap"""
         mock_parse_sitemap.return_value = []

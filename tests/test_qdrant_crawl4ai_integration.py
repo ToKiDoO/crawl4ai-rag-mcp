@@ -14,10 +14,9 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 # Import test doubles
-from fastmcp import Context
-
 # Import MCP server components
 from crawl4ai_mcp import Crawl4AIContext
+from fastmcp import Context
 
 # Import Qdrant-specific modules
 from database.factory import create_and_initialize_database, create_database_client
@@ -106,7 +105,9 @@ class TestQdrantCrawl4AiIntegration:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_with_qdrant(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test store_crawled_page function with Qdrant backend"""
         # Mock embeddings
@@ -145,7 +146,8 @@ class TestQdrantCrawl4AiIntegration:
         qdrant_adapter.client.should_fail = True
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             with pytest.raises(Exception, match="Upsert failed"):
                 await add_documents_to_database(
@@ -184,10 +186,13 @@ class TestQdrantCrawl4AiIntegration:
         ]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             results = await search_documents(
-                database=qdrant_adapter, query="test query", match_count=2,
+                database=qdrant_adapter,
+                query="test query",
+                match_count=2,
             )
 
             assert len(results) == 2
@@ -201,11 +206,14 @@ class TestQdrantCrawl4AiIntegration:
         qdrant_adapter.client.should_fail = True
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             with pytest.raises(Exception, match="Search failed"):
                 await search_documents(
-                    database=qdrant_adapter, query="test query", match_count=5,
+                    database=qdrant_adapter,
+                    query="test query",
+                    match_count=5,
                 )
 
     @pytest.mark.asyncio
@@ -225,7 +233,8 @@ class TestQdrantCrawl4AiIntegration:
 
             # Verify client was initialized with correct parameters
             mock_client_class.assert_called_once_with(
-                url="http://localhost:6333", api_key=None,
+                url="http://localhost:6333",
+                api_key=None,
             )
 
     @pytest.mark.asyncio
@@ -235,7 +244,8 @@ class TestQdrantCrawl4AiIntegration:
         tasks = []
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             for i in range(5):
                 task = add_documents_to_database(
@@ -379,7 +389,8 @@ class TestQdrantCrawl4AiIntegration:
         test_embeddings = [[0.1] * embedding_dim, [0.2] * embedding_dim]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ) as mock_embed:
             await add_documents_to_database(
                 database=qdrant_adapter,
@@ -403,7 +414,9 @@ class TestQdrantCrawl4AiIntegration:
 
     @pytest.mark.asyncio
     async def test_qdrant_vector_search_with_filters(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test vector search operations with metadata filters"""
         # Setup filtered search results
@@ -420,7 +433,8 @@ class TestQdrantCrawl4AiIntegration:
         ]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             results = await search_documents(
                 database=qdrant_adapter,
@@ -449,7 +463,8 @@ class TestQdrantCrawl4AiIntegration:
         qdrant_adapter.client.upsert = failing_upsert
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536] * 10,
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536] * 10,
         ):
             # This should fail on first batch but the function should handle it
             with pytest.raises(Exception, match="First batch failed"):

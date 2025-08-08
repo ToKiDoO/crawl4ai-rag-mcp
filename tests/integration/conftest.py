@@ -63,7 +63,9 @@ def docker_compose_services():
         # Cleanup: Stop services
         try:
             subprocess.run(
-                ["docker", "compose", "-f", str(compose_file), "down", "-v"], check=False, timeout=60,
+                ["docker", "compose", "-f", str(compose_file), "down", "-v"],
+                check=False,
+                timeout=60,
             )
         except subprocess.TimeoutExpired:
             pass
@@ -106,7 +108,10 @@ async def qdrant_client(qdrant_service_url):
                     must=[FieldCondition(key="test", match=MatchValue(value=True))],
                 )
                 await loop.run_in_executor(
-                    None, adapter.client.delete, adapter.CRAWLED_PAGES, test_filter,
+                    None,
+                    adapter.client.delete,
+                    adapter.CRAWLED_PAGES,
+                    test_filter,
                 )
             except:
                 pass  # Ignore cleanup errors
@@ -128,7 +133,10 @@ async def qdrant_client(qdrant_service_url):
                     must=[FieldCondition(key="test", match=MatchValue(value=True))],
                 )
                 await loop.run_in_executor(
-                    None, adapter.client.delete, adapter.CRAWLED_PAGES, test_filter,
+                    None,
+                    adapter.client.delete,
+                    adapter.CRAWLED_PAGES,
+                    test_filter,
                 )
             except:
                 pass  # Ignore cleanup errors
@@ -146,7 +154,9 @@ async def supabase_client():
         pytest.skip("Supabase credentials not configured, skipping Supabase tests")
 
     adapter = SupabaseAdapter(
-        url=supabase_url, key=supabase_key, table_name="test_crawled_pages",
+        url=supabase_url,
+        key=supabase_key,
+        table_name="test_crawled_pages",
     )
 
     await adapter.initialize()
@@ -319,7 +329,8 @@ def pytest_configure(config):
     )
     config.addinivalue_line("markers", "e2e: mark test as end-to-end workflow test")
     config.addinivalue_line(
-        "markers", "performance: mark test as performance benchmark",
+        "markers",
+        "performance: mark test as performance benchmark",
     )
     config.addinivalue_line("markers", "slow: mark test as slow running")
 

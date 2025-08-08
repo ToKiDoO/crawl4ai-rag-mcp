@@ -1,5 +1,6 @@
-import requests
 from datetime import datetime
+
+import requests
 
 # Test script with known hallucinations
 
@@ -11,6 +12,8 @@ data = response.extract_json_data()
 tomorrow = datetime.now().add_days(1)
 
 # Hallucination 3: requests.post(..., auto_retry=True) - parameter doesn't exist
-result = requests.post("https://api.example.com/endpoint", json={"key": "value"}, auto_retry=True)
+result = requests.post(
+    "https://api.example.com/endpoint", json={"key": "value"}, auto_retry=True
+)
 
 print("Test completed")

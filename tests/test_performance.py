@@ -14,7 +14,9 @@ def run_tests(test_file, options=""):
     cmd = f"uv run python -m pytest {test_file} {options} -q"
 
     start_time = time.time()
-    result = subprocess.run(cmd, check=False, shell=True, capture_output=True, text=True)
+    result = subprocess.run(
+        cmd, check=False, shell=True, capture_output=True, text=True
+    )
     execution_time = time.time() - start_time
 
     # Extract test counts from output

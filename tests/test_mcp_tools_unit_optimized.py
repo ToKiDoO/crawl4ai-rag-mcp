@@ -184,7 +184,8 @@ def mock_external_dependencies():
                 ) as mock_hallucination_reporter,
                 patch("os.path.exists", return_value=True) as mock_path_exists,
                 patch(
-                    "builtins.open", mock_open(read_data="script content"),
+                    "builtins.open",
+                    mock_open(read_data="script content"),
                 ) as mock_file_open,
             ):
                 yield {
@@ -236,7 +237,9 @@ class TestSearchTool:
 
     @pytest.mark.asyncio
     async def test_search_success_with_rag(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful search with RAG processing"""
         # Setup mocks
@@ -256,7 +259,8 @@ class TestSearchTool:
 
             # Mock perform_rag_query function - also async
             with patch(
-                "crawl4ai_mcp.perform_rag_query", new_callable=AsyncMock,
+                "crawl4ai_mcp.perform_rag_query",
+                new_callable=AsyncMock,
             ) as mock_rag:
                 mock_rag.return_value = json.dumps(
                     {
@@ -351,12 +355,17 @@ class TestScrapeUrlsTool:
         ],
     )
     async def test_scrape_urls_success(
-        self, mock_context, mock_external_dependencies, urls, expected_count,
+        self,
+        mock_context,
+        mock_external_dependencies,
+        urls,
+        expected_count,
     ):
         """Test successful URL scraping - parameterized"""
         # Mock the crawl_batch function directly
         with patch(
-            "crawl4ai_mcp.crawl_batch", new_callable=AsyncMock,
+            "crawl4ai_mcp.crawl_batch",
+            new_callable=AsyncMock,
         ) as mock_crawl_batch:
             if isinstance(urls, str):
                 mock_crawl_batch.return_value = [
@@ -393,7 +402,8 @@ class TestPerformRagQueryTool:
         """Test successful RAG query with mocked embeddings"""
         # Mock search_documents to return results without calling OpenAI
         with patch(
-            "crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+            "crawl4ai_mcp.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.return_value = [
                 {
@@ -405,7 +415,8 @@ class TestPerformRagQueryTool:
 
             # Mock the embedding creation to avoid OpenAI calls
             with patch(
-                "crawl4ai_mcp.create_embeddings", new_callable=AsyncMock,
+                "crawl4ai_mcp.create_embeddings",
+                new_callable=AsyncMock,
             ) as mock_embed:
                 mock_embed.return_value = [MOCK_EMBEDDING]
 
@@ -429,12 +440,15 @@ class TestMCPToolsPerformance:
 
     @pytest.mark.asyncio
     async def test_concurrent_requests_handling(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test that tools can handle concurrent requests efficiently"""
         # Mock search_documents with minimal overhead
         with patch(
-            "crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+            "crawl4ai_mcp.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.return_value = [
                 {"content": "Test", "similarity": 0.9, "metadata": {}},
@@ -442,7 +456,8 @@ class TestMCPToolsPerformance:
 
             # Mock embeddings to avoid OpenAI calls
             with patch(
-                "crawl4ai_mcp.create_embeddings", new_callable=AsyncMock,
+                "crawl4ai_mcp.create_embeddings",
+                new_callable=AsyncMock,
             ) as mock_embed:
                 mock_embed.return_value = [MOCK_EMBEDDING]
 

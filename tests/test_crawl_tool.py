@@ -115,7 +115,6 @@ def setup_environment():
     for key, value in env_vars.items():
         os.environ[key] = value
 
-
     # Cleanup not needed for test environment variables
 
 
@@ -145,7 +144,9 @@ class TestSearchTool:
 
     @pytest.mark.asyncio
     async def test_search_basic_functionality(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test basic search functionality"""
         # Get the tool function
@@ -180,7 +181,8 @@ class TestSearchTool:
 
             # Mock perform_rag_query function call
             with patch(
-                "crawl4ai_mcp.perform_rag_query", new_callable=AsyncMock,
+                "crawl4ai_mcp.perform_rag_query",
+                new_callable=AsyncMock,
             ) as mock_rag:
                 mock_rag.return_value = json.dumps(
                     {
@@ -197,7 +199,9 @@ class TestSearchTool:
 
                 # Execute search
                 result = await search_fn(
-                    mock_context, "python programming", return_raw_markdown=False,
+                    mock_context,
+                    "python programming",
+                    return_raw_markdown=False,
                 )
 
                 # Parse and validate result
@@ -209,7 +213,9 @@ class TestSearchTool:
 
     @pytest.mark.asyncio
     async def test_search_with_raw_markdown(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search with raw markdown return"""
         search_fn = get_tool_function("search")
@@ -234,7 +240,9 @@ class TestSearchTool:
 
             # Execute search with raw markdown
             result = await search_fn(
-                mock_context, "test query", return_raw_markdown=True,
+                mock_context,
+                "test query",
+                return_raw_markdown=True,
             )
 
             # Parse and validate result
@@ -244,7 +252,9 @@ class TestSearchTool:
 
     @pytest.mark.asyncio
     async def test_search_with_custom_parameters(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search with custom parameters"""
         search_fn = get_tool_function("search")
@@ -285,7 +295,9 @@ class TestSearchTool:
 
     @pytest.mark.asyncio
     async def test_search_connection_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search behavior with connection errors"""
         search_fn = get_tool_function("search")
@@ -353,7 +365,9 @@ class TestScrapeUrlsTool:
 
     @pytest.mark.asyncio
     async def test_scrape_single_url_success(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test scraping a single URL successfully"""
         scrape_fn = get_tool_function("scrape_urls")
@@ -374,7 +388,9 @@ class TestScrapeUrlsTool:
 
     @pytest.mark.asyncio
     async def test_scrape_multiple_urls_success(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test scraping multiple URLs successfully"""
         scrape_fn = get_tool_function("scrape_urls")
@@ -394,7 +410,9 @@ class TestScrapeUrlsTool:
 
     @pytest.mark.asyncio
     async def test_scrape_with_raw_markdown(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test scraping with raw markdown return"""
         scrape_fn = get_tool_function("scrape_urls")
@@ -406,7 +424,9 @@ class TestScrapeUrlsTool:
 
         # Execute scrape with raw markdown
         result = await scrape_fn(
-            mock_context, "https://example.com", return_raw_markdown=True,
+            mock_context,
+            "https://example.com",
+            return_raw_markdown=True,
         )
 
         # Parse and validate result
@@ -447,7 +467,9 @@ class TestScrapeUrlsTool:
 
     @pytest.mark.asyncio
     async def test_scrape_batch_processing(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test scraping with batch processing parameters"""
         scrape_fn = get_tool_function("scrape_urls")
@@ -471,7 +493,9 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_basic_functionality(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test basic smart crawl functionality"""
         smart_crawl_fn = get_tool_function("smart_crawl_url")
@@ -491,7 +515,9 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_with_depth(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl with custom depth"""
         smart_crawl_fn = get_tool_function("smart_crawl_url")
@@ -508,7 +534,10 @@ class TestSmartCrawlUrlTool:
 
         # Execute smart crawl with depth
         result = await smart_crawl_fn(
-            mock_context, "https://example.com", max_depth=2, max_concurrent=3,
+            mock_context,
+            "https://example.com",
+            max_depth=2,
+            max_concurrent=3,
         )
 
         # Parse and validate result
@@ -517,7 +546,9 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_with_query_filter(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl with query filtering"""
         smart_crawl_fn = get_tool_function("smart_crawl_url")
@@ -530,7 +561,9 @@ class TestSmartCrawlUrlTool:
 
         # Execute smart crawl with query
         result = await smart_crawl_fn(
-            mock_context, "https://example.com", query=["python", "programming"],
+            mock_context,
+            "https://example.com",
+            query=["python", "programming"],
         )
 
         # Parse and validate result
@@ -539,7 +572,9 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_chunking_options(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl with custom chunking"""
         smart_crawl_fn = get_tool_function("smart_crawl_url")
@@ -552,7 +587,9 @@ class TestSmartCrawlUrlTool:
 
         # Execute smart crawl with custom chunk size
         result = await smart_crawl_fn(
-            mock_context, "https://example.com", chunk_size=3000,
+            mock_context,
+            "https://example.com",
+            chunk_size=3000,
         )
 
         # Parse and validate result
@@ -561,7 +598,9 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_error_handling(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl error handling"""
         smart_crawl_fn = get_tool_function("smart_crawl_url")
@@ -581,7 +620,9 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_invalid_url(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl with invalid URL"""
         smart_crawl_fn = get_tool_function("smart_crawl_url")
@@ -600,7 +641,9 @@ class TestCrawlToolsPerformance:
 
     @pytest.mark.asyncio
     async def test_concurrent_crawling_performance(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test performance of concurrent crawling operations"""
         scrape_fn = get_tool_function("scrape_urls")

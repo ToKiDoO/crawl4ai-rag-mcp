@@ -10,10 +10,10 @@ import subprocess
 import time
 from pathlib import Path
 
-import docker
 import pytest
 from dotenv import load_dotenv
 
+import docker
 from database.factory import create_database_client
 from utils import (
     add_code_examples_to_database,
@@ -159,7 +159,9 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
     @pytest.mark.asyncio
     async def test_qdrant_document_operations(
-        self, ensure_qdrant_running, sample_documents,
+        self,
+        ensure_qdrant_running,
+        sample_documents,
     ):
         """Test document operations with Qdrant"""
         db = await self.create_qdrant_db()
@@ -189,7 +191,9 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Test 1: Search by similarity
         results = await search_documents(
-            database=db, query="Python programming guide", match_count=5,
+            database=db,
+            query="Python programming guide",
+            match_count=5,
         )
 
         assert len(results) > 0
@@ -202,14 +206,17 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Test 3: Keyword search (Note: May return empty if text indexing not configured)
         keyword_results = await db.search_documents_by_keyword(
-            keyword="machine learning", match_count=5,
+            keyword="machine learning",
+            match_count=5,
         )
         # For now, just verify it doesn't error
         assert isinstance(keyword_results, list)
 
     @pytest.mark.asyncio
     async def test_qdrant_code_operations(
-        self, ensure_qdrant_running, sample_code_examples,
+        self,
+        ensure_qdrant_running,
+        sample_code_examples,
     ):
         """Test code example operations with Qdrant"""
         db = await self.create_qdrant_db()
@@ -226,7 +233,9 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Test 1: Search code examples
         results = await search_code_examples(
-            database=db, query="fibonacci recursive algorithm", match_count=5,
+            database=db,
+            query="fibonacci recursive algorithm",
+            match_count=5,
         )
 
         assert len(results) > 0
@@ -234,7 +243,9 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
         # Test 2: Search for async code
         async_results = await search_code_examples(
-            database=db, query="async HTTP requests aiohttp", match_count=5,
+            database=db,
+            query="async HTTP requests aiohttp",
+            match_count=5,
         )
 
         assert len(async_results) > 0
@@ -283,7 +294,9 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
     @pytest.mark.asyncio
     async def test_qdrant_metadata_filtering(
-        self, ensure_qdrant_running, sample_documents,
+        self,
+        ensure_qdrant_running,
+        sample_documents,
     ):
         """Test metadata filtering with Qdrant"""
         db = await self.create_qdrant_db()
@@ -360,7 +373,8 @@ results = await asyncio.gather(*[fetch_data(url) for url in urls])
 
     @pytest.mark.asyncio
     @pytest.mark.skipif(
-        os.getenv("SUPABASE_URL") is None, reason="Supabase credentials not configured",
+        os.getenv("SUPABASE_URL") is None,
+        reason="Supabase credentials not configured",
     )
     async def test_supabase_basic_operations(self, sample_documents):
         """Test basic operations with Supabase (if configured)"""

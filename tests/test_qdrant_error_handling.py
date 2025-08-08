@@ -120,7 +120,8 @@ class TestQdrantErrorHandling:
             # Test that search failure is properly propagated
             with pytest.raises(Exception, match="Search operation failed"):
                 await adapter.search_documents(
-                    query_embedding=[0.1] * 1536, match_count=5,
+                    query_embedding=[0.1] * 1536,
+                    match_count=5,
                 )
 
     @pytest.mark.asyncio
@@ -180,7 +181,11 @@ class TestQdrantErrorHandling:
 
             # Test with empty lists
             await adapter.add_documents(
-                urls=[], chunk_numbers=[], contents=[], metadatas=[], embeddings=[],
+                urls=[],
+                chunk_numbers=[],
+                contents=[],
+                metadatas=[],
+                embeddings=[],
             )
 
             # Should not call upsert for empty data
@@ -318,7 +323,8 @@ class TestQdrantErrorHandling:
 
             # Mock embedding creation to avoid OpenAI calls
             with patch(
-                "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+                "utils.create_embeddings_batch",
+                return_value=[[0.1] * 1536],
             ):
                 with pytest.raises(Exception, match="Qdrant storage error"):
                     adapter = QdrantAdapter(url="http://localhost:6333")
@@ -350,11 +356,14 @@ class TestQdrantErrorHandling:
 
             # Mock invalid embedding
             with patch(
-                "utils.create_embedding", return_value=[0.1] * 128,
+                "utils.create_embedding",
+                return_value=[0.1] * 128,
             ):  # Wrong dimension
                 with pytest.raises(ValueError, match="Invalid query vector dimensions"):
                     await search_documents(
-                        database=adapter, query="test query", match_count=5,
+                        database=adapter,
+                        query="test query",
+                        match_count=5,
                     )
 
     @pytest.mark.asyncio

@@ -97,7 +97,8 @@ class TestMCPToolsEdgeCases:
         scrape_func = scrape_urls.fn if hasattr(scrape_urls, "fn") else scrape_urls
 
         result = await scrape_func(
-            mock_ctx, ["https://valid.com", 123, "https://also-valid.com"],
+            mock_ctx,
+            ["https://valid.com", 123, "https://also-valid.com"],
         )
         result_data = json.loads(result)
         assert result_data["success"] is False
@@ -188,7 +189,9 @@ class TestMCPToolsEdgeCases:
                 mock_response = Mock()
                 mock_response.raise_for_status = Mock()  # No exception
                 mock_response.json.side_effect = json.JSONDecodeError(
-                    "Invalid JSON", "", 0,
+                    "Invalid JSON",
+                    "",
+                    0,
                 )
                 mock_get.return_value = mock_response
 
@@ -315,7 +318,10 @@ class TestMCPToolsEdgeCases:
 
         scrape_func = scrape_urls.fn if hasattr(scrape_urls, "fn") else scrape_urls
         result = await scrape_func(
-            mock_ctx, large_batch, max_concurrent=5, batch_size=10,
+            mock_ctx,
+            large_batch,
+            max_concurrent=5,
+            batch_size=10,
         )
 
         result_data = json.loads(result)

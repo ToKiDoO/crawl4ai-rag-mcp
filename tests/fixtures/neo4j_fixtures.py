@@ -71,7 +71,9 @@ class MockNeo4jResult:
         self._consumed = True
         return MagicMock(
             counters=MagicMock(
-                nodes_created=0, relationships_created=0, properties_set=0,
+                nodes_created=0,
+                relationships_created=0,
+                properties_set=0,
             ),
         )
 

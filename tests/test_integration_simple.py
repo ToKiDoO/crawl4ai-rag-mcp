@@ -95,7 +95,9 @@ class TestSimpleIntegration:
 
         # Test search through utils
         results = await search_documents(
-            database=mock_db, query="test query", match_count=5,
+            database=mock_db,
+            query="test query",
+            match_count=5,
         )
 
         assert len(results) == 1
@@ -136,7 +138,9 @@ class TestSimpleIntegration:
 
         # Test code example search
         results = await search_code_examples(
-            database=mock_db, query="test function", match_count=5,
+            database=mock_db,
+            query="test function",
+            match_count=5,
         )
 
         assert len(results) == 1

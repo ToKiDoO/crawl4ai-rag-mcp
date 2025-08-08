@@ -42,7 +42,9 @@ class TestQdrantIntegration:
 
         loop = asyncio.get_event_loop()
         collection_info = await loop.run_in_executor(
-            None, qdrant_client.client.get_collection, qdrant_client.CRAWLED_PAGES,
+            None,
+            qdrant_client.client.get_collection,
+            qdrant_client.CRAWLED_PAGES,
         )
         assert (
             collection_info.config.params.vectors.size == 1536
@@ -51,7 +53,8 @@ class TestQdrantIntegration:
 
         # Test connection health
         health_status = await loop.run_in_executor(
-            None, qdrant_client.client.get_collections,
+            None,
+            qdrant_client.client.get_collections,
         )
         assert qdrant_client.CRAWLED_PAGES in [
             col.name for col in health_status.collections
@@ -115,12 +118,14 @@ class TestQdrantIntegration:
 
             # Search for programming content
             programming_results = await qdrant_client.search_crawled_pages(
-                query="programming language", match_count=5,
+                query="programming language",
+                match_count=5,
             )
 
             # Search for AI content
             ai_results = await qdrant_client.search_crawled_pages(
-                query="artificial intelligence machine learning", match_count=5,
+                query="artificial intelligence machine learning",
+                match_count=5,
             )
 
         # Verify search results
@@ -136,7 +141,9 @@ class TestQdrantIntegration:
 
         # Test filtering by metadata
         python_results = await qdrant_client.search_crawled_pages(
-            query="programming", match_count=5, filters={"category": "programming"},
+            query="programming",
+            match_count=5,
+            filters={"category": "programming"},
         )
 
         assert len(python_results) >= 2
@@ -251,7 +258,8 @@ class TestQdrantIntegration:
 
             start_time = time.time()
             results = await qdrant_client.search_crawled_pages(
-                query="Large document content", match_count=1,
+                query="Large document content",
+                match_count=1,
             )
             search_time = time.time() - start_time
 
@@ -298,7 +306,8 @@ class TestQdrantIntegration:
                 # If it succeeds, verify it's stored correctly
                 if doc_id:
                     results = await qdrant_client.search_crawled_pages(
-                        query="Valid content", match_count=1,
+                        query="Valid content",
+                        match_count=1,
                     )
                     assert len(results) >= 1
 
@@ -313,7 +322,8 @@ class TestQdrantIntegration:
 
             with pytest.raises(Exception):
                 await qdrant_client.search_crawled_pages(
-                    query="This should fail", match_count=5,
+                    query="This should fail",
+                    match_count=5,
                 )
 
         # Verify database is still functional after errors
@@ -322,7 +332,8 @@ class TestQdrantIntegration:
 
             # This should work normally
             results = await qdrant_client.search_crawled_pages(
-                query="recovery test", match_count=1,
+                query="recovery test",
+                match_count=1,
             )
 
             # Should not crash, even if no results
@@ -361,7 +372,8 @@ class TestQdrantIntegration:
             # Multiple retrievals should be consistent
             retrieval_tasks = [
                 qdrant_client.search_crawled_pages(
-                    "unique identifier 12345", match_count=1,
+                    "unique identifier 12345",
+                    match_count=1,
                 )
                 for _ in range(5)
             ]
@@ -443,7 +455,8 @@ class TestSupabaseIntegration:
             mock_embeddings.return_value = [0.1] * 1536
 
             results = await supabase_client.search_crawled_pages(
-                query="vector search capabilities", match_count=5,
+                query="vector search capabilities",
+                match_count=5,
             )
 
         # Verify search results
@@ -488,7 +501,8 @@ class TestDatabaseFactory:
             mock_embeddings.return_value = [0.1] * 1536
 
             results = await adapter.search_crawled_pages(
-                query="Factory test", match_count=5,
+                query="Factory test",
+                match_count=5,
             )
 
         assert len(results) >= 1
@@ -551,7 +565,8 @@ class TestCrossDatabase:
             mock_embeddings.return_value = [0.1] * 1536
 
             qdrant_results = await qdrant_client.search_crawled_pages(
-                query="portable cross database", match_count=5,
+                query="portable cross database",
+                match_count=5,
             )
 
         # Verify consistent data structure

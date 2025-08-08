@@ -229,7 +229,9 @@ class TestCrawlingFunctions:
         mock_crawler.arun_many.return_value = [mock_result1, mock_result2, mock_result2]
 
         results = await crawl_recursive_internal_links(
-            mock_crawler, ["https://example.com"], max_depth=2,
+            mock_crawler,
+            ["https://example.com"],
+            max_depth=2,
         )
 
         assert isinstance(results, list)
@@ -312,7 +314,8 @@ class TestMCPTools:
     async def test_perform_rag_query_tool_basic(self, mock_context):
         """Test the perform_rag_query MCP tool basic functionality."""
         with patch(
-            "src.crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             # Mock RAG search results
             mock_search.return_value = [

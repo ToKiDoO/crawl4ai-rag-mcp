@@ -56,7 +56,10 @@ class TestEndToEndWorkflows:
 
     @pytest.mark.asyncio
     async def test_basic_crawl_and_search_workflow(
-        self, qdrant_client, performance_thresholds, integration_test_env,
+        self,
+        qdrant_client,
+        performance_thresholds,
+        integration_test_env,
     ):
         """Test basic crawl → search workflow."""
 
@@ -82,7 +85,8 @@ class TestEndToEndWorkflows:
         with patch("src.crawl4ai_mcp.mcp") as mock_mcp:
             # Mock create_embedding for storage
             with patch(
-                "src.utils.create_embedding", return_value=[0.1] * 1536,
+                "src.utils.create_embedding",
+                return_value=[0.1] * 1536,
             ):
                 crawl_func = (
                     scrape_urls.fn if hasattr(scrape_urls, "fn") else scrape_urls
@@ -90,7 +94,8 @@ class TestEndToEndWorkflows:
 
                 # Call with store_results=True (this should be parsed from the URL parameter)
                 result = await crawl_func(
-                    mock_ctx, "https://example.com/test?store_results=true",
+                    mock_ctx,
+                    "https://example.com/test?store_results=true",
                 )
 
         # Verify crawl succeeded
@@ -99,11 +104,14 @@ class TestEndToEndWorkflows:
         # Step 2: Search for the stored content
         with patch("src.crawl4ai_mcp.mcp") as mock_mcp:
             with patch(
-                "src.utils.create_embedding", return_value=[0.1] * 1536,
+                "src.utils.create_embedding",
+                return_value=[0.1] * 1536,
             ):
                 search_func = search.fn if hasattr(search, "fn") else search
                 search_result = await search_func(
-                    mock_ctx, query="artificial intelligence", num_results=5,
+                    mock_ctx,
+                    query="artificial intelligence",
+                    num_results=5,
                 )
 
         # Verify search found relevant content
@@ -143,7 +151,8 @@ class TestEndToEndWorkflows:
         # Test RAG query
         with patch("src.crawl4ai_mcp.mcp") as mock_mcp:
             with patch(
-                "src.utils.create_embedding", return_value=[0.1] * 1536,
+                "src.utils.create_embedding",
+                return_value=[0.1] * 1536,
             ):
                 rag_func = (
                     perform_rag_query.fn
@@ -160,7 +169,9 @@ class TestEndToEndWorkflows:
 
                 # Query about AI
                 ai_result = await rag_func(
-                    mock_ctx, query="What is artificial intelligence?", match_count=3,
+                    mock_ctx,
+                    query="What is artificial intelligence?",
+                    match_count=3,
                 )
 
         # Verify RAG results contain relevant information
@@ -213,7 +224,8 @@ class TestEndToEndWorkflows:
         # Test code search
         with patch("src.crawl4ai_mcp.mcp") as mock_mcp:
             with patch(
-                "src.utils.create_embedding", return_value=[0.1] * 1536,
+                "src.utils.create_embedding",
+                return_value=[0.1] * 1536,
             ):
                 code_search_func = (
                     search_code_examples.fn
@@ -223,12 +235,16 @@ class TestEndToEndWorkflows:
 
                 # Search for async code examples
                 async_result = await code_search_func(
-                    mock_ctx, query="async await example", match_count=3,
+                    mock_ctx,
+                    query="async await example",
+                    match_count=3,
                 )
 
                 # Search for JavaScript examples
                 js_result = await code_search_func(
-                    mock_ctx, query="javascript function", match_count=3,
+                    mock_ctx,
+                    query="javascript function",
+                    match_count=3,
                 )
 
         # Verify code search results
@@ -264,7 +280,8 @@ class TestEndToEndWorkflows:
         # Test smart crawl
         with patch("src.crawl4ai_mcp.mcp") as mock_mcp:
             with patch(
-                "src.utils.create_embedding", return_value=[0.1] * 1536,
+                "src.utils.create_embedding",
+                return_value=[0.1] * 1536,
             ):
                 smart_crawl_func = (
                     smart_crawl_url.fn
@@ -273,7 +290,10 @@ class TestEndToEndWorkflows:
                 )
 
                 result = await smart_crawl_func(
-                    mock_ctx, url="https://example.com", max_depth=2, max_concurrent=5,
+                    mock_ctx,
+                    url="https://example.com",
+                    max_depth=2,
+                    max_concurrent=5,
                 )
 
         # Verify smart crawl worked
@@ -310,7 +330,8 @@ class TestEndToEndWorkflows:
         # Test search with no results
         with patch("src.crawl4ai_mcp.mcp") as mock_mcp:
             with patch(
-                "src.utils.create_embedding", return_value=[0.1] * 1536,
+                "src.utils.create_embedding",
+                return_value=[0.1] * 1536,
             ):
                 search_func = search.fn if hasattr(search, "fn") else search
 
@@ -328,7 +349,10 @@ class TestEndToEndWorkflows:
     @pytest.mark.asyncio
     @pytest.mark.performance
     async def test_performance_workflow(
-        self, qdrant_client, performance_thresholds, integration_test_env,
+        self,
+        qdrant_client,
+        performance_thresholds,
+        integration_test_env,
     ):
         """Test workflow performance characteristics."""
 
@@ -339,7 +363,8 @@ class TestEndToEndWorkflows:
 
         for i, url in enumerate(test_urls):
             with patch(
-                "src.utils.create_embedding", return_value=[0.1] * 1536,
+                "src.utils.create_embedding",
+                return_value=[0.1] * 1536,
             ):
                 await qdrant_client.store_crawled_page(
                     url=url,
@@ -353,7 +378,8 @@ class TestEndToEndWorkflows:
 
         with patch("src.crawl4ai_mcp.mcp") as mock_mcp:
             with patch(
-                "src.utils.create_embedding", return_value=[0.1] * 1536,
+                "src.utils.create_embedding",
+                return_value=[0.1] * 1536,
             ):
                 search_func = search.fn if hasattr(search, "fn") else search
 
@@ -361,7 +387,9 @@ class TestEndToEndWorkflows:
                     start_time = time.time()
 
                     result = await search_func(
-                        mock_ctx, query=f"performance test topic {i}", num_results=3,
+                        mock_ctx,
+                        query=f"performance test topic {i}",
+                        num_results=3,
                     )
 
                     search_time = (time.time() - start_time) * 1000

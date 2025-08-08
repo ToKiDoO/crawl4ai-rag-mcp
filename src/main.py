@@ -14,7 +14,6 @@ from fastmcp import FastMCP
 from config import get_settings
 from core import crawl4ai_lifespan, logger
 from tools import register_tools
-from core.context import set_app_context
 
 # Get settings instance
 settings = get_settings()
@@ -72,10 +71,16 @@ async def main():
                 logger.info("✓ Application context initialized successfully")
                 logger.info(f"  - Crawler: {type(context.crawler).__name__}")
                 logger.info(f"  - Database: {type(context.database_client).__name__}")
-                logger.info(f"  - Reranking model: {'✓' if context.reranking_model else '✗'}")
-                logger.info(f"  - Knowledge validator: {'✓' if context.knowledge_validator else '✗'}")
-                logger.info(f"  - Repository extractor: {'✓' if context.repo_extractor else '✗'}")
-                
+                logger.info(
+                    f"  - Reranking model: {'✓' if context.reranking_model else '✗'}"
+                )
+                logger.info(
+                    f"  - Knowledge validator: {'✓' if context.knowledge_validator else '✗'}"
+                )
+                logger.info(
+                    f"  - Repository extractor: {'✓' if context.repo_extractor else '✗'}"
+                )
+
                 # Run the HTTP server with the context active
                 await mcp.run_async(transport="http", host=host, port=int(port))
         elif transport == "sse":

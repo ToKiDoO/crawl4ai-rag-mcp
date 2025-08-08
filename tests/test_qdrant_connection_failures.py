@@ -351,7 +351,11 @@ class TestQdrantOperationFailures:
 
         # Empty inputs should be handled gracefully
         await adapter.add_documents(
-            urls=[], chunk_numbers=[], contents=[], metadatas=[], embeddings=[],
+            urls=[],
+            chunk_numbers=[],
+            contents=[],
+            metadatas=[],
+            embeddings=[],
         )
 
         # Should not have attempted any operations

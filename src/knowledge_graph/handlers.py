@@ -6,7 +6,7 @@ Provides handlers for different query commands like repos, explore, classes, etc
 
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ async def handle_repos_command(session: Any, command: str) -> str:
     repos = []
     async for record in result:
         repos.append(record["name"])
-    
+
     return json.dumps(
         {
             "success": True,
@@ -36,7 +36,7 @@ async def handle_explore_command(session: Any, command: str, repo_name: str) -> 
     repo_check_query = "MATCH (r:Repository {name: $repo_name}) RETURN r.name as name"
     result = await session.run(repo_check_query, repo_name=repo_name)
     repo_record = await result.single()
-    
+
     if not repo_record:
         return json.dumps(
             {
@@ -46,7 +46,7 @@ async def handle_explore_command(session: Any, command: str, repo_name: str) -> 
             },
             indent=2,
         )
-    
+
     # Get repository stats
     stats_query = """
     MATCH (r:Repository {name: $repo_name})
@@ -68,10 +68,10 @@ async def handle_explore_command(session: Any, command: str, repo_name: str) -> 
         SIZE([func IN functions WHERE func IS NOT NULL]) as function_count,
         SIZE([a IN attributes WHERE a IS NOT NULL]) as attribute_count
     """
-    
+
     result = await session.run(stats_query, repo_name=repo_name)
     stats = await result.single()
-    
+
     # Get sample classes
     sample_classes_query = """
     MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)-[:DEFINES]->(c:Class)
@@ -79,14 +79,14 @@ async def handle_explore_command(session: Any, command: str, repo_name: str) -> 
     ORDER BY methods DESC
     LIMIT 10
     """
-    
+
     result = await session.run(sample_classes_query, repo_name=repo_name)
     sample_classes = []
     async for record in result:
         sample_classes.append(
-            {"name": record["name"], "method_count": record["methods"]}
+            {"name": record["name"], "method_count": record["methods"]},
         )
-    
+
     return json.dumps(
         {
             "success": True,
@@ -107,10 +107,12 @@ async def handle_explore_command(session: Any, command: str, repo_name: str) -> 
     )
 
 
-async def handle_classes_command(session: Any, command: str, repo_name: Optional[str] = None) -> str:
+async def handle_classes_command(
+    session: Any, command: str, repo_name: str | None = None
+) -> str:
     """Handle 'classes [repo]' command - list classes"""
     limit = 20
-    
+
     if repo_name:
         query = """
         MATCH (r:Repository {name: $repo_name})-[:CONTAINS]->(f:File)-[:DEFINES]->(c:Class)
@@ -127,11 +129,11 @@ async def handle_classes_command(session: Any, command: str, repo_name: Optional
         LIMIT $limit
         """
         result = await session.run(query, limit=limit)
-    
+
     classes = []
     async for record in result:
         classes.append({"name": record["name"], "full_name": record["full_name"]})
-    
+
     return json.dumps(
         {
             "success": True,
@@ -158,7 +160,7 @@ async def handle_class_command(session: Any, command: str, class_name: str) -> s
     """
     result = await session.run(class_query, class_name=class_name)
     class_record = await result.single()
-    
+
     if not class_record:
         return json.dumps(
             {
@@ -168,7 +170,7 @@ async def handle_class_command(session: Any, command: str, class_name: str) -> s
             },
             indent=2,
         )
-    
+
     # Get methods
     methods_query = """
     MATCH (c:Class)-[:HAS_METHOD]->(m:Method)
@@ -184,9 +186,9 @@ async def handle_class_command(session: Any, command: str, class_name: str) -> s
                 "name": record["name"],
                 "params": record["params"],
                 "return_type": record["return_type"],
-            }
+            },
         )
-    
+
     # Get attributes
     attributes_query = """
     MATCH (c:Class)-[:HAS_ATTRIBUTE]->(a:Attribute)
@@ -198,7 +200,7 @@ async def handle_class_command(session: Any, command: str, class_name: str) -> s
     attributes = []
     async for record in result:
         attributes.append({"name": record["name"], "type": record["type"]})
-    
+
     return json.dumps(
         {
             "success": True,
@@ -217,7 +219,10 @@ async def handle_class_command(session: Any, command: str, class_name: str) -> s
 
 
 async def handle_method_command(
-    session: Any, command: str, method_name: str, class_name: Optional[str] = None
+    session: Any,
+    command: str,
+    method_name: str,
+    class_name: str | None = None,
 ) -> str:
     """Handle 'method <name> [class]' command - search for methods"""
     if class_name:
@@ -230,7 +235,9 @@ async def handle_method_command(
                m.params_detailed as params_detailed, m.return_type as return_type, m.args as args
         """
         result = await session.run(
-            query, class_name=class_name, method_name=method_name
+            query,
+            class_name=class_name,
+            method_name=method_name,
         )
     else:
         query = """
@@ -242,7 +249,7 @@ async def handle_method_command(
         LIMIT 20
         """
         result = await session.run(query, method_name=method_name)
-    
+
     methods = []
     async for record in result:
         methods.append(
@@ -254,9 +261,9 @@ async def handle_method_command(
                 "params_detailed": record["params_detailed"],
                 "return_type": record["return_type"],
                 "args": record["args"],
-            }
+            },
         )
-    
+
     return json.dumps(
         {
             "success": True,
@@ -280,7 +287,7 @@ async def handle_query_command(session: Any, command: str, cypher_query: str) ->
             count += 1
             if count >= 20:  # Limit results to prevent overwhelming responses
                 break
-        
+
         return json.dumps(
             {
                 "success": True,
@@ -299,7 +306,7 @@ async def handle_query_command(session: Any, command: str, cypher_query: str) ->
             {
                 "success": False,
                 "command": command,
-                "error": f"Query execution failed: {str(e)}",
+                "error": f"Query execution failed: {e!s}",
                 "query": cypher_query,
             },
             indent=2,

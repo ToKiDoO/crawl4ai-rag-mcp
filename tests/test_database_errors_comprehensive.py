@@ -25,6 +25,7 @@ src_path = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
 from crawl4ai_mcp import perform_rag_query, scrape_urls
+
 from database.base import VectorDatabase
 from database.factory import create_and_initialize_database, create_database_client
 from utils import (
@@ -140,7 +141,8 @@ class TestDatabaseErrorHandling:
         )
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             try:
                 await add_documents_to_database(
@@ -246,7 +248,8 @@ class TestDatabaseErrorHandling:
         mock_ctx.mock_db.add_documents.side_effect = partial_failure
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536] * 20,
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536] * 20,
         ):
             try:
                 await add_documents_to_database(
@@ -273,7 +276,8 @@ class TestDatabaseErrorHandling:
         )
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 512],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 512],
         ):  # Wrong dimension
             try:
                 await add_documents_to_database(
@@ -320,7 +324,8 @@ class TestDatabaseErrorHandling:
         )
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             try:
                 await add_documents_to_database(
@@ -394,7 +399,8 @@ class TestDatabaseErrorHandling:
         )
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             try:
                 await add_documents_to_database(
@@ -419,7 +425,8 @@ class TestDatabaseErrorHandling:
         )
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             try:
                 await add_documents_to_database(
@@ -519,7 +526,8 @@ class TestDatabaseErrorHandling:
         )
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             try:
                 await add_documents_to_database(

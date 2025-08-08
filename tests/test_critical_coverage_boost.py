@@ -222,13 +222,16 @@ class TestHighImpactCoverage:
             # Test supabase client error handling
             with patch.dict(os.environ, {}, clear=True):
                 with pytest.raises(
-                    ValueError, match="SUPABASE_URL and SUPABASE_SERVICE_KEY",
+                    ValueError,
+                    match="SUPABASE_URL and SUPABASE_SERVICE_KEY",
                 ):
                     get_supabase_client()
 
             # Test with missing one var
             with patch.dict(
-                os.environ, {"SUPABASE_URL": "https://test.supabase.co"}, clear=True,
+                os.environ,
+                {"SUPABASE_URL": "https://test.supabase.co"},
+                clear=True,
             ):
                 with pytest.raises(ValueError):
                     get_supabase_client()

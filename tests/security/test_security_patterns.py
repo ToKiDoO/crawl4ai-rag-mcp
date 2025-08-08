@@ -170,7 +170,10 @@ class SecurityTestHelpers:
 
             for pattern in patterns:
                 sanitized = re.sub(
-                    pattern, f"{key}=[REDACTED]", sanitized, flags=re.IGNORECASE,
+                    pattern,
+                    f"{key}=[REDACTED]",
+                    sanitized,
+                    flags=re.IGNORECASE,
                 )
 
         return sanitized

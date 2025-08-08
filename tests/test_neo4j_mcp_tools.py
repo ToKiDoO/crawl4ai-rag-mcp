@@ -160,7 +160,10 @@ class TestCheckAIScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_valid_script_path(
-        self, mock_knowledge_context, enabled_environment, sample_script_file,
+        self,
+        mock_knowledge_context,
+        enabled_environment,
+        sample_script_file,
     ):
         """Test hallucination check with valid script path"""
         ctx, mock_validator = mock_knowledge_context
@@ -213,7 +216,9 @@ class TestCheckAIScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_invalid_script_path(
-        self, mock_knowledge_context, enabled_environment,
+        self,
+        mock_knowledge_context,
+        enabled_environment,
     ):
         """Test hallucination check with invalid script path"""
         ctx, mock_validator = mock_knowledge_context
@@ -229,7 +234,10 @@ class TestCheckAIScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_script_analysis_error(
-        self, mock_knowledge_context, enabled_environment, sample_script_file,
+        self,
+        mock_knowledge_context,
+        enabled_environment,
+        sample_script_file,
     ):
         """Test handling of script analysis errors"""
         ctx, mock_validator = mock_knowledge_context
@@ -248,7 +256,10 @@ class TestCheckAIScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_validation_error(
-        self, mock_knowledge_context, enabled_environment, sample_script_file,
+        self,
+        mock_knowledge_context,
+        enabled_environment,
+        sample_script_file,
     ):
         """Test handling of validation errors"""
         ctx, mock_validator = mock_knowledge_context
@@ -272,7 +283,10 @@ class TestCheckAIScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_script_with_warnings(
-        self, mock_knowledge_context, enabled_environment, sample_script_file,
+        self,
+        mock_knowledge_context,
+        enabled_environment,
+        sample_script_file,
     ):
         """Test handling of script analysis with warnings"""
         ctx, mock_validator = mock_knowledge_context
@@ -664,7 +678,8 @@ class TestMCPToolsIntegration:
         )
 
         parse_result = await parse_github_repository(
-            ctx, "https://github.com/test/repo.git",
+            ctx,
+            "https://github.com/test/repo.git",
         )
         parse_response = json.loads(parse_result)
         assert parse_response["success"] is True

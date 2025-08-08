@@ -35,7 +35,9 @@ class TestDataBuilder:
 
     @staticmethod
     def search_result(
-        score: float = 0.9, id: str | None = None, **doc_kwargs,
+        score: float = 0.9,
+        id: str | None = None,
+        **doc_kwargs,
     ) -> dict[str, Any]:
         """Create a search result with document data."""
         doc = TestDataBuilder.document(**doc_kwargs)
@@ -103,7 +105,8 @@ class TestAssertions:
 
     @staticmethod
     def assert_embedding_valid(
-        embedding: list[float], expected_dim: int = 1536,
+        embedding: list[float],
+        expected_dim: int = 1536,
     ) -> None:
         """Validate embedding structure."""
         assert isinstance(embedding, list), (

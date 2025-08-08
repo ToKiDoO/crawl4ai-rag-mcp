@@ -116,7 +116,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_single_document(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test storing a single document page with Qdrant"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -126,7 +127,8 @@ class TestQdrantStoreCrawledPage:
         test_embeddings = [[0.1] * 1536]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -162,7 +164,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_multiple_chunks(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test storing multiple chunks from the same page"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -172,7 +175,8 @@ class TestQdrantStoreCrawledPage:
         test_embeddings = [[0.1] * 1536, [0.2] * 1536, [0.3] * 1536]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -208,7 +212,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_batch_processing(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test batch processing with multiple documents"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -235,7 +240,8 @@ class TestQdrantStoreCrawledPage:
         test_embeddings = [[0.1 * (i + 1)] * 1536 for i in range(10)]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -260,7 +266,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_with_source_ids(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test storing documents with source IDs"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -269,7 +276,8 @@ class TestQdrantStoreCrawledPage:
         test_embeddings = [[0.1] * 1536, [0.2] * 1536]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             # Mock source storage (simulate sources being added first)
             await add_documents_to_database(
@@ -300,7 +308,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_cleanup_existing(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test that existing documents are cleaned up before storing new ones"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -320,7 +329,8 @@ class TestQdrantStoreCrawledPage:
         test_embeddings = [[0.1] * 1536]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -340,7 +350,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_embedding_failure(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test handling of embedding creation failures"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -363,7 +374,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_qdrant_upsert_failure(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test handling of Qdrant upsert failures"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -375,7 +387,8 @@ class TestQdrantStoreCrawledPage:
         test_embeddings = [[0.1] * 1536]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             with pytest.raises(Exception, match="Upsert failed"):
                 await add_documents_to_database(
@@ -390,7 +403,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_point_id_generation(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test that point IDs are generated deterministically"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -399,7 +413,8 @@ class TestQdrantStoreCrawledPage:
         test_embeddings = [[0.1] * 1536, [0.2] * 1536]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -427,7 +442,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_empty_data(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test handling of empty data inputs"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -451,7 +467,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_large_batch(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test storing a large batch that exceeds the default batch size"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -469,7 +486,8 @@ class TestQdrantStoreCrawledPage:
         test_embeddings = [[0.1] * 1536 for _ in range(num_docs)]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -494,7 +512,8 @@ class TestQdrantStoreCrawledPage:
 
     @pytest.mark.asyncio
     async def test_store_crawled_page_metadata_handling(
-        self, qdrant_adapter_with_enhanced_client,
+        self,
+        qdrant_adapter_with_enhanced_client,
     ):
         """Test proper handling of metadata including None values"""
         adapter = qdrant_adapter_with_enhanced_client
@@ -503,7 +522,8 @@ class TestQdrantStoreCrawledPage:
         test_embeddings = [[0.1] * 1536, [0.2] * 1536, [0.3] * 1536]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,

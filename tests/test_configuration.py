@@ -32,6 +32,7 @@ from crawl4ai_mcp import (
     validate_neo4j_connection,
     validate_script_path,
 )
+
 from database.factory import create_and_initialize_database, create_database_client
 
 
@@ -51,7 +52,8 @@ class TestDatabaseFactory:
         mock_supabase.assert_called_once()
 
     @patch.dict(
-        os.environ, {"VECTOR_DATABASE": "qdrant", "QDRANT_URL": "http://localhost:6333"},
+        os.environ,
+        {"VECTOR_DATABASE": "qdrant", "QDRANT_URL": "http://localhost:6333"},
     )
     @patch("database.factory.QdrantAdapter")
     def test_create_database_client_qdrant(self, mock_qdrant):
@@ -82,7 +84,8 @@ class TestDatabaseFactory:
 
         assert client == mock_instance
         mock_qdrant.assert_called_once_with(
-            url="http://custom:6333", api_key="test-key",
+            url="http://custom:6333",
+            api_key="test-key",
         )
 
     @patch.dict(os.environ, {}, clear=True)  # Clear all env vars
@@ -126,7 +129,8 @@ class TestDatabaseFactory:
 
         assert client == mock_instance
         mock_qdrant.assert_called_once_with(
-            url="http://qdrant:6333", api_key=None,
+            url="http://qdrant:6333",
+            api_key=None,
         )  # Default URL
 
     @patch("database.factory.create_database_client")
@@ -144,7 +148,8 @@ class TestDatabaseFactory:
 
     @patch("database.factory.create_database_client")
     async def test_create_and_initialize_database_with_async_init(
-        self, mock_create_client,
+        self,
+        mock_create_client,
     ):
         """Test database creation with async initialization"""
         mock_client = Mock()
@@ -251,7 +256,8 @@ class TestValidationFunctions:
         validate_neo4j_connection("bolt://localhost:7687", "neo4j", "password")
 
         mock_driver.assert_called_once_with(
-            "bolt://localhost:7687", auth=("neo4j", "password"),
+            "bolt://localhost:7687",
+            auth=("neo4j", "password"),
         )
 
     @patch("crawl4ai_mcp.neo4j.GraphDatabase.driver")
@@ -261,7 +267,9 @@ class TestValidationFunctions:
 
         with pytest.raises(Exception, match="Connection failed"):
             validate_neo4j_connection(
-                "bolt://localhost:7687", "neo4j", "wrong_password",
+                "bolt://localhost:7687",
+                "neo4j",
+                "wrong_password",
             )
 
     def test_format_neo4j_error(self):

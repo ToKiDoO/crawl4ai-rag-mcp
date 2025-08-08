@@ -46,7 +46,8 @@ class TestSearXNGIntegration:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(
-                    f"{searxng_url}/healthz", timeout=aiohttp.ClientTimeout(total=5),
+                    f"{searxng_url}/healthz",
+                    timeout=aiohttp.ClientTimeout(total=5),
                 ) as response:
                     if response.status != 200:
                         pytest.skip(f"SearXNG not healthy: {response.status}")
@@ -138,7 +139,9 @@ class TestSearXNGIntegration:
                 assert "error" in data["message"].lower()
 
     async def test_full_pipeline_search_scrape_store(
-        self, searxng_url, searxng_health_check,
+        self,
+        searxng_url,
+        searxng_health_check,
     ):
         """Test the full pipeline: search → scrape → store → RAG query."""
         # This test requires database to be available
@@ -151,7 +154,8 @@ class TestSearXNGIntegration:
             search_data = json.loads(search_result)
 
             assert search_data.get(
-                "success", True,
+                "success",
+                True,
             )  # Default to True for backward compatibility
             assert len(search_data["results"]) > 0
 
@@ -196,7 +200,9 @@ class TestSearXNGIntegration:
 
                     # Step 3: Perform RAG query
                     rag_result = await perform_rag_query(
-                        ctx, "What is asyncio?", max_results=5,
+                        ctx,
+                        "What is asyncio?",
+                        max_results=5,
                     )
                     rag_data = json.loads(rag_result)
 

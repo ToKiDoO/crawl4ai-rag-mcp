@@ -144,7 +144,8 @@ class TestNeo4jConnectionValidation:
     def test_validate_neo4j_connection_empty_values(self):
         """Test validation when environment variables are empty."""
         with patch.dict(
-            os.environ, {"NEO4J_URI": "", "NEO4J_USER": "", "NEO4J_PASSWORD": ""},
+            os.environ,
+            {"NEO4J_URI": "", "NEO4J_USER": "", "NEO4J_PASSWORD": ""},
         ):
             result = validate_neo4j_connection()
             assert result is False
@@ -331,7 +332,9 @@ class TestCheckAiScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_knowledge_validator_not_available(
-        self, mock_context, mock_neo4j_environment,
+        self,
+        mock_context,
+        mock_neo4j_environment,
     ):
         """Test when knowledge validator is not available."""
         mock_context.request_context.lifespan_context.knowledge_validator = None
@@ -417,7 +420,8 @@ class TestCheckAiScriptHallucinationsTool:
                     )
 
                     result = await check_hallucinations(
-                        mock_context, "/path/to/script.py",
+                        mock_context,
+                        "/path/to/script.py",
                     )
                     result_data = json.loads(result)
 
@@ -524,7 +528,9 @@ class TestQueryKnowledgeGraphTool:
 
     @pytest.mark.asyncio
     async def test_explore_command_with_args(
-        self, mock_context, mock_neo4j_environment,
+        self,
+        mock_context,
+        mock_neo4j_environment,
     ):
         """Test explore command with repository name."""
         # Mock multiple Neo4j queries for explore command
@@ -580,7 +586,9 @@ class TestQueryKnowledgeGraphTool:
 
     @pytest.mark.asyncio
     async def test_query_execution_exception(
-        self, mock_context, mock_neo4j_environment,
+        self,
+        mock_context,
+        mock_neo4j_environment,
     ):
         """Test handling of query execution exception."""
         # Mock session.run to raise an exception
@@ -616,7 +624,9 @@ class TestParseGithubRepositoryTool:
 
     @pytest.mark.asyncio
     async def test_repo_extractor_not_available(
-        self, mock_context, mock_neo4j_environment,
+        self,
+        mock_context,
+        mock_neo4j_environment,
     ):
         """Test when repository extractor is not available."""
         mock_context.request_context.lifespan_context.repo_extractor = None
@@ -646,7 +656,9 @@ class TestParseGithubRepositoryTool:
 
     @pytest.mark.asyncio
     async def test_successful_repository_parsing(
-        self, mock_context, mock_neo4j_environment,
+        self,
+        mock_context,
+        mock_neo4j_environment,
     ):
         """Test successful repository parsing."""
         # Mock URL validation
@@ -673,7 +685,8 @@ class TestParseGithubRepositoryTool:
             parse_repo = get_tool_function("parse_github_repository")
 
             result = await parse_repo(
-                mock_context, "https://github.com/owner/test-repo",
+                mock_context,
+                "https://github.com/owner/test-repo",
             )
             result_data = json.loads(result)
 
@@ -693,7 +706,9 @@ class TestParseGithubRepositoryTool:
 
     @pytest.mark.asyncio
     async def test_repository_not_found_after_parsing(
-        self, mock_context, mock_neo4j_environment,
+        self,
+        mock_context,
+        mock_neo4j_environment,
     ):
         """Test when repository is not found in database after parsing."""
         with patch("crawl4ai_mcp.validate_github_url") as mock_validate:
@@ -710,7 +725,8 @@ class TestParseGithubRepositoryTool:
             parse_repo = get_tool_function("parse_github_repository")
 
             result = await parse_repo(
-                mock_context, "https://github.com/owner/test-repo",
+                mock_context,
+                "https://github.com/owner/test-repo",
             )
             result_data = json.loads(result)
 
@@ -723,7 +739,9 @@ class TestParseGithubRepositoryTool:
 
     @pytest.mark.asyncio
     async def test_repository_parsing_exception(
-        self, mock_context, mock_neo4j_environment,
+        self,
+        mock_context,
+        mock_neo4j_environment,
     ):
         """Test handling of repository parsing exception."""
         with patch("crawl4ai_mcp.validate_github_url") as mock_validate:
@@ -737,7 +755,8 @@ class TestParseGithubRepositoryTool:
             parse_repo = get_tool_function("parse_github_repository")
 
             result = await parse_repo(
-                mock_context, "https://github.com/owner/test-repo",
+                mock_context,
+                "https://github.com/owner/test-repo",
             )
             result_data = json.loads(result)
 
@@ -752,7 +771,9 @@ class TestNeo4jIntegration:
 
     @pytest.mark.asyncio
     async def test_neo4j_session_context_manager(
-        self, mock_context, mock_neo4j_environment,
+        self,
+        mock_context,
+        mock_neo4j_environment,
     ):
         """Test that Neo4j session is properly used as async context manager."""
         with patch("crawl4ai_mcp.validate_github_url") as mock_validate:
@@ -857,7 +878,9 @@ class TestErrorHandlingPatterns:
 
     @pytest.mark.asyncio
     async def test_exception_handling_consistency(
-        self, mock_context, mock_neo4j_environment,
+        self,
+        mock_context,
+        mock_neo4j_environment,
     ):
         """Test that all tools handle exceptions consistently."""
         with patch("crawl4ai_mcp.validate_github_url") as mock_validate:

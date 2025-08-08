@@ -33,7 +33,8 @@ class TestDatabaseFactory:
         assert client.__class__.__name__ == "SupabaseAdapter"
 
     @patch.dict(
-        os.environ, {"VECTOR_DATABASE": "qdrant", "QDRANT_URL": "http://localhost:6333"},
+        os.environ,
+        {"VECTOR_DATABASE": "qdrant", "QDRANT_URL": "http://localhost:6333"},
     )
     def test_create_qdrant_client(self):
         """Test creating Qdrant client"""
@@ -113,7 +114,9 @@ class TestDatabaseFactory:
 
         # Test
         with patch.object(
-            SupabaseAdapter, "initialize", new_callable=AsyncMock,
+            SupabaseAdapter,
+            "initialize",
+            new_callable=AsyncMock,
         ) as mock_init:
             client = await create_and_initialize_database()
 
@@ -127,7 +130,9 @@ class TestDatabaseFactory:
         """Test create and initialize for Qdrant"""
         # Test
         with patch.object(
-            QdrantAdapter, "initialize", new_callable=AsyncMock,
+            QdrantAdapter,
+            "initialize",
+            new_callable=AsyncMock,
         ) as mock_init:
             client = await create_and_initialize_database()
 
@@ -145,7 +150,8 @@ class TestDatabaseFactory:
         # Change environment
         with patch.dict(os.environ, {"VECTOR_DATABASE": "supabase"}):
             with patch(
-                "database.supabase_adapter.create_client", return_value=MagicMock(),
+                "database.supabase_adapter.create_client",
+                return_value=MagicMock(),
             ):
                 client2 = create_database_client()
                 assert isinstance(client2, SupabaseAdapter)

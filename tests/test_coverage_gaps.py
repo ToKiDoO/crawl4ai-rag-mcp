@@ -112,7 +112,9 @@ class TestCrawl4AIMCPTools:
     @patch("src.crawl4ai_mcp.AsyncWebCrawler")
     @patch("src.crawl4ai_mcp.get_database")
     async def test_scrape_urls_mcp_tool_basic(
-        self, mock_get_database, mock_crawler_class,
+        self,
+        mock_get_database,
+        mock_crawler_class,
     ):
         """Test basic scrape_urls functionality."""
         # Setup mocks
@@ -212,7 +214,8 @@ class TestUtilsFunctions:
             from src.utils import get_supabase_client
 
             with pytest.raises(
-                ValueError, match="SUPABASE_URL and SUPABASE_SERVICE_KEY must be set",
+                ValueError,
+                match="SUPABASE_URL and SUPABASE_SERVICE_KEY must be set",
             ):
                 get_supabase_client()
 

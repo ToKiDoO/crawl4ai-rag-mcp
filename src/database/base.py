@@ -142,7 +142,10 @@ class VectorDatabase(Protocol):
         ...
 
     async def update_source_info(
-        self, source_id: str, summary: str, word_count: int,
+        self,
+        source_id: str,
+        summary: str,
+        word_count: int,
     ) -> None:
         """
         Update or create source information.
@@ -173,7 +176,10 @@ class VectorDatabase(Protocol):
         ...
 
     async def search_documents_by_keyword(
-        self, keyword: str, match_count: int = 10, source_filter: str | None = None,
+        self,
+        keyword: str,
+        match_count: int = 10,
+        source_filter: str | None = None,
     ) -> list[dict[str, Any]]:
         """
         Search for documents containing a keyword.
@@ -189,7 +195,10 @@ class VectorDatabase(Protocol):
         ...
 
     async def search_code_examples_by_keyword(
-        self, keyword: str, match_count: int = 10, source_filter: str | None = None,
+        self,
+        keyword: str,
+        match_count: int = 10,
+        source_filter: str | None = None,
     ) -> list[dict[str, Any]]:
         """
         Search for code examples containing a keyword.

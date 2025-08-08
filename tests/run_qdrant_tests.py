@@ -20,7 +20,12 @@ def run_command(cmd: str, shell: bool = True) -> tuple:
     """Run a command and return the result"""
     try:
         result = subprocess.run(
-            cmd, check=False, shell=shell, capture_output=True, text=True, timeout=120,
+            cmd,
+            check=False,
+            shell=shell,
+            capture_output=True,
+            text=True,
+            timeout=120,
         )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
@@ -169,7 +174,10 @@ def main():
         help="Cleanup Qdrant Docker container after tests",
     )
     parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Run tests in verbose mode",
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Run tests in verbose mode",
     )
     parser.add_argument(
         "--markers",
@@ -187,7 +195,9 @@ def main():
         help="Test files to run",
     )
     parser.add_argument(
-        "--check-deps", action="store_true", help="Only check dependencies and exit",
+        "--check-deps",
+        action="store_true",
+        help="Only check dependencies and exit",
     )
 
     args = parser.parse_args()
@@ -231,7 +241,9 @@ def main():
     try:
         # Run tests
         success = run_test_suite(
-            test_files=args.test_files, verbose=args.verbose, markers=args.markers,
+            test_files=args.test_files,
+            verbose=args.verbose,
+            markers=args.markers,
         )
 
         if success:

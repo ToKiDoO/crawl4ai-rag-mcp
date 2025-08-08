@@ -548,7 +548,9 @@ class TestProcessCodeExample:
 
         assert result == "Test function summary"
         mock_generate.assert_called_once_with(
-            "def test(): pass", "Before context", "After context",
+            "def test(): pass",
+            "Before context",
+            "After context",
         )
 
     @patch("crawl4ai_mcp.generate_code_example_summary")
@@ -596,7 +598,9 @@ class TestProcessCodeExample:
 
         assert result == "Summary with long context"
         mock_generate.assert_called_once_with(
-            code, long_context_before, long_context_after,
+            code,
+            long_context_before,
+            long_context_after,
         )
 
     @patch("crawl4ai_mcp.generate_code_example_summary")

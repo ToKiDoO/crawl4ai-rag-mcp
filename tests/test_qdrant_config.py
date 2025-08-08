@@ -140,10 +140,12 @@ def pytest_configure(config):
     # Add custom markers
     config.addinivalue_line("markers", "qdrant: mark test as requiring Qdrant database")
     config.addinivalue_line(
-        "markers", "docker_env: mark test as requiring Docker environment",
+        "markers",
+        "docker_env: mark test as requiring Docker environment",
     )
     config.addinivalue_line(
-        "markers", "localhost_env: mark test as requiring localhost environment",
+        "markers",
+        "localhost_env: mark test as requiring localhost environment",
     )
 
 

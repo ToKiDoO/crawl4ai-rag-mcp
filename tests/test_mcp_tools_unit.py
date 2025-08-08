@@ -238,7 +238,9 @@ class TestSearchTool:
 
     @pytest.mark.asyncio
     async def test_search_success_with_rag(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful search with RAG processing"""
         # Setup mocks
@@ -263,7 +265,8 @@ class TestSearchTool:
 
             # Mock perform_rag_query function - also async
             with patch(
-                "crawl4ai_mcp.perform_rag_query", new_callable=AsyncMock,
+                "crawl4ai_mcp.perform_rag_query",
+                new_callable=AsyncMock,
             ) as mock_rag:
                 mock_rag.return_value = json.dumps(
                     {
@@ -299,7 +302,9 @@ class TestSearchTool:
 
     @pytest.mark.asyncio
     async def test_search_success_with_raw_markdown(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful search with raw markdown return"""
         # Setup mocks
@@ -324,7 +329,9 @@ class TestSearchTool:
 
             # Execute test
             result = await search(
-                mock_context, query="test query", return_raw_markdown=True,
+                mock_context,
+                query="test query",
+                return_raw_markdown=True,
             )
 
             # Verify result
@@ -336,12 +343,16 @@ class TestSearchTool:
     @pytest.mark.asyncio
     @patch.dict(os.environ, {}, clear=False)  # Remove SEARXNG_URL for this test
     async def test_search_missing_searxng_url(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search failure when SEARXNG_URL is not configured"""
         # Temporarily remove SEARXNG_URL from environment
         with patch.dict(
-            os.environ, {}, clear=True,
+            os.environ,
+            {},
+            clear=True,
         ):  # Clear all environment variables for this test
             # Execute test
             result = await search(mock_context, query="test query")
@@ -371,7 +382,9 @@ class TestSearchTool:
 
     @pytest.mark.asyncio
     async def test_search_connection_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search failure due to connection error"""
         # Setup connection error mock
@@ -412,12 +425,15 @@ class TestScrapeUrlsTool:
 
     @pytest.mark.asyncio
     async def test_scrape_single_url_success(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful scraping of a single URL"""
         # Mock the crawl_batch function directly since it's called by _process_multiple_urls
         with patch(
-            "crawl4ai_mcp.crawl_batch", new_callable=AsyncMock,
+            "crawl4ai_mcp.crawl_batch",
+            new_callable=AsyncMock,
         ) as mock_crawl_batch:
             mock_crawl_batch.return_value = [
                 {
@@ -438,14 +454,17 @@ class TestScrapeUrlsTool:
 
     @pytest.mark.asyncio
     async def test_scrape_multiple_urls_success(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful scraping of multiple URLs"""
         urls = ["https://example.com/page1", "https://example.com/page2"]
 
         # Mock the crawl_batch function directly since it's called by _process_multiple_urls
         with patch(
-            "crawl4ai_mcp.crawl_batch", new_callable=AsyncMock,
+            "crawl4ai_mcp.crawl_batch",
+            new_callable=AsyncMock,
         ) as mock_crawl_batch:
             mock_crawl_batch.return_value = [
                 {
@@ -474,7 +493,8 @@ class TestScrapeUrlsTool:
         """Test scraping with invalid URL"""
         # Mock the crawl_batch function to return empty results for invalid URL
         with patch(
-            "crawl4ai_mcp.crawl_batch", new_callable=AsyncMock,
+            "crawl4ai_mcp.crawl_batch",
+            new_callable=AsyncMock,
         ) as mock_crawl_batch:
             mock_crawl_batch.return_value = []  # No successful results for invalid URL
 
@@ -488,12 +508,15 @@ class TestScrapeUrlsTool:
 
     @pytest.mark.asyncio
     async def test_scrape_crawler_failure(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test scraping when crawler fails"""
         # Mock the crawl_batch function to return empty results (simulating failure)
         with patch(
-            "crawl4ai_mcp.crawl_batch", new_callable=AsyncMock,
+            "crawl4ai_mcp.crawl_batch",
+            new_callable=AsyncMock,
         ) as mock_crawl_batch:
             mock_crawl_batch.return_value = []  # No successful results
 
@@ -507,20 +530,29 @@ class TestScrapeUrlsTool:
 
     @pytest.mark.asyncio
     async def test_scrape_with_raw_markdown(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test scraping with raw markdown return (no database storage)"""
         # Mock the crawl_batch function directly
         with patch(
-            "crawl4ai_mcp.crawl_batch", new_callable=AsyncMock,
+            "crawl4ai_mcp.crawl_batch",
+            new_callable=AsyncMock,
         ) as mock_crawl_batch:
             mock_crawl_batch.return_value = [
-                {"url": "https://example.com", "markdown": "# Raw Content", "links": {}},
+                {
+                    "url": "https://example.com",
+                    "markdown": "# Raw Content",
+                    "links": {},
+                },
             ]
 
             # Execute test with raw markdown flag
             result = await scrape_urls(
-                mock_context, url="https://example.com", return_raw_markdown=True,
+                mock_context,
+                url="https://example.com",
+                return_raw_markdown=True,
             )
 
             # Verify result
@@ -538,12 +570,15 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_regular_url(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl with regular URL (should use crawl_recursive_internal_links)"""
         # Mock crawl_recursive_internal_links function which is actually called for regular URLs
         with patch(
-            "crawl4ai_mcp.crawl_recursive_internal_links", new_callable=AsyncMock,
+            "crawl4ai_mcp.crawl_recursive_internal_links",
+            new_callable=AsyncMock,
         ) as mock_crawl_recursive:
             mock_crawl_recursive.return_value = [
                 {
@@ -565,7 +600,9 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_sitemap_url(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl with sitemap URL"""
         # Mock sitemap content
@@ -585,7 +622,8 @@ class TestSmartCrawlUrlTool:
         with (
             patch("crawl4ai_mcp.parse_sitemap") as mock_parse_sitemap,
             patch(
-                "crawl4ai_mcp.crawl_batch", new_callable=AsyncMock,
+                "crawl4ai_mcp.crawl_batch",
+                new_callable=AsyncMock,
             ) as mock_crawl_batch,
         ):
             # Mock parse_sitemap to return the URLs from the sitemap
@@ -610,7 +648,8 @@ class TestSmartCrawlUrlTool:
 
             # Execute test
             result = await smart_crawl_url(
-                mock_context, url="https://example.com/sitemap.xml",
+                mock_context,
+                url="https://example.com/sitemap.xml",
             )
 
             # Verify result
@@ -621,12 +660,15 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_robots_txt(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl with robots.txt URL"""
         # Mock crawl_markdown_file function which is actually called for .txt files
         with patch(
-            "crawl4ai_mcp.crawl_markdown_file", new_callable=AsyncMock,
+            "crawl4ai_mcp.crawl_markdown_file",
+            new_callable=AsyncMock,
         ) as mock_crawl_markdown:
             mock_crawl_markdown.return_value = [
                 {
@@ -639,7 +681,8 @@ class TestSmartCrawlUrlTool:
 
             # Execute test
             result = await smart_crawl_url(
-                mock_context, url="https://example.com/robots.txt",
+                mock_context,
+                url="https://example.com/robots.txt",
             )
 
             # Verify result
@@ -650,7 +693,9 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_invalid_sitemap(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl with invalid sitemap XML"""
         # Mock invalid XML
@@ -662,7 +707,8 @@ class TestSmartCrawlUrlTool:
 
         # Execute test
         result = await smart_crawl_url(
-            mock_context, url="https://example.com/sitemap.xml",
+            mock_context,
+            url="https://example.com/sitemap.xml",
         )
 
         # Verify error handling - should return "No URLs found in sitemap" for invalid XML
@@ -672,7 +718,9 @@ class TestSmartCrawlUrlTool:
 
     @pytest.mark.asyncio
     async def test_smart_crawl_max_depth_limit(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test smart crawl respects max_depth parameter"""
         # Mock sitemap with many URLs
@@ -695,7 +743,8 @@ class TestSmartCrawlUrlTool:
         with (
             patch("crawl4ai_mcp.parse_sitemap") as mock_parse_sitemap,
             patch(
-                "crawl4ai_mcp.crawl_batch", new_callable=AsyncMock,
+                "crawl4ai_mcp.crawl_batch",
+                new_callable=AsyncMock,
             ) as mock_crawl_batch,
         ):
             # Mock parse_sitemap to return the URLs from the sitemap
@@ -738,7 +787,9 @@ class TestSmartCrawlUrlTool:
 
             # Execute test with max_depth=3 (note: max_depth doesn't apply to sitemaps, they crawl all URLs)
             result = await smart_crawl_url(
-                mock_context, url="https://example.com/sitemap.xml", max_depth=3,
+                mock_context,
+                url="https://example.com/sitemap.xml",
+                max_depth=3,
             )
 
             # Verify sitemap was processed (max_depth doesn't limit sitemap processing)
@@ -753,7 +804,9 @@ class TestGetAvailableSourcesTool:
 
     @pytest.mark.asyncio
     async def test_get_available_sources_success(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful retrieval of available sources"""
         # Mock database client - use get_sources() method which is actually called
@@ -788,7 +841,9 @@ class TestGetAvailableSourcesTool:
 
     @pytest.mark.asyncio
     async def test_get_available_sources_empty(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test get available sources when database is empty"""
         # Mock empty database
@@ -804,7 +859,9 @@ class TestGetAvailableSourcesTool:
 
     @pytest.mark.asyncio
     async def test_get_available_sources_database_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test get available sources when database throws error"""
         # Mock database error - use get_sources() method which is actually called
@@ -829,7 +886,8 @@ class TestPerformRagQueryTool:
         """Test successful RAG query"""
         # Mock search_documents function directly
         with patch(
-            "crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+            "crawl4ai_mcp.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.return_value = [
                 {
@@ -869,7 +927,9 @@ class TestPerformRagQueryTool:
 
     @pytest.mark.asyncio
     async def test_rag_query_with_source_filter(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test RAG query with source filtering"""
         # Mock search results
@@ -879,7 +939,9 @@ class TestPerformRagQueryTool:
 
         # Execute test
         result = await perform_rag_query(
-            mock_context, query="test query", source="specific.com",
+            mock_context,
+            query="test query",
+            source="specific.com",
         )
 
         # Verify result and that search_documents was called with source filter
@@ -891,7 +953,9 @@ class TestPerformRagQueryTool:
 
     @pytest.mark.asyncio
     async def test_rag_query_database_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test RAG query when database search fails"""
         # Mock database error
@@ -913,7 +977,9 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_success(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful code examples search"""
         # Mock code search results
@@ -928,7 +994,8 @@ class TestSearchCodeExamplesTool:
 
         # Execute test
         result = await search_code_examples(
-            mock_context, query="Python function example",
+            mock_context,
+            query="Python function example",
         )
 
         # Verify result
@@ -939,7 +1006,9 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_with_source_filter(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test code examples search with source filtering"""
         # Mock code search results
@@ -947,7 +1016,9 @@ class TestSearchCodeExamplesTool:
 
         # Execute test
         result = await search_code_examples(
-            mock_context, query="test code", source_id="github.com",
+            mock_context,
+            query="test code",
+            source_id="github.com",
         )
 
         # Verify result and function call
@@ -957,7 +1028,9 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_no_results(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test code examples search with no results"""
         # Mock empty results
@@ -973,7 +1046,9 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test code examples search with database error"""
         # Mock database error
@@ -995,7 +1070,9 @@ class TestCheckAiScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_check_hallucinations_success(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful hallucination check"""
         # Mock analyzer results - the analyzer returns a structured result object
@@ -1049,7 +1126,8 @@ class TestCheckAiScriptHallucinationsTool:
 
         # Execute test
         result = await check_ai_script_hallucinations(
-            mock_context, script_path="/path/to/script.py",
+            mock_context,
+            script_path="/path/to/script.py",
         )
 
         # Verify result
@@ -1060,7 +1138,9 @@ class TestCheckAiScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_check_hallucinations_no_issues(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test hallucination check with no issues found"""
         # Mock analyzer with no hallucinations
@@ -1075,7 +1155,8 @@ class TestCheckAiScriptHallucinationsTool:
 
         # Execute test
         result = await check_ai_script_hallucinations(
-            mock_context, script_path="/path/to/clean_script.py",
+            mock_context,
+            script_path="/path/to/clean_script.py",
         )
 
         # Verify result
@@ -1085,7 +1166,9 @@ class TestCheckAiScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_check_hallucinations_file_not_found(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test hallucination check with non-existent file"""
         # Mock file not found error
@@ -1099,7 +1182,8 @@ class TestCheckAiScriptHallucinationsTool:
 
         # Execute test
         result = await check_ai_script_hallucinations(
-            mock_context, script_path="/nonexistent/script.py",
+            mock_context,
+            script_path="/nonexistent/script.py",
         )
 
         # Verify error result
@@ -1109,7 +1193,9 @@ class TestCheckAiScriptHallucinationsTool:
 
     @pytest.mark.asyncio
     async def test_check_hallucinations_analyzer_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test hallucination check with analyzer error"""
         # Mock analyzer error
@@ -1121,7 +1207,8 @@ class TestCheckAiScriptHallucinationsTool:
 
         # Execute test
         result = await check_ai_script_hallucinations(
-            mock_context, script_path="/path/to/script.py",
+            mock_context,
+            script_path="/path/to/script.py",
         )
 
         # Verify error result
@@ -1135,7 +1222,9 @@ class TestQueryKnowledgeGraphTool:
 
     @pytest.mark.asyncio
     async def test_query_knowledge_graph_success(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful knowledge graph query"""
         # Mock validator results
@@ -1150,7 +1239,8 @@ class TestQueryKnowledgeGraphTool:
 
         # Execute test
         result = await query_knowledge_graph(
-            mock_context, command="MATCH (f:Function) RETURN f.name, f.exists",
+            mock_context,
+            command="MATCH (f:Function) RETURN f.name, f.exists",
         )
 
         # Verify result
@@ -1161,7 +1251,9 @@ class TestQueryKnowledgeGraphTool:
 
     @pytest.mark.asyncio
     async def test_query_knowledge_graph_empty_result(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test knowledge graph query with empty result"""
         # Mock empty results
@@ -1173,7 +1265,8 @@ class TestQueryKnowledgeGraphTool:
 
         # Execute test
         result = await query_knowledge_graph(
-            mock_context, command="MATCH (n:NonExistent) RETURN n",
+            mock_context,
+            command="MATCH (n:NonExistent) RETURN n",
         )
 
         # Verify result
@@ -1183,7 +1276,9 @@ class TestQueryKnowledgeGraphTool:
 
     @pytest.mark.asyncio
     async def test_query_knowledge_graph_connection_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test knowledge graph query with connection error"""
         # Mock connection error
@@ -1205,7 +1300,9 @@ class TestQueryKnowledgeGraphTool:
 
     @pytest.mark.asyncio
     async def test_query_knowledge_graph_invalid_query(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test knowledge graph query with invalid Cypher query"""
         # Mock invalid query error
@@ -1219,7 +1316,8 @@ class TestQueryKnowledgeGraphTool:
 
         # Execute test
         result = await query_knowledge_graph(
-            mock_context, command="INVALID CYPHER QUERY",
+            mock_context,
+            command="INVALID CYPHER QUERY",
         )
 
         # Verify error result
@@ -1233,7 +1331,9 @@ class TestParseGithubRepositoryTool:
 
     @pytest.mark.asyncio
     async def test_parse_github_repository_success(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test successful GitHub repository parsing"""
         # Mock extractor results
@@ -1250,7 +1350,8 @@ class TestParseGithubRepositoryTool:
 
         # Execute test
         result = await parse_github_repository(
-            mock_context, repo_url="https://github.com/example/test-repo",
+            mock_context,
+            repo_url="https://github.com/example/test-repo",
         )
 
         # Verify result
@@ -1261,12 +1362,15 @@ class TestParseGithubRepositoryTool:
 
     @pytest.mark.asyncio
     async def test_parse_github_repository_invalid_url(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test GitHub repository parsing with invalid URL"""
         # Execute test with invalid URL
         result = await parse_github_repository(
-            mock_context, repo_url="not-a-github-url",
+            mock_context,
+            repo_url="not-a-github-url",
         )
 
         # Verify error result
@@ -1276,7 +1380,9 @@ class TestParseGithubRepositoryTool:
 
     @pytest.mark.asyncio
     async def test_parse_github_repository_private_repo(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test GitHub repository parsing with private repo (access denied)"""
         # Mock access denied error
@@ -1290,7 +1396,8 @@ class TestParseGithubRepositoryTool:
 
         # Execute test
         result = await parse_github_repository(
-            mock_context, repo_url="https://github.com/private/repo",
+            mock_context,
+            repo_url="https://github.com/private/repo",
         )
 
         # Verify error result
@@ -1300,7 +1407,9 @@ class TestParseGithubRepositoryTool:
 
     @pytest.mark.asyncio
     async def test_parse_github_repository_network_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test GitHub repository parsing with network error"""
         # Mock network error
@@ -1312,7 +1421,8 @@ class TestParseGithubRepositoryTool:
 
         # Execute test
         result = await parse_github_repository(
-            mock_context, repo_url="https://github.com/example/repo",
+            mock_context,
+            repo_url="https://github.com/example/repo",
         )
 
         # Verify error result
@@ -1322,7 +1432,9 @@ class TestParseGithubRepositoryTool:
 
     @pytest.mark.asyncio
     async def test_parse_github_repository_neo4j_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test GitHub repository parsing with Neo4j connection error"""
         # Mock Neo4j connection error
@@ -1336,7 +1448,8 @@ class TestParseGithubRepositoryTool:
 
         # Execute test
         result = await parse_github_repository(
-            mock_context, repo_url="https://github.com/example/repo",
+            mock_context,
+            repo_url="https://github.com/example/repo",
         )
 
         # Verify error result
@@ -1350,7 +1463,9 @@ class TestMCPToolsIntegration:
 
     @pytest.mark.asyncio
     async def test_search_to_rag_query_integration(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test integration between search and RAG query tools"""
         # First mock successful search
@@ -1410,7 +1525,9 @@ class TestMCPToolsPerformance:
 
     @pytest.mark.asyncio
     async def test_concurrent_requests_handling(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test that tools can handle concurrent requests"""
         # Mock successful responses
@@ -1434,7 +1551,9 @@ class TestMCPToolsPerformance:
 
     @pytest.mark.asyncio
     async def test_large_batch_processing(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test batch processing with large number of URLs"""
         # Create a large list of URLs
@@ -1442,7 +1561,8 @@ class TestMCPToolsPerformance:
 
         # Mock the crawl_batch function directly
         with patch(
-            "crawl4ai_mcp.crawl_batch", new_callable=AsyncMock,
+            "crawl4ai_mcp.crawl_batch",
+            new_callable=AsyncMock,
         ) as mock_crawl_batch:
             # Generate mock results for the first 10 URLs
             mock_results = [

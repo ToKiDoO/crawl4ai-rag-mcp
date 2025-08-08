@@ -261,7 +261,8 @@ class PreConnectionChecklist:
                     "--format",
                     "json",
                 ],
-                check=False, capture_output=True,
+                check=False,
+                capture_output=True,
                 text=True,
             )
 

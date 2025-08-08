@@ -95,7 +95,10 @@ class QdrantBenchmark:
                 for doc in batch:
                     tasks.append(
                         store_crawled_page(
-                            client, doc["url"], doc["content"], doc["metadata"],
+                            client,
+                            doc["url"],
+                            doc["content"],
+                            doc["metadata"],
                         ),
                     )
 

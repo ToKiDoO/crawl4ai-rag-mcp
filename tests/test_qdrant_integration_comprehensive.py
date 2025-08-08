@@ -140,7 +140,8 @@ class TestQdrantIntegrationComprehensive:
         try:
             # Test empty search on each collection
             results = await adapter.search_documents(
-                query_embedding=[0.1] * 1536, match_count=1,
+                query_embedding=[0.1] * 1536,
+                match_count=1,
             )
             assert isinstance(results, list)
         except Exception as e:
@@ -172,7 +173,8 @@ class TestQdrantIntegrationComprehensive:
         test_embedding = [0.1] * 1536
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[test_embedding],
+            "utils.create_embeddings_batch",
+            return_value=[test_embedding],
         ):
             # Store document
             await add_documents_to_database(
@@ -196,7 +198,9 @@ class TestQdrantIntegrationComprehensive:
         with patch("utils.create_embedding", return_value=test_embedding):
             # Search for content
             results = await search_documents(
-                database=adapter, query="Python async programming", match_count=5,
+                database=adapter,
+                query="Python async programming",
+                match_count=5,
             )
 
         # Verify results
@@ -222,7 +226,8 @@ class TestQdrantIntegrationComprehensive:
         ]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -289,7 +294,8 @@ class TestQdrantIntegrationComprehensive:
         start_time = time.time()
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -309,7 +315,9 @@ class TestQdrantIntegrationComprehensive:
         # Verify all documents stored by searching
         with patch("utils.create_embedding", return_value=[0.1] * 1536):
             results = await search_documents(
-                database=adapter, query="Document topic testing", match_count=num_docs,
+                database=adapter,
+                query="Document topic testing",
+                match_count=num_docs,
             )
 
         # Should find many of our test documents
@@ -355,7 +363,8 @@ class TestQdrantIntegrationComprehensive:
             """Simulate concurrent read operations"""
             for i in range(3):
                 with patch(
-                    "utils.create_embedding", return_value=[0.1] * 1536,
+                    "utils.create_embedding",
+                    return_value=[0.1] * 1536,
                 ):
                     results = await search_documents(
                         database=adapter,
@@ -386,7 +395,9 @@ class TestQdrantIntegrationComprehensive:
         await asyncio.sleep(1)
         with patch("utils.create_embedding", return_value=[0.1] * 1536):
             results = await search_documents(
-                database=adapter, query="Worker document concurrent", match_count=20,
+                database=adapter,
+                query="Worker document concurrent",
+                match_count=20,
             )
 
         # Should find documents from all workers
@@ -453,7 +464,8 @@ class TestQdrantIntegrationComprehensive:
         test_embeddings = [[0.1] * 1536, [0.2] * 1536, [0.3] * 1536]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -520,7 +532,8 @@ class TestQdrantIntegrationComprehensive:
 
         # Store initial document
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.1] * 1536],
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -541,7 +554,8 @@ class TestQdrantIntegrationComprehensive:
 
         # Store replacement document
         with patch(
-            "utils.create_embeddings_batch", return_value=[[0.2] * 1536],
+            "utils.create_embeddings_batch",
+            return_value=[[0.2] * 1536],
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -594,7 +608,8 @@ class TestQdrantIntegrationComprehensive:
         start_time = time.time()
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await add_documents_to_database(
                 database=adapter,
@@ -620,7 +635,9 @@ class TestQdrantIntegrationComprehensive:
         with patch("utils.create_embedding", return_value=[0.1] * 1536):
             for _ in range(10):  # 10 search operations
                 await search_documents(
-                    database=adapter, query="Benchmark document content", match_count=5,
+                    database=adapter,
+                    query="Benchmark document content",
+                    match_count=5,
                 )
 
         search_time = time.time() - search_start
@@ -660,7 +677,8 @@ class TestQdrantIntegrationComprehensive:
         test_embeddings = [[0.1] * 1536, [0.2] * 1536]
 
         with patch(
-            "utils.create_embeddings_batch", return_value=test_embeddings,
+            "utils.create_embeddings_batch",
+            return_value=test_embeddings,
         ):
             await adapter.add_code_examples(
                 urls=[ex["url"] for ex in code_examples],
@@ -675,7 +693,8 @@ class TestQdrantIntegrationComprehensive:
 
         # Search for code examples
         search_results = await adapter.search_code_examples(
-            query_embedding=[0.1] * 1536, match_count=5,
+            query_embedding=[0.1] * 1536,
+            match_count=5,
         )
 
         # Verify results
@@ -723,7 +742,8 @@ class TestQdrantIntegrationComprehensive:
         test_embedding = [0.1] * 1536
 
         with patch(
-            "utils.create_embeddings_batch", return_value=[test_embedding],
+            "utils.create_embeddings_batch",
+            return_value=[test_embedding],
         ):
             await add_documents_to_database(
                 database=adapter,

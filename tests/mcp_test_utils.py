@@ -45,7 +45,9 @@ class MCPResponse:
         """Parse JSON-RPC response"""
         data = json.loads(json_str)
         return cls(
-            result=data.get("result"), error=data.get("error"), id=data.get("id"),
+            result=data.get("result"),
+            error=data.get("error"),
+            id=data.get("id"),
         )
 
     def is_success(self) -> bool:
@@ -64,7 +66,9 @@ class MCPTestClient:
         self.request_id = 0
 
     def create_request(
-        self, method: str, params: dict[str, Any] | None = None,
+        self,
+        method: str,
+        params: dict[str, Any] | None = None,
     ) -> MCPRequest:
         """Create a new MCP request"""
         self.request_id += 1
@@ -75,15 +79,20 @@ class MCPTestClient:
         return self.create_request("tools/list")
 
     def create_tool_call_request(
-        self, tool_name: str, arguments: dict[str, Any],
+        self,
+        tool_name: str,
+        arguments: dict[str, Any],
     ) -> MCPRequest:
         """Create a tool call request"""
         return self.create_request(
-            "tools/call", params={"name": tool_name, "arguments": arguments},
+            "tools/call",
+            params={"name": tool_name, "arguments": arguments},
         )
 
     async def send_stdio_request(
-        self, request: MCPRequest, server_command: list[str],
+        self,
+        request: MCPRequest,
+        server_command: list[str],
     ) -> MCPResponse:
         """Send request via stdio transport"""
         # Start MCP server process
@@ -228,7 +237,8 @@ class MockMCPServer:
         """Handle an MCP request"""
         if request.method == "tools/list":
             return MCPResponse(
-                result={"tools": list(self.tools.values())}, id=request.id,
+                result={"tools": list(self.tools.values())},
+                id=request.id,
             )
         if request.method == "tools/call":
             tool_name = request.params.get("name")
@@ -251,7 +261,8 @@ class MockMCPServer:
                     return MCPResponse(result=result, id=request.id)
                 except Exception as e:
                     return MCPResponse(
-                        error={"code": -32603, "message": str(e)}, id=request.id,
+                        error={"code": -32603, "message": str(e)},
+                        id=request.id,
                     )
             else:
                 return MCPResponse(result="Mock result", id=request.id)

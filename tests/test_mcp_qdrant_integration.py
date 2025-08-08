@@ -192,7 +192,8 @@ class TestMCPQdrantIntegration:
         mock_db.update_source_info = AsyncMock()
 
         ctx = create_test_context(
-            crawler=mock_dependencies["crawler"], database_client=mock_db,
+            crawler=mock_dependencies["crawler"],
+            database_client=mock_db,
         )
 
         with patch("crawl4ai_mcp.create_and_initialize_database", return_value=mock_db):
@@ -263,7 +264,8 @@ class TestMCPQdrantIntegration:
         )
 
         ctx = create_test_context(
-            database_client=mock_db, reranking_model=mock_dependencies["reranker"],
+            database_client=mock_db,
+            reranking_model=mock_dependencies["reranker"],
         )
 
         # Enable reranking

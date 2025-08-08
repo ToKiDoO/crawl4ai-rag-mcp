@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 
 import crawl4ai_mcp
+
 from database.factory import create_and_initialize_database
 from database.qdrant_adapter import QdrantAdapter
 from tests.test_qdrant_config import get_qdrant_url, requires_qdrant
@@ -200,7 +201,9 @@ async def fetch_data(url: str) -> dict:
         with patch("utils.create_embedding", return_value=test_embedding):
             # Test the MCP tool
             result = await crawl4ai_mcp.search_code_examples(
-                ctx=ctx, query="async fetch data aiohttp", match_count=3,
+                ctx=ctx,
+                query="async fetch data aiohttp",
+                match_count=3,
             )
 
         # Parse the JSON result
@@ -255,10 +258,12 @@ async def fetch_data(url: str) -> dict:
                 return_value={"word_count": 50, "section": "main"},
             ),
             patch(
-                "crawl4ai_mcp.extract_source_summary", return_value="Test page summary",
+                "crawl4ai_mcp.extract_source_summary",
+                return_value="Test page summary",
             ),
             patch(
-                "utils.create_embeddings_batch", return_value=[[0.1] * 1536],
+                "utils.create_embeddings_batch",
+                return_value=[[0.1] * 1536],
             ),
         ):
             # Test the MCP tool
@@ -325,7 +330,8 @@ async def fetch_data(url: str) -> dict:
 
         # Test the delete_source MCP tool
         result = await crawl4ai_mcp.delete_source(
-            ctx=ctx, source_id="delete-test.example.com",
+            ctx=ctx,
+            source_id="delete-test.example.com",
         )
 
         # Parse the JSON result
@@ -351,11 +357,15 @@ async def fetch_data(url: str) -> dict:
 
         # Mock a database operation to fail
         with patch.object(
-            database, "search_documents", side_effect=Exception("Qdrant search failed"),
+            database,
+            "search_documents",
+            side_effect=Exception("Qdrant search failed"),
         ):
             # Test that errors are properly handled and returned
             result = await crawl4ai_mcp.search_crawled_pages(
-                ctx=ctx, query="test query", match_count=5,
+                ctx=ctx,
+                query="test query",
+                match_count=5,
             )
 
             # Parse the JSON result
@@ -390,7 +400,8 @@ async def fetch_data(url: str) -> dict:
         async def concurrent_search(ctx, worker_id):
             """Perform concurrent searches"""
             with patch(
-                "utils.create_embedding", return_value=test_embedding,
+                "utils.create_embedding",
+                return_value=test_embedding,
             ):
                 result = await crawl4ai_mcp.search_crawled_pages(
                     ctx=ctx,
@@ -437,7 +448,9 @@ async def fetch_data(url: str) -> dict:
 
         with patch("utils.create_embedding", return_value=[0.1] * 1536):
             result = await crawl4ai_mcp.search_crawled_pages(
-                ctx=ctx, query="Performance test document topic", match_count=10,
+                ctx=ctx,
+                query="Performance test document topic",
+                match_count=10,
             )
 
         search_time = time.time() - start_time

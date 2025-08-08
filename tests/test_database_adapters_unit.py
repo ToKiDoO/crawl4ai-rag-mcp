@@ -104,7 +104,8 @@ class TestQdrantAdapter:
         adapter = QdrantAdapter()
 
         with patch(
-            "database.qdrant_adapter.QdrantClient", return_value=mock_qdrant_client,
+            "database.qdrant_adapter.QdrantClient",
+            return_value=mock_qdrant_client,
         ):
             # Mock get_collection to raise exception (collection doesn't exist)
             mock_qdrant_client.get_collection.side_effect = Exception(
@@ -125,7 +126,8 @@ class TestQdrantAdapter:
         adapter = QdrantAdapter()
 
         with patch(
-            "database.qdrant_adapter.QdrantClient", return_value=mock_qdrant_client,
+            "database.qdrant_adapter.QdrantClient",
+            return_value=mock_qdrant_client,
         ):
             # Mock get_collection to succeed (collections exist)
             mock_qdrant_client.get_collection.return_value = MagicMock()
@@ -138,7 +140,8 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_initialize_handles_create_collection_errors(
-        self, mock_qdrant_client,
+        self,
+        mock_qdrant_client,
     ):
         """Test initialize handles collection creation errors gracefully"""
         from database.qdrant_adapter import QdrantAdapter
@@ -146,7 +149,8 @@ class TestQdrantAdapter:
         adapter = QdrantAdapter()
 
         with patch(
-            "database.qdrant_adapter.QdrantClient", return_value=mock_qdrant_client,
+            "database.qdrant_adapter.QdrantClient",
+            return_value=mock_qdrant_client,
         ):
             mock_qdrant_client.get_collection.side_effect = Exception(
                 "Collection not found",
@@ -198,7 +202,12 @@ class TestQdrantAdapter:
         mock_qdrant_client.scroll.return_value = ([], None)
 
         await qdrant_adapter.add_documents(
-            urls, chunk_numbers, contents, metadatas, embeddings, source_ids,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            embeddings,
+            source_ids,
         )
 
         # Should call upsert with proper points
@@ -211,7 +220,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_add_documents_without_source_ids(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test document addition without source_ids"""
         urls = ["https://test.com/1"]
@@ -223,14 +234,21 @@ class TestQdrantAdapter:
         mock_qdrant_client.scroll.return_value = ([], None)
 
         await qdrant_adapter.add_documents(
-            urls, chunk_numbers, contents, metadatas, embeddings, None,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            embeddings,
+            None,
         )
 
         mock_qdrant_client.upsert.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_add_documents_batch_processing(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test document addition with batch processing"""
         # Create more documents than batch size to test batching
@@ -247,7 +265,12 @@ class TestQdrantAdapter:
         mock_qdrant_client.scroll.return_value = ([], None)
 
         await qdrant_adapter.add_documents(
-            urls, chunk_numbers, contents, metadatas, embeddings, source_ids,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            embeddings,
+            source_ids,
         )
 
         # Should be called twice due to batching
@@ -255,7 +278,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_add_documents_deletes_existing(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test that add_documents deletes existing documents for URLs"""
         urls = ["https://test.com/1"]
@@ -270,7 +295,12 @@ class TestQdrantAdapter:
         mock_qdrant_client.scroll.return_value = (mock_points, None)
 
         await qdrant_adapter.add_documents(
-            urls, chunk_numbers, contents, metadatas, embeddings, source_ids,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            embeddings,
+            source_ids,
         )
 
         # Should call delete for existing documents (once per unique URL)
@@ -281,7 +311,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_add_documents_handles_delete_error(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test add_documents handles delete errors gracefully"""
         with patch.object(
@@ -298,14 +330,21 @@ class TestQdrantAdapter:
 
             # Should not raise exception despite delete failure
             await qdrant_adapter.add_documents(
-                urls, chunk_numbers, contents, metadatas, embeddings, source_ids,
+                urls,
+                chunk_numbers,
+                contents,
+                metadatas,
+                embeddings,
+                source_ids,
             )
 
             mock_qdrant_client.upsert.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_add_documents_handles_upsert_error(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test add_documents handles upsert errors"""
         mock_qdrant_client.scroll.return_value = ([], None)
@@ -320,7 +359,12 @@ class TestQdrantAdapter:
 
         with pytest.raises(Exception, match="Upsert failed"):
             await qdrant_adapter.add_documents(
-                urls, chunk_numbers, contents, metadatas, embeddings, source_ids,
+                urls,
+                chunk_numbers,
+                contents,
+                metadatas,
+                embeddings,
+                source_ids,
             )
 
     @pytest.mark.asyncio
@@ -351,7 +395,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_search_documents_with_filters(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test document search with metadata and source filters"""
         query_embedding = [0.1] * 1536
@@ -373,7 +419,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_search_documents_by_keyword(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test keyword-based document search"""
         keyword = "python"
@@ -389,7 +437,8 @@ class TestQdrantAdapter:
         mock_qdrant_client.scroll.return_value = ([mock_point], None)
 
         results = await qdrant_adapter.search_documents_by_keyword(
-            keyword, match_count=5,
+            keyword,
+            match_count=5,
         )
 
         assert len(results) == 1
@@ -398,7 +447,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_search_documents_by_keyword_with_source_filter(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test keyword search with source filter"""
         keyword = "python"
@@ -407,7 +458,9 @@ class TestQdrantAdapter:
         mock_qdrant_client.scroll.return_value = ([], None)
 
         await qdrant_adapter.search_documents_by_keyword(
-            keyword, match_count=5, source_filter=source_filter,
+            keyword,
+            match_count=5,
+            source_filter=source_filter,
         )
 
         # Verify scroll was called with proper filter
@@ -456,7 +509,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_delete_documents_by_url_no_points(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test deleting documents when no points exist"""
         urls = ["https://test.com/nonexistent"]
@@ -516,7 +571,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_by_keyword(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test searching code examples by keyword"""
         keyword = "function"
@@ -533,7 +590,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_delete_code_examples_by_url(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test deleting code examples by URL"""
         urls = ["https://test.com/code"]
@@ -556,7 +615,12 @@ class TestQdrantAdapter:
         embedding = [0.1] * 1536
 
         await qdrant_adapter.add_source(
-            source_id, url, title, description, metadata, embedding,
+            source_id,
+            url,
+            title,
+            description,
+            metadata,
+            embedding,
         )
 
         mock_qdrant_client.upsert.assert_called_once()
@@ -616,15 +680,18 @@ class TestQdrantAdapter:
         # Mock multiple batches of sources
         batch1_points = [
             MagicMock(
-                id="id1", payload={"source_id": "source1", "summary": "Summary 1"},
+                id="id1",
+                payload={"source_id": "source1", "summary": "Summary 1"},
             ),
             MagicMock(
-                id="id2", payload={"source_id": "source2", "summary": "Summary 2"},
+                id="id2",
+                payload={"source_id": "source2", "summary": "Summary 2"},
             ),
         ]
         batch2_points = [
             MagicMock(
-                id="id3", payload={"source_id": "source3", "summary": "Summary 3"},
+                id="id3",
+                payload={"source_id": "source3", "summary": "Summary 3"},
             ),
         ]
 
@@ -667,7 +734,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_update_source_info_create_new(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test update_source_info creates new source when not found"""
         source_id = "new-source"
@@ -684,7 +753,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_create_new_source_embedding_generation(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test _create_new_source generates proper embedding"""
         source_id = "test-source"
@@ -694,7 +765,11 @@ class TestQdrantAdapter:
         point_id = "test-point-id"
 
         await qdrant_adapter._create_new_source(
-            source_id, summary, word_count, timestamp, point_id,
+            source_id,
+            summary,
+            word_count,
+            timestamp,
+            point_id,
         )
 
         mock_qdrant_client.upsert.assert_called_once()
@@ -790,7 +865,8 @@ class TestSupabaseAdapter:
             adapter = SupabaseAdapter()
 
             with pytest.raises(
-                ValueError, match="SUPABASE_URL and SUPABASE_SERVICE_KEY must be set",
+                ValueError,
+                match="SUPABASE_URL and SUPABASE_SERVICE_KEY must be set",
             ):
                 await adapter.initialize()
 
@@ -815,7 +891,12 @@ class TestSupabaseAdapter:
         source_ids = ["test.com", "test.com"]
 
         await supabase_adapter.add_documents(
-            urls, chunk_numbers, contents, metadatas, embeddings, source_ids,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            embeddings,
+            source_ids,
         )
 
         # Should call delete for existing URLs and insert for new documents
@@ -825,7 +906,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_add_documents_extracts_source_id_from_url(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test add_documents extracts source_id from URL when not provided"""
         urls = ["https://example.com/page"]
@@ -836,7 +919,12 @@ class TestSupabaseAdapter:
         source_ids = []  # Empty source_ids
 
         await supabase_adapter.add_documents(
-            urls, chunk_numbers, contents, metadatas, embeddings, source_ids,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            embeddings,
+            source_ids,
         )
 
         # Should still work by extracting source_id from URL
@@ -845,7 +933,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_add_documents_batch_processing(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test document addition with batch processing"""
         batch_size = supabase_adapter.batch_size
@@ -859,7 +949,12 @@ class TestSupabaseAdapter:
         source_ids = ["test.com"] * num_docs
 
         await supabase_adapter.add_documents(
-            urls, chunk_numbers, contents, metadatas, embeddings, source_ids,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            embeddings,
+            source_ids,
         )
 
         # Should call insert multiple times due to batching
@@ -868,7 +963,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_search_documents_success(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test successful document search"""
         query_embedding = [0.1] * 1536
@@ -897,7 +994,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_search_documents_with_filters(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test document search with filters"""
         query_embedding = [0.1] * 1536
@@ -922,7 +1021,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_search_documents_error_handling(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test search documents handles errors gracefully"""
         query_embedding = [0.1] * 1536
@@ -937,7 +1038,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_delete_documents_by_url(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test deleting documents by URL"""
         urls = ["https://test.com/1", "https://test.com/2"]
@@ -950,7 +1053,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_add_code_examples_success(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test successful code example addition"""
         urls = ["https://test.com/code"]
@@ -978,7 +1083,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_add_code_examples_empty_urls(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test add_code_examples with empty URLs list"""
         await supabase_adapter.add_code_examples([], [], [], [], [], [], [])
@@ -988,7 +1095,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_add_code_examples_handles_delete_error(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test add_code_examples handles delete errors gracefully"""
         urls = ["https://test.com/code"]
@@ -1026,7 +1135,11 @@ class TestSupabaseAdapter:
 
         mock_result = MagicMock()
         mock_result.data = [
-            {"id": "code-id", "content": "def test(): pass", "summary": "Test function"},
+            {
+                "id": "code-id",
+                "content": "def test(): pass",
+                "summary": "Test function",
+            },
         ]
 
         rpc_mock = mock_supabase_client.rpc.return_value
@@ -1043,7 +1156,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_delete_code_examples_by_url(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test deleting code examples by URL"""
         urls = ["https://test.com/code1", "https://test.com/code2"]
@@ -1056,7 +1171,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_delete_code_examples_handles_errors(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test delete_code_examples handles errors gracefully"""
         urls = ["https://test.com/code"]
@@ -1071,7 +1188,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_update_source_info_update_existing(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test updating existing source info"""
         source_id = "test-source"
@@ -1091,7 +1210,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_update_source_info_create_new(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test creating new source info when update returns no data"""
         source_id = "new-source"
@@ -1111,7 +1232,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_update_source_info_handles_error(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test update_source_info handles errors gracefully"""
         source_id = "test-source"
@@ -1147,7 +1270,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_get_documents_by_url_handles_error(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test get_documents_by_url handles errors gracefully"""
         url = "https://test.com/page"
@@ -1163,7 +1288,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_search_documents_by_keyword(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test searching documents by keyword"""
         keyword = "python"
@@ -1185,7 +1312,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_search_documents_by_keyword_with_source_filter(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test keyword search with source filter"""
         keyword = "python"
@@ -1197,14 +1326,17 @@ class TestSupabaseAdapter:
         )
 
         await supabase_adapter.search_documents_by_keyword(
-            keyword, source_filter=source_filter,
+            keyword,
+            source_filter=source_filter,
         )
 
         table_mock.eq.assert_called_once_with("source_id", source_filter)
 
     @pytest.mark.asyncio
     async def test_search_code_examples_by_keyword(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test searching code examples by keyword"""
         keyword = "function"
@@ -1245,7 +1377,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_delete_documents_batch_success(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test successful batch deletion"""
         urls = ["https://test.com/1", "https://test.com/2"]
@@ -1257,7 +1391,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_delete_documents_batch_fallback(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test batch deletion fallback to individual deletion"""
         urls = ["https://test.com/1", "https://test.com/2"]
@@ -1275,7 +1411,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_insert_with_retry_success_first_attempt(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test successful insert on first attempt"""
         table_name = "test_table"
@@ -1288,7 +1426,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_insert_with_retry_success_after_retries(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test successful insert after retries"""
         table_name = "test_table"
@@ -1309,7 +1449,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_insert_with_retry_fallback_to_individual(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test insert with retry falls back to individual inserts after all batch attempts fail"""
         table_name = "test_table"
@@ -1381,7 +1523,12 @@ class TestDatabaseAdapterEdgeCases:
         source_ids = ["test.com"] * size
 
         await adapter.add_documents(
-            urls, chunk_numbers, contents, metadatas, embeddings, source_ids,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            embeddings,
+            source_ids,
         )
 
         # Should call upsert multiple times due to batching
@@ -1429,7 +1576,12 @@ class TestDatabaseAdapterEdgeCases:
         wrong_embeddings = [[0.1] * 100]  # Wrong size
 
         await adapter.add_documents(
-            ["https://test.com"], [1], ["Content"], [{}], wrong_embeddings, ["test.com"],
+            ["https://test.com"],
+            [1],
+            ["Content"],
+            [{}],
+            wrong_embeddings,
+            ["test.com"],
         )
 
         # Should still call upsert (Qdrant will handle the validation)

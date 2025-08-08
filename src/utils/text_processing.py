@@ -8,9 +8,11 @@ try:
     from utils import generate_code_example_summary
 except ImportError:
     # Provide a simple fallback implementation
-    def generate_code_example_summary(code: str, context_before: str = "", context_after: str = "") -> str:
+    def generate_code_example_summary(
+        code: str, context_before: str = "", context_after: str = ""
+    ) -> str:
         """Simple fallback for code example summary generation."""
-        lines = code.strip().split('\n')
+        lines = code.strip().split("\n")
         first_line = lines[0] if lines else ""
         return f"Code example: {first_line[:100]}..."
 

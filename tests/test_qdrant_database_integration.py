@@ -183,7 +183,9 @@ class TestQdrantDatabaseIntegration:
             # Create concurrent tasks
             async def add_docs(idx):
                 await add_documents_to_database(
-                    [f"http://example.com/{idx}"], [f"Content {idx}"], [{"idx": idx}],
+                    [f"http://example.com/{idx}"],
+                    [f"Content {idx}"],
+                    [{"idx": idx}],
                 )
 
             # Run concurrent operations

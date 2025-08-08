@@ -40,6 +40,7 @@ from crawl4ai_mcp import (
     validate_github_url,
     validate_script_path,
 )
+
 from utils import create_embedding, create_embeddings_batch
 
 
@@ -360,7 +361,9 @@ class TestProcessCodeExample:
 
         assert result == "Generated summary"
         mock_generate.assert_called_once_with(
-            "def hello(): pass", "Context before", "Context after",
+            "def hello(): pass",
+            "Context before",
+            "Context after",
         )
 
     @patch("crawl4ai_mcp.generate_code_example_summary")
@@ -483,7 +486,9 @@ class TestValidateScriptPath:
         assert "error" not in result
         mock_exists.assert_called_once_with("/path/to/valid_script.py")
         mock_file.assert_called_once_with(
-            "/path/to/valid_script.py", "r", encoding="utf-8",
+            "/path/to/valid_script.py",
+            "r",
+            encoding="utf-8",
         )
 
     @patch("builtins.open")
@@ -1537,7 +1542,8 @@ class TestCreateEmbeddingsBatch:
 
             assert len(result) == 2
             mock_openai.assert_called_once_with(
-                model="text-embedding-3-small", input=texts,
+                model="text-embedding-3-small",
+                input=texts,
             )
 
 

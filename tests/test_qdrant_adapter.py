@@ -53,7 +53,8 @@ class TestQdrantAdapter:
     async def qdrant_adapter(self, mock_qdrant_client):
         """Create Qdrant adapter with mocked client"""
         with patch(
-            "database.qdrant_adapter.QdrantClient", return_value=mock_qdrant_client,
+            "database.qdrant_adapter.QdrantClient",
+            return_value=mock_qdrant_client,
         ):
             from database.qdrant_adapter import QdrantAdapter
 
@@ -93,7 +94,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_add_documents_generates_ids(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test that documents are added with proper ID generation"""
         urls = ["https://test.com/page1", "https://test.com/page2"]
@@ -124,13 +127,16 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_search_documents_with_score_conversion(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test search returns results with proper similarity scores"""
         query_embedding = [0.5] * 1536
 
         results = await qdrant_adapter.search_documents(
-            query_embedding=query_embedding, match_count=10,
+            query_embedding=query_embedding,
+            match_count=10,
         )
 
         # Verify search was called on correct collection
@@ -146,7 +152,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_search_with_metadata_filter(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test search with metadata filtering"""
 
@@ -173,7 +181,9 @@ class TestQdrantAdapter:
         source_filter = "docs.python.org"
 
         await qdrant_adapter.search_documents(
-            query_embedding=query_embedding, match_count=5, source_filter=source_filter,
+            query_embedding=query_embedding,
+            match_count=5,
+            source_filter=source_filter,
         )
 
         # Verify filter includes source_id condition
@@ -234,7 +244,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_special_characters_handling(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test handling of special characters in content"""
         special_content = (
@@ -353,7 +365,8 @@ class TestQdrantAdapter:
 
         # Test without source filter
         results = await qdrant_adapter.search_documents_by_keyword(
-            keyword="Python", match_count=10,
+            keyword="Python",
+            match_count=10,
         )
 
         assert len(results) == 1
@@ -372,7 +385,9 @@ class TestQdrantAdapter:
 
         # Test update source info
         await qdrant_adapter.update_source_info(
-            source_id="test.com", summary="Test website", word_count=1500,
+            source_id="test.com",
+            summary="Test website",
+            word_count=1500,
         )
 
         # Verify upsert was called on sources collection
@@ -464,7 +479,9 @@ class TestQdrantAdapter:
 
     @pytest.mark.asyncio
     async def test_source_operations_in_metadata_collection(
-        self, qdrant_adapter, mock_qdrant_client,
+        self,
+        qdrant_adapter,
+        mock_qdrant_client,
     ):
         """Test source operations use a metadata collection"""
         # Mock retrieve to return empty (no existing source)
@@ -472,7 +489,9 @@ class TestQdrantAdapter:
 
         # Test update source
         await qdrant_adapter.update_source_info(
-            source_id="test.com", summary="Updated summary", word_count=1000,
+            source_id="test.com",
+            summary="Updated summary",
+            word_count=1000,
         )
 
         # Should create a new source using upsert (since retrieve returned empty)
@@ -523,7 +542,8 @@ class TestQdrantAdapter:
 
         # Test search code examples
         await qdrant_adapter.search_code_examples(
-            query_embedding=[0.3] * 1536, match_count=5,
+            query_embedding=[0.3] * 1536,
+            match_count=5,
         )
 
         # Verify search on code_examples collection
@@ -569,7 +589,8 @@ class TestQdrantAdapter:
         # Should propagate error up
         with pytest.raises(Exception) as exc_info:
             await qdrant_adapter.search_documents(
-                query_embedding=[0.5] * 1536, match_count=10,
+                query_embedding=[0.5] * 1536,
+                match_count=10,
             )
         assert "Connection error" in str(exc_info.value)
 

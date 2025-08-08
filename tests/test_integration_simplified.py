@@ -87,7 +87,9 @@ class TestIntegrationSimplified:
                 "payload": {"url": url, "content": chunk, "chunk_number": i},
                 "vector": embedding,
             }
-            for i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False))
+            for i, (chunk, embedding) in enumerate(
+                zip(chunks, embeddings, strict=False)
+            )
         ]
 
         result = qdrant.upsert("crawled_pages", points)

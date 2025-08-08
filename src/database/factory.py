@@ -32,8 +32,7 @@ def create_database_client() -> VectorDatabase:
         api_key = os.getenv("QDRANT_API_KEY")
         return QdrantAdapter(url=url, api_key=api_key)
     raise ValueError(
-        f"Unknown database type: {db_type}. "
-        f"Supported types are: 'supabase', 'qdrant'",
+        f"Unknown database type: {db_type}. Supported types are: 'supabase', 'qdrant'",
     )
 
 

@@ -30,11 +30,13 @@ from tests.fixtures.neo4j_fixtures import (
 
 # Mock dependencies before importing our modules
 with patch.dict(
-    "sys.modules", {"neo4j": MagicMock(), "neo4j.AsyncGraphDatabase": MagicMock()},
+    "sys.modules",
+    {"neo4j": MagicMock(), "neo4j.AsyncGraphDatabase": MagicMock()},
 ):
     # Now import our modules
     sys.path.insert(
-        0, os.path.join(os.path.dirname(__file__), "..", "knowledge_graphs"),
+        0,
+        os.path.join(os.path.dirname(__file__), "..", "knowledge_graphs"),
     )
     from parse_repo_into_neo4j import DirectNeo4jExtractor, Neo4jCodeAnalyzer
 
@@ -50,7 +52,9 @@ class TestGitHubRepositoryCloning:
             mock_db.driver.return_value = mock_driver
 
             extractor = DirectNeo4jExtractor(
-                "bolt://localhost:7687", "test_user", "test_password",
+                "bolt://localhost:7687",
+                "test_user",
+                "test_password",
             )
             extractor.driver = mock_driver
             extractor.analyzer = MagicMock(spec=Neo4jCodeAnalyzer)
@@ -60,7 +64,10 @@ class TestGitHubRepositoryCloning:
     @patch("parse_repo_into_neo4j.subprocess.run")
     @patch("parse_repo_into_neo4j.shutil.rmtree")
     def test_clone_repo_success(
-        self, mock_rmtree, mock_subprocess, extractor_with_git_mock,
+        self,
+        mock_rmtree,
+        mock_subprocess,
+        extractor_with_git_mock,
     ):
         """Test successful repository cloning"""
         # Mock successful git clone
@@ -104,7 +111,10 @@ class TestGitHubRepositoryCloning:
     @patch("parse_repo_into_neo4j.subprocess.run")
     @patch("parse_repo_into_neo4j.Path.exists")
     def test_clone_repo_cleanup_on_error(
-        self, mock_exists, mock_subprocess, extractor_with_git_mock,
+        self,
+        mock_exists,
+        mock_subprocess,
+        extractor_with_git_mock,
     ):
         """Test cleanup of partial clone on error"""
         # Mock path exists to simulate partial clone
@@ -134,7 +144,9 @@ class TestPythonFileDiscovery:
             mock_db.driver.return_value = mock_driver
 
             extractor = DirectNeo4jExtractor(
-                "bolt://localhost:7687", "test_user", "test_password",
+                "bolt://localhost:7687",
+                "test_user",
+                "test_password",
             )
             extractor.driver = mock_driver
             extractor.analyzer = MagicMock(spec=Neo4jCodeAnalyzer)
@@ -142,7 +154,9 @@ class TestPythonFileDiscovery:
             yield extractor
 
     def test_get_python_files_simple_structure(
-        self, extractor_with_fs_mock, sample_git_repo,
+        self,
+        extractor_with_fs_mock,
+        sample_git_repo,
     ):
         """Test discovering Python files in simple repository structure"""
         python_files = extractor_with_fs_mock.get_python_files(sample_git_repo)
@@ -154,7 +168,9 @@ class TestPythonFileDiscovery:
 
     @patch("parse_repo_into_neo4j.Path.rglob")
     def test_get_python_files_complex_structure(
-        self, mock_rglob, extractor_with_fs_mock,
+        self,
+        mock_rglob,
+        extractor_with_fs_mock,
     ):
         """Test discovering Python files in complex repository structure"""
         # Mock complex file structure
@@ -178,7 +194,9 @@ class TestPythonFileDiscovery:
 
     @patch("parse_repo_into_neo4j.Path.rglob")
     def test_get_python_files_empty_repository(
-        self, mock_rglob, extractor_with_fs_mock,
+        self,
+        mock_rglob,
+        extractor_with_fs_mock,
     ):
         """Test handling of repository with no Python files"""
         # Mock empty repository
@@ -190,7 +208,9 @@ class TestPythonFileDiscovery:
 
     @patch("parse_repo_into_neo4j.Path.rglob")
     def test_get_python_files_permission_error(
-        self, mock_rglob, extractor_with_fs_mock,
+        self,
+        mock_rglob,
+        extractor_with_fs_mock,
     ):
         """Test handling of permission errors during file discovery"""
         # Mock permission error
@@ -211,7 +231,9 @@ class TestRepositoryAnalysis:
             mock_db.driver.return_value = mock_driver
 
             extractor = DirectNeo4jExtractor(
-                "bolt://localhost:7687", "test_user", "test_password",
+                "bolt://localhost:7687",
+                "test_user",
+                "test_password",
             )
             extractor.driver = mock_driver
 
@@ -249,7 +271,11 @@ class TestRepositoryAnalysis:
     @patch("parse_repo_into_neo4j.subprocess.run")
     @patch("parse_repo_into_neo4j.shutil.rmtree")
     async def test_analyze_repository_complete_workflow(
-        self, mock_rmtree, mock_subprocess, analysis_extractor, sample_git_repo,
+        self,
+        mock_rmtree,
+        mock_subprocess,
+        analysis_extractor,
+        sample_git_repo,
     ):
         """Test complete repository analysis workflow"""
         await analysis_extractor.initialize()
@@ -274,7 +300,9 @@ class TestRepositoryAnalysis:
 
     @pytest.mark.asyncio
     async def test_analyze_repository_with_file_list(
-        self, analysis_extractor, sample_repository_data,
+        self,
+        analysis_extractor,
+        sample_repository_data,
     ):
         """Test repository analysis with pre-provided file list"""
         await analysis_extractor.initialize()
@@ -307,7 +335,9 @@ class TestRepositoryAnalysis:
 
     @pytest.mark.asyncio
     async def test_analyze_repository_large_repository(
-        self, analysis_extractor, performance_test_data,
+        self,
+        analysis_extractor,
+        performance_test_data,
     ):
         """Test analysis of large repository"""
         await analysis_extractor.initialize()
@@ -347,7 +377,9 @@ class TestGraphCreation:
             mock_db.driver.return_value = mock_driver
 
             extractor = DirectNeo4jExtractor(
-                "bolt://localhost:7687", "test_user", "test_password",
+                "bolt://localhost:7687",
+                "test_user",
+                "test_password",
             )
             extractor.driver = mock_driver
             extractor.analyzer = MagicMock(spec=Neo4jCodeAnalyzer)
@@ -372,14 +404,17 @@ class TestGraphCreation:
         # This would be called within analyze_repository
         with patch.object(graph_extractor, "_create_graph") as mock_create_graph:
             await graph_extractor.analyze_repository(
-                repo_data["url"], repo_data["files"],
+                repo_data["url"],
+                repo_data["files"],
             )
 
             mock_create_graph.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_create_graph_file_nodes(
-        self, graph_extractor, sample_repository_data,
+        self,
+        graph_extractor,
+        sample_repository_data,
     ):
         """Test creation of file nodes with proper metadata"""
         await graph_extractor.initialize()
@@ -390,7 +425,8 @@ class TestGraphCreation:
         ]
 
         result = await graph_extractor.analyze_repository(
-            sample_repository_data["url"], sample_repository_data["files"],
+            sample_repository_data["url"],
+            sample_repository_data["files"],
         )
 
         assert result is not None
@@ -398,7 +434,9 @@ class TestGraphCreation:
 
     @pytest.mark.asyncio
     async def test_create_graph_class_hierarchy(
-        self, graph_extractor, sample_repository_data,
+        self,
+        graph_extractor,
+        sample_repository_data,
     ):
         """Test creation of class nodes with methods and attributes"""
         await graph_extractor.initialize()
@@ -413,7 +451,8 @@ class TestGraphCreation:
         ]
 
         result = await graph_extractor.analyze_repository(
-            sample_repository_data["url"], sample_repository_data["files"],
+            sample_repository_data["url"],
+            sample_repository_data["files"],
         )
 
         assert result is not None
@@ -448,7 +487,8 @@ class TestGraphCreation:
         ]
 
         result = await graph_extractor.analyze_repository(
-            "https://github.com/test/repo.git", files_data,
+            "https://github.com/test/repo.git",
+            files_data,
         )
 
         assert result is not None
@@ -490,7 +530,8 @@ class TestGraphCreation:
         ]
 
         result = await graph_extractor.analyze_repository(
-            "https://github.com/test/repo.git", files_data,
+            "https://github.com/test/repo.git",
+            files_data,
         )
 
         assert result is not None
@@ -517,7 +558,8 @@ class TestGraphCreation:
             )
 
         result = await graph_extractor.analyze_repository(
-            "https://github.com/test/large-repo.git", files_data,
+            "https://github.com/test/large-repo.git",
+            files_data,
         )
 
         assert result is not None
@@ -535,7 +577,9 @@ class TestImportRelationshipMapping:
             mock_db.driver.return_value = mock_driver
 
             extractor = DirectNeo4jExtractor(
-                "bolt://localhost:7687", "test_user", "test_password",
+                "bolt://localhost:7687",
+                "test_user",
+                "test_password",
             )
             extractor.driver = mock_driver
             extractor.analyzer = MagicMock(spec=Neo4jCodeAnalyzer)
@@ -573,7 +617,8 @@ class TestImportRelationshipMapping:
         ]
 
         result = await import_extractor.analyze_repository(
-            "https://github.com/test/repo.git", files_data,
+            "https://github.com/test/repo.git",
+            files_data,
         )
 
         assert result is not None
@@ -609,7 +654,8 @@ class TestImportRelationshipMapping:
         ]
 
         result = await import_extractor.analyze_repository(
-            "https://github.com/test/repo.git", files_data,
+            "https://github.com/test/repo.git",
+            files_data,
         )
 
         assert result is not None
@@ -639,7 +685,8 @@ class TestImportRelationshipMapping:
         ]
 
         result = await import_extractor.analyze_repository(
-            "https://github.com/test/repo.git", files_data,
+            "https://github.com/test/repo.git",
+            files_data,
         )
 
         assert result is not None
@@ -667,7 +714,8 @@ class TestImportRelationshipMapping:
         ]
 
         result = await import_extractor.analyze_repository(
-            "https://github.com/test/repo.git", files_data,
+            "https://github.com/test/repo.git",
+            files_data,
         )
 
         assert result is not None
@@ -685,7 +733,9 @@ class TestErrorHandlingAndEdgeCases:
             mock_db.driver.return_value = mock_driver
 
             extractor = DirectNeo4jExtractor(
-                "bolt://localhost:7687", "test_user", "test_password",
+                "bolt://localhost:7687",
+                "test_user",
+                "test_password",
             )
             extractor.driver = mock_driver
             extractor.analyzer = MagicMock(spec=Neo4jCodeAnalyzer)
@@ -805,7 +855,8 @@ class TestErrorHandlingAndEdgeCases:
         # This should either handle gracefully or provide meaningful error
         try:
             result = await error_extractor.analyze_repository(
-                "https://github.com/test/huge-repo.git", huge_files_data,
+                "https://github.com/test/huge-repo.git",
+                huge_files_data,
             )
             # If successful, should complete without memory errors
             assert result is not None
@@ -855,7 +906,9 @@ class TestPerformanceOptimization:
             mock_db.driver.return_value = mock_driver
 
             extractor = DirectNeo4jExtractor(
-                "bolt://localhost:7687", "test_user", "test_password",
+                "bolt://localhost:7687",
+                "test_user",
+                "test_password",
             )
             extractor.driver = mock_driver
             extractor.analyzer = MagicMock(spec=Neo4jCodeAnalyzer)
@@ -864,7 +917,9 @@ class TestPerformanceOptimization:
 
     @pytest.mark.asyncio
     async def test_batch_processing_efficiency(
-        self, perf_extractor, performance_test_data,
+        self,
+        perf_extractor,
+        performance_test_data,
     ):
         """Test that batch processing improves performance"""
         await perf_extractor.initialize()
@@ -891,7 +946,8 @@ class TestPerformanceOptimization:
         start_time = time.time()
 
         result = await perf_extractor.analyze_repository(
-            "https://github.com/test/large-repo.git", files_data,
+            "https://github.com/test/large-repo.git",
+            files_data,
         )
 
         end_time = time.time()
@@ -920,7 +976,8 @@ class TestPerformanceOptimization:
         ]
 
         result1 = await perf_extractor.analyze_repository(
-            "https://github.com/test/repo.git", initial_files,
+            "https://github.com/test/repo.git",
+            initial_files,
         )
 
         # Second analysis - repository with additional files
@@ -942,7 +999,8 @@ class TestPerformanceOptimization:
         ]
 
         result2 = await perf_extractor.analyze_repository(
-            "https://github.com/test/repo.git", updated_files,
+            "https://github.com/test/repo.git",
+            updated_files,
         )
 
         assert result1 is not None
@@ -969,7 +1027,8 @@ class TestPerformanceOptimization:
         }
 
         result = await perf_extractor.analyze_repository(
-            "https://github.com/test/repo.git", [large_file_data],
+            "https://github.com/test/repo.git",
+            [large_file_data],
         )
 
         assert result is not None

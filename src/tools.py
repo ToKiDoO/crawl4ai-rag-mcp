@@ -17,15 +17,21 @@ from core import MCPToolError, track_request
 from database import (
     get_available_sources,
     perform_rag_query,
+)
+from database import (
     search_code_examples as search_code_examples_db,
 )
 from knowledge_graph import (
     query_knowledge_graph,
 )
-from knowledge_graph.repository import parse_github_repository as parse_github_repository_impl
+from knowledge_graph.repository import (
+    parse_github_repository as parse_github_repository_impl,
+)
 from services import (
     process_urls_for_mcp,
     search_and_process,
+)
+from services import (
     smart_crawl_url as smart_crawl_url_service_impl,
 )
 from utils.validation import validate_github_url, validate_script_path
@@ -33,7 +39,7 @@ from utils.validation import validate_github_url, validate_script_path
 logger = logging.getLogger(__name__)
 
 # Import global context functions from core.context
-from core.context import get_app_context, set_app_context
+from core.context import get_app_context
 
 
 async def parse_github_repository_wrapper(ctx: Context, repo_url: str) -> str:
@@ -41,17 +47,24 @@ async def parse_github_repository_wrapper(ctx: Context, repo_url: str) -> str:
     Wrapper function to properly extract repo_extractor from context and call the implementation.
     """
     import json
-    
+
     # Get the app context that was stored during lifespan
     app_ctx = get_app_context()
-    
-    if not app_ctx or not hasattr(app_ctx, 'repo_extractor') or not app_ctx.repo_extractor:
+
+    if (
+        not app_ctx
+        or not hasattr(app_ctx, "repo_extractor")
+        or not app_ctx.repo_extractor
+    ):
         # Return a proper error message
-        return json.dumps({
-            "success": False,
-            "error": "Repository extractor not available. Neo4j may not be configured or the USE_KNOWLEDGE_GRAPH environment variable may be set to false."
-        }, indent=2)
-    
+        return json.dumps(
+            {
+                "success": False,
+                "error": "Repository extractor not available. Neo4j may not be configured or the USE_KNOWLEDGE_GRAPH environment variable may be set to false.",
+            },
+            indent=2,
+        )
+
     return await parse_github_repository_impl(app_ctx.repo_extractor, repo_url)
 
 
@@ -60,16 +73,23 @@ async def get_available_sources_wrapper(ctx: Context) -> str:
     Wrapper function to properly extract database_client from context and call the implementation.
     """
     import json
-    
+
     # Get the app context that was stored during lifespan
     app_ctx = get_app_context()
-    
-    if not app_ctx or not hasattr(app_ctx, 'database_client') or not app_ctx.database_client:
-        return json.dumps({
-            "success": False,
-            "error": "Database client not available"
-        }, indent=2)
-    
+
+    if (
+        not app_ctx
+        or not hasattr(app_ctx, "database_client")
+        or not app_ctx.database_client
+    ):
+        return json.dumps(
+            {
+                "success": False,
+                "error": "Database client not available",
+            },
+            indent=2,
+        )
+
     return await get_available_sources(app_ctx.database_client)
 
 
@@ -83,16 +103,23 @@ async def perform_rag_query_wrapper(
     Wrapper function to properly extract database_client from context and call the implementation.
     """
     import json
-    
+
     # Get the app context that was stored during lifespan
     app_ctx = get_app_context()
-    
-    if not app_ctx or not hasattr(app_ctx, 'database_client') or not app_ctx.database_client:
-        return json.dumps({
-            "success": False,
-            "error": "Database client not available"
-        }, indent=2)
-    
+
+    if (
+        not app_ctx
+        or not hasattr(app_ctx, "database_client")
+        or not app_ctx.database_client
+    ):
+        return json.dumps(
+            {
+                "success": False,
+                "error": "Database client not available",
+            },
+            indent=2,
+        )
+
     return await perform_rag_query(
         app_ctx.database_client,
         query=query,
@@ -111,16 +138,23 @@ async def search_code_examples_wrapper(
     Wrapper function to properly extract database_client from context and call the implementation.
     """
     import json
-    
+
     # Get the app context that was stored during lifespan
     app_ctx = get_app_context()
-    
-    if not app_ctx or not hasattr(app_ctx, 'database_client') or not app_ctx.database_client:
-        return json.dumps({
-            "success": False,
-            "error": "Database client not available"
-        }, indent=2)
-    
+
+    if (
+        not app_ctx
+        or not hasattr(app_ctx, "database_client")
+        or not app_ctx.database_client
+    ):
+        return json.dumps(
+            {
+                "success": False,
+                "error": "Database client not available",
+            },
+            indent=2,
+        )
+
     return await search_code_examples_db(
         app_ctx.database_client,
         query=query,
@@ -141,7 +175,7 @@ async def query_knowledge_graph_wrapper(ctx: Context, command: str) -> str:
 def register_tools(mcp):
     """
     Register all MCP tools with the FastMCP instance.
-    
+
     Args:
         mcp: FastMCP instance to register tools with
     """
@@ -217,27 +251,35 @@ def register_tools(mcp):
         try:
             # Security: Add input size limit to prevent JSON bomb attacks
             MAX_INPUT_SIZE = 50000  # 50KB limit for safety
-            
+
             # Handle URL parameter which can be:
             # 1. Single URL string
             # 2. JSON string representation of a list (from MCP protocol)
             # 3. Actual Python list
-            
+
             # Enhanced debug logging
-            logger.debug(f"scrape_urls received url parameter (type: {type(url).__name__})")
-            
+            logger.debug(
+                f"scrape_urls received url parameter (type: {type(url).__name__})"
+            )
+
             urls = []
             if isinstance(url, str):
                 # Security check: Limit input size
                 if len(url) > MAX_INPUT_SIZE:
-                    raise ValueError(f"Input too large: {len(url)} bytes (max: {MAX_INPUT_SIZE})")
+                    raise ValueError(
+                        f"Input too large: {len(url)} bytes (max: {MAX_INPUT_SIZE})"
+                    )
                 # Clean whitespace and normalize the string
                 cleaned_url = url.strip()
                 logger.debug(f"Processing string URL, cleaned: {cleaned_url!r}")
-                
+
                 # Check if it's a JSON string representation of a list
                 # Be more precise: must start with [ and end with ] and likely contain quotes
-                if cleaned_url.startswith('[') and cleaned_url.endswith(']') and ('"' in cleaned_url or "'" in cleaned_url):
+                if (
+                    cleaned_url.startswith("[")
+                    and cleaned_url.endswith("]")
+                    and ('"' in cleaned_url or "'" in cleaned_url)
+                ):
                     logger.debug("Detected JSON array format, attempting to parse...")
                     try:
                         # Handle common JSON escaping issues
@@ -245,12 +287,20 @@ def register_tools(mcp):
                         parsed = json.loads(cleaned_url)
                         if isinstance(parsed, list):
                             urls = parsed
-                            logger.debug(f"Successfully parsed JSON array with {len(urls)} URLs")
+                            logger.debug(
+                                f"Successfully parsed JSON array with {len(urls)} URLs"
+                            )
                         else:
-                            urls = [cleaned_url]  # Single URL that looks like JSON but isn't a list
-                            logger.debug("JSON parsed but result is not a list, treating as single URL")
+                            urls = [
+                                cleaned_url
+                            ]  # Single URL that looks like JSON but isn't a list
+                            logger.debug(
+                                "JSON parsed but result is not a list, treating as single URL"
+                            )
                     except json.JSONDecodeError as json_err:
-                        logger.debug(f"JSON parsing failed ({json_err}), treating as single URL")
+                        logger.debug(
+                            f"JSON parsing failed ({json_err}), treating as single URL"
+                        )
                         # Don't attempt fallback parsing with comma split as it can break valid URLs
                         # URLs can contain commas in query parameters
                         urls = [cleaned_url]  # Treat as single URL
@@ -262,48 +312,54 @@ def register_tools(mcp):
                 logger.debug(f"List parameter received with {len(urls)} URLs")
             else:
                 # Handle other types by converting to string
-                logger.warning(f"Unexpected URL parameter type {type(url)}, converting to string")
+                logger.warning(
+                    f"Unexpected URL parameter type {type(url)}, converting to string"
+                )
                 urls = [str(url)]
 
             # Clean and validate each URL in the final list
             from utils.url_helpers import clean_url
-            
+
             cleaned_urls = []
             invalid_urls = []
-            
+
             for i, raw_url in enumerate(urls):
                 try:
                     # Convert to string if not already
                     url_str = str(raw_url).strip()
-                    logger.debug(f"Processing URL {i+1}/{len(urls)}: {url_str!r}")
-                    
+                    logger.debug(f"Processing URL {i + 1}/{len(urls)}: {url_str!r}")
+
                     if not url_str:
-                        logger.warning(f"Empty URL at position {i+1}, skipping")
+                        logger.warning(f"Empty URL at position {i + 1}, skipping")
                         continue
-                    
+
                     # Clean the URL using utility function
                     cleaned_url = clean_url(url_str)
                     if cleaned_url:
                         cleaned_urls.append(cleaned_url)
-                        logger.debug(f"URL {i+1} cleaned successfully: {cleaned_url}")
+                        logger.debug(f"URL {i + 1} cleaned successfully: {cleaned_url}")
                     else:
                         invalid_urls.append(url_str)
-                        logger.warning(f"URL {i+1} failed cleaning: {url_str}")
-                        
+                        logger.warning(f"URL {i + 1} failed cleaning: {url_str}")
+
                 except Exception as url_err:
-                    logger.error(f"Error processing URL {i+1} ({raw_url!r}): {url_err}")
+                    logger.error(
+                        f"Error processing URL {i + 1} ({raw_url!r}): {url_err}"
+                    )
                     invalid_urls.append(str(raw_url))
-            
+
             # Log final results
-            logger.info(f"URL processing complete: {len(cleaned_urls)} valid URLs, {len(invalid_urls)} invalid URLs")
+            logger.info(
+                f"URL processing complete: {len(cleaned_urls)} valid URLs, {len(invalid_urls)} invalid URLs"
+            )
             if invalid_urls:
                 logger.warning(f"Invalid URLs that were skipped: {invalid_urls}")
-            
+
             if not cleaned_urls:
                 error_msg = "No valid URLs found after processing and cleaning"
                 logger.error(error_msg)
                 raise MCPToolError(error_msg)
-            
+
             # Use cleaned URLs for processing
             return await process_urls_for_mcp(
                 ctx=ctx,
@@ -358,7 +414,7 @@ def register_tools(mcp):
             if query is not None:
                 if isinstance(query, str):
                     # Check if it's a JSON string representation of a list
-                    if query.strip().startswith('[') and query.strip().endswith(']'):
+                    if query.strip().startswith("[") and query.strip().endswith("]"):
                         try:
                             parsed = json.loads(query)
                             if isinstance(parsed, list):
@@ -393,7 +449,7 @@ def register_tools(mcp):
         Get all available sources from the sources table.
 
         This tool returns a list of all unique sources (domains) that have been crawled and stored
-        in the database, along with their summaries and statistics. This is useful for discovering 
+        in the database, along with their summaries and statistics. This is useful for discovering
         what content is available for querying.
 
         Always use this tool before calling the RAG query or code example query tool
@@ -510,40 +566,52 @@ def register_tools(mcp):
         try:
             # Validate script path
             validation_result = validate_script_path(script_path)
-            if isinstance(validation_result, dict) and not validation_result.get("valid", False):
-                return json.dumps({
-                    "success": False,
-                    "error": validation_result.get("error", "Script validation failed")
-                }, indent=2)
+            if isinstance(validation_result, dict) and not validation_result.get(
+                "valid", False
+            ):
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": validation_result.get(
+                            "error", "Script validation failed"
+                        ),
+                    },
+                    indent=2,
+                )
 
             # Get the app context that was stored during lifespan
             app_ctx = get_app_context()
-            
+
             if not app_ctx:
-                return json.dumps({
-                    "success": False,
-                    "error": "Application context not available"
-                }, indent=2)
-            
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": "Application context not available",
+                    },
+                    indent=2,
+                )
+
             # Get database client (required)
-            database_client = getattr(app_ctx, 'database_client', None)
-            
+            database_client = getattr(app_ctx, "database_client", None)
+
             # Get Neo4j driver (optional)
             neo4j_driver = None
-            if hasattr(app_ctx, 'repo_extractor') and app_ctx.repo_extractor:
-                neo4j_driver = getattr(app_ctx.repo_extractor, 'driver', None)
-            
+            if hasattr(app_ctx, "repo_extractor") and app_ctx.repo_extractor:
+                neo4j_driver = getattr(app_ctx.repo_extractor, "driver", None)
+
             # Use enhanced hallucination detection (which actually works)
-            from knowledge_graph.enhanced_validation import check_ai_script_hallucinations_enhanced as check_ai_script_hallucinations_enhanced_impl
-            
+            from knowledge_graph.enhanced_validation import (
+                check_ai_script_hallucinations_enhanced as check_ai_script_hallucinations_enhanced_impl,
+            )
+
             # Use the container path if available from validation
             actual_path = validation_result.get("container_path", script_path)
             return await check_ai_script_hallucinations_enhanced_impl(
                 database_client=database_client,
                 neo4j_driver=neo4j_driver,
-                script_path=actual_path
+                script_path=actual_path,
             )
-            
+
         except Exception as e:
             logger.error(f"Error in check_ai_script_hallucinations tool: {e}")
             raise MCPToolError(f"Hallucination check failed: {e!s}")
@@ -571,7 +639,7 @@ def register_tools(mcp):
         - `repos` - **START HERE!** List all repositories in the knowledge graph
         - `explore <repo_name>` - Get detailed overview of a specific repository
 
-        **Class Commands:**  
+        **Class Commands:**
         - `classes` - List all classes across all repositories (limited to 20)
         - `classes <repo_name>` - List classes in a specific repository
         - `class <class_name>` - Get detailed information about a specific class including methods and attributes
@@ -694,6 +762,7 @@ def register_tools(mcp):
 
             # Parse repository with branch support
             from knowledge_graph.repository import parse_github_repository_with_branch
+
             return await parse_github_repository_with_branch(ctx, repo_url, branch)
         except Exception as e:
             logger.error(f"Error in parse_repository_branch tool: {e}")
@@ -725,6 +794,7 @@ def register_tools(mcp):
         """
         try:
             from knowledge_graph.repository import get_repository_metadata_from_neo4j
+
             return await get_repository_metadata_from_neo4j(ctx, repo_name)
         except Exception as e:
             logger.error(f"Error in get_repository_info tool: {e}")
@@ -760,6 +830,7 @@ def register_tools(mcp):
                 raise MCPToolError(validation_result.get("error", "Invalid GitHub URL"))
 
             from knowledge_graph.repository import update_repository_in_neo4j
+
             return await update_repository_in_neo4j(ctx, repo_url)
         except Exception as e:
             logger.error(f"Error in update_parsed_repository tool: {e}")
@@ -788,69 +859,91 @@ def register_tools(mcp):
             JSON string with indexing results and statistics
         """
         import json
-        
+
         try:
             # Get the app context that was stored during lifespan
             app_ctx = get_app_context()
-            
+
             if not app_ctx:
-                return json.dumps({
-                    "success": False,
-                    "error": "Application context not available"
-                }, indent=2)
-            
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": "Application context not available",
+                    },
+                    indent=2,
+                )
+
             # Check Neo4j availability
-            if not hasattr(app_ctx, 'repo_extractor') or not app_ctx.repo_extractor:
-                return json.dumps({
-                    "success": False,
-                    "error": "Repository extractor not available. Neo4j may not be configured or USE_KNOWLEDGE_GRAPH may be false."
-                }, indent=2)
-            
+            if not hasattr(app_ctx, "repo_extractor") or not app_ctx.repo_extractor:
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": "Repository extractor not available. Neo4j may not be configured or USE_KNOWLEDGE_GRAPH may be false.",
+                    },
+                    indent=2,
+                )
+
             # Check database availability
-            if not hasattr(app_ctx, 'database_client') or not app_ctx.database_client:
-                return json.dumps({
-                    "success": False,
-                    "error": "Database client not available"
-                }, indent=2)
-            
+            if not hasattr(app_ctx, "database_client") or not app_ctx.database_client:
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": "Database client not available",
+                    },
+                    indent=2,
+                )
+
             # Clean up any existing code examples for this repository
-            logger.info(f"Cleaning up existing code examples for repository: {repo_name}")
+            logger.info(
+                f"Cleaning up existing code examples for repository: {repo_name}"
+            )
             try:
                 await app_ctx.database_client.delete_repository_code_examples(repo_name)
             except Exception as cleanup_error:
                 logger.warning(f"Error during cleanup: {cleanup_error}")
-            
+
             # Extract code examples from Neo4j
             from knowledge_graph.code_extractor import extract_repository_code
-            extraction_result = await extract_repository_code(app_ctx.repo_extractor, repo_name)
-            
+
+            extraction_result = await extract_repository_code(
+                app_ctx.repo_extractor, repo_name
+            )
+
             if not extraction_result["success"]:
                 return json.dumps(extraction_result, indent=2)
-            
+
             code_examples = extraction_result["code_examples"]
-            
+
             if not code_examples:
-                return json.dumps({
-                    "success": True,
-                    "repository_name": repo_name,
-                    "message": "No code examples found to index",
-                    "indexed_count": 0
-                }, indent=2)
-            
+                return json.dumps(
+                    {
+                        "success": True,
+                        "repository_name": repo_name,
+                        "message": "No code examples found to index",
+                        "indexed_count": 0,
+                    },
+                    indent=2,
+                )
+
             # Generate embeddings for code examples
             from utils import create_embeddings_batch
-            
+
             embedding_texts = [example["embedding_text"] for example in code_examples]
-            logger.info(f"Generating embeddings for {len(embedding_texts)} code examples")
-            
+            logger.info(
+                f"Generating embeddings for {len(embedding_texts)} code examples"
+            )
+
             embeddings = create_embeddings_batch(embedding_texts)
-            
+
             if len(embeddings) != len(code_examples):
-                return json.dumps({
-                    "success": False,
-                    "error": f"Embedding count mismatch: got {len(embeddings)}, expected {len(code_examples)}"
-                }, indent=2)
-            
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": f"Embedding count mismatch: got {len(embeddings)}, expected {len(code_examples)}",
+                    },
+                    indent=2,
+                )
+
             # Prepare data for Qdrant storage
             urls = []
             chunk_numbers = []
@@ -858,20 +951,22 @@ def register_tools(mcp):
             summaries = []
             metadatas = []
             source_ids = []
-            
+
             for i, example in enumerate(code_examples):
                 # Create a pseudo-URL for the code example
                 pseudo_url = f"neo4j://repository/{repo_name}/{example['code_type']}/{example['name']}"
                 urls.append(pseudo_url)
                 chunk_numbers.append(i)
                 code_texts.append(example["code_text"])
-                summaries.append(f"{example['code_type'].title()}: {example['full_name']}")
+                summaries.append(
+                    f"{example['code_type'].title()}: {example['full_name']}"
+                )
                 metadatas.append(example["metadata"])
                 source_ids.append(repo_name)
-            
+
             # Store in Qdrant
             logger.info(f"Storing {len(code_examples)} code examples in Qdrant")
-            
+
             await app_ctx.database_client.add_code_examples(
                 urls=urls,
                 chunk_numbers=chunk_numbers,
@@ -881,36 +976,47 @@ def register_tools(mcp):
                 embeddings=embeddings,
                 source_ids=source_ids,
             )
-            
+
             # Update source information
             await app_ctx.database_client.update_source_info(
                 source_id=repo_name,
                 summary=f"Code repository with {extraction_result['extraction_summary']['classes']} classes, "
-                       f"{extraction_result['extraction_summary']['methods']} methods, "
-                       f"{extraction_result['extraction_summary']['functions']} functions",
-                word_count=sum(len(example["code_text"].split()) for example in code_examples)
+                f"{extraction_result['extraction_summary']['methods']} methods, "
+                f"{extraction_result['extraction_summary']['functions']} functions",
+                word_count=sum(
+                    len(example["code_text"].split()) for example in code_examples
+                ),
             )
-            
-            return json.dumps({
-                "success": True,
-                "repository_name": repo_name,
-                "indexed_count": len(code_examples),
-                "extraction_summary": extraction_result["extraction_summary"],
-                "storage_summary": {
-                    "embeddings_generated": len(embeddings),
-                    "examples_stored": len(code_examples),
-                    "total_code_words": sum(len(example["code_text"].split()) for example in code_examples),
+
+            return json.dumps(
+                {
+                    "success": True,
+                    "repository_name": repo_name,
+                    "indexed_count": len(code_examples),
+                    "extraction_summary": extraction_result["extraction_summary"],
+                    "storage_summary": {
+                        "embeddings_generated": len(embeddings),
+                        "examples_stored": len(code_examples),
+                        "total_code_words": sum(
+                            len(example["code_text"].split())
+                            for example in code_examples
+                        ),
+                    },
+                    "message": f"Successfully indexed {len(code_examples)} code examples from {repo_name}",
                 },
-                "message": f"Successfully indexed {len(code_examples)} code examples from {repo_name}"
-            }, indent=2)
-            
+                indent=2,
+            )
+
         except Exception as e:
             logger.error(f"Error in extract_and_index_repository_code tool: {e}")
-            return json.dumps({
-                "success": False,
-                "repository_name": repo_name,
-                "error": str(e)
-            }, indent=2)
+            return json.dumps(
+                {
+                    "success": False,
+                    "repository_name": repo_name,
+                    "error": str(e),
+                },
+                indent=2,
+            )
 
     @mcp.tool()
     @track_request("smart_code_search")
@@ -928,7 +1034,7 @@ def register_tools(mcp):
 
         This tool provides high-confidence code search results by:
         - Performing semantic search in Qdrant for relevant code examples
-        - Validating each result against Neo4j knowledge graph structure  
+        - Validating each result against Neo4j knowledge graph structure
         - Adding confidence scores and validation metadata
         - Providing intelligent fallback when one system is unavailable
         - Options to control validation for speed vs accuracy trade-offs
@@ -945,27 +1051,36 @@ def register_tools(mcp):
             JSON string with validated search results, confidence scores, and metadata
         """
         import json
-        
+
         try:
             # Get the app context
             app_ctx = get_app_context()
-            
-            if not app_ctx or not hasattr(app_ctx, 'database_client') or not app_ctx.database_client:
-                return json.dumps({
-                    "success": False,
-                    "error": "Database client not available"
-                }, indent=2)
-            
+
+            if (
+                not app_ctx
+                or not hasattr(app_ctx, "database_client")
+                or not app_ctx.database_client
+            ):
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": "Database client not available",
+                    },
+                    indent=2,
+                )
+
             # Initialize validated search service
             from services.validated_search import ValidatedCodeSearchService
-            
+
             neo4j_driver = None
-            if hasattr(app_ctx, 'repo_extractor') and app_ctx.repo_extractor:
+            if hasattr(app_ctx, "repo_extractor") and app_ctx.repo_extractor:
                 # Extract Neo4j driver if available
-                neo4j_driver = getattr(app_ctx.repo_extractor, 'driver', None)
-            
-            validated_search = ValidatedCodeSearchService(app_ctx.database_client, neo4j_driver)
-            
+                neo4j_driver = getattr(app_ctx.repo_extractor, "driver", None)
+
+            validated_search = ValidatedCodeSearchService(
+                app_ctx.database_client, neo4j_driver
+            )
+
             # Configure validation based on mode
             parallel_validation = True
             if validation_mode == "fast":
@@ -973,9 +1088,11 @@ def register_tools(mcp):
                 min_confidence = max(min_confidence, 0.4)  # Lower threshold for speed
             elif validation_mode == "thorough":
                 parallel_validation = False  # Sequential for thoroughness
-                min_confidence = max(min_confidence, 0.7)  # Higher threshold for accuracy
+                min_confidence = max(
+                    min_confidence, 0.7
+                )  # Higher threshold for accuracy
             # balanced mode uses defaults
-            
+
             # Perform validated search
             result = await validated_search.search_and_validate_code(
                 query=query,
@@ -983,18 +1100,21 @@ def register_tools(mcp):
                 source_filter=source_filter,
                 min_confidence=min_confidence,
                 include_suggestions=include_suggestions,
-                parallel_validation=parallel_validation
+                parallel_validation=parallel_validation,
             )
-            
+
             return json.dumps(result, indent=2)
-            
+
         except Exception as e:
             logger.error(f"Error in smart_code_search tool: {e}")
-            return json.dumps({
-                "success": False,
-                "query": query,
-                "error": str(e)
-            }, indent=2)
+            return json.dumps(
+                {
+                    "success": False,
+                    "query": query,
+                    "error": str(e),
+                },
+                indent=2,
+            )
 
     @mcp.tool()
     @track_request("check_ai_script_hallucinations_enhanced")
@@ -1032,40 +1152,52 @@ def register_tools(mcp):
         try:
             # Validate script path
             validation_result = validate_script_path(script_path)
-            if isinstance(validation_result, dict) and not validation_result.get("valid", False):
-                return json.dumps({
-                    "success": False,
-                    "error": validation_result.get("error", "Script validation failed")
-                }, indent=2)
+            if isinstance(validation_result, dict) and not validation_result.get(
+                "valid", False
+            ):
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": validation_result.get(
+                            "error", "Script validation failed"
+                        ),
+                    },
+                    indent=2,
+                )
 
             # Get the app context
             app_ctx = get_app_context()
-            
+
             if not app_ctx:
-                return json.dumps({
-                    "success": False,
-                    "error": "Application context not available"
-                }, indent=2)
-            
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": "Application context not available",
+                    },
+                    indent=2,
+                )
+
             # Get database client (required)
-            database_client = getattr(app_ctx, 'database_client', None)
-            
+            database_client = getattr(app_ctx, "database_client", None)
+
             # Get Neo4j driver (optional)
             neo4j_driver = None
-            if hasattr(app_ctx, 'repo_extractor') and app_ctx.repo_extractor:
-                neo4j_driver = getattr(app_ctx.repo_extractor, 'driver', None)
-            
+            if hasattr(app_ctx, "repo_extractor") and app_ctx.repo_extractor:
+                neo4j_driver = getattr(app_ctx.repo_extractor, "driver", None)
+
             # Use enhanced hallucination detection
-            from knowledge_graph.enhanced_validation import check_ai_script_hallucinations_enhanced as check_ai_script_hallucinations_enhanced_impl
-            
+            from knowledge_graph.enhanced_validation import (
+                check_ai_script_hallucinations_enhanced as check_ai_script_hallucinations_enhanced_impl,
+            )
+
             # Use the container path if available from validation
             actual_path = validation_result.get("container_path", script_path)
             return await check_ai_script_hallucinations_enhanced_impl(
                 database_client=database_client,
                 neo4j_driver=neo4j_driver,
-                script_path=actual_path
+                script_path=actual_path,
             )
-            
+
         except Exception as e:
             logger.error(f"Error in enhanced hallucination detection tool: {e}")
             raise MCPToolError(f"Enhanced hallucination check failed: {e!s}")
@@ -1075,57 +1207,57 @@ def register_tools(mcp):
     async def get_script_analysis_info(ctx: Context) -> str:
         """
         Get information about script analysis setup and paths.
-        
+
         This helper tool provides information about:
         - Available script directories
         - How to use the hallucination detection tools
         - Path mapping between host and container
-        
+
         Returns:
             JSON string with setup information and usage examples
         """
         import os
-        
+
         info = {
             "accessible_paths": {
                 "user_scripts": "./analysis_scripts/user_scripts/",
                 "test_scripts": "./analysis_scripts/test_scripts/",
                 "validation_results": "./analysis_scripts/validation_results/",
-                "temp_scripts": "/tmp/ (maps to /app/tmp_scripts/ in container)"
+                "temp_scripts": "/tmp/ (maps to /app/tmp_scripts/ in container)",
             },
             "usage_examples": [
                 {
                     "description": "Analyze a script in user_scripts directory",
                     "host_path": "./analysis_scripts/user_scripts/my_script.py",
-                    "tool_call": "check_ai_script_hallucinations(script_path='analysis_scripts/user_scripts/my_script.py')"
+                    "tool_call": "check_ai_script_hallucinations(script_path='analysis_scripts/user_scripts/my_script.py')",
                 },
                 {
                     "description": "Analyze a script from /tmp",
                     "host_path": "/tmp/test.py",
-                    "tool_call": "check_ai_script_hallucinations(script_path='/tmp/test.py')"
+                    "tool_call": "check_ai_script_hallucinations(script_path='/tmp/test.py')",
                 },
                 {
                     "description": "Analyze with just filename (defaults to user_scripts)",
                     "host_path": "./analysis_scripts/user_scripts/script.py",
-                    "tool_call": "check_ai_script_hallucinations(script_path='script.py')"
-                }
+                    "tool_call": "check_ai_script_hallucinations(script_path='script.py')",
+                },
             ],
             "instructions": [
                 "1. Place your Python scripts in ./analysis_scripts/user_scripts/ on your host machine",
                 "2. Call the hallucination detection tools with the relative path",
                 "3. Results will be saved to ./analysis_scripts/validation_results/",
-                "4. The path translation is automatic - you can use convenient paths"
+                "4. The path translation is automatic - you can use convenient paths",
             ],
             "container_mappings": {
                 "./analysis_scripts/": "/app/analysis_scripts/",
-                "/tmp/": "/app/tmp_scripts/"
+                "/tmp/": "/app/tmp_scripts/",
             },
             "available_tools": [
                 "check_ai_script_hallucinations - Basic hallucination detection",
-                "check_ai_script_hallucinations_enhanced - Enhanced detection with code suggestions"
-            ]
+                "check_ai_script_hallucinations_enhanced - Enhanced detection with code suggestions",
+            ],
         }
-        
+
         # Check which directories actually exist
         for key, path in info["accessible_paths"].items():
             if "(" not in path:  # Skip paths with descriptions
@@ -1134,6 +1266,5 @@ def register_tools(mcp):
                     info["accessible_paths"][key] += " ✓ (exists)"
                 else:
                     info["accessible_paths"][key] += " ✗ (not found)"
-        
-        return json.dumps(info, indent=2)
 
+        return json.dumps(info, indent=2)

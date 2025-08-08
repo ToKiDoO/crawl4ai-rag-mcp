@@ -92,7 +92,10 @@ class DocumentFactory:
 
     @classmethod
     def create_with_similarity(
-        cls, base_document: TestDocument, similarity: float = 0.8, count: int = 5,
+        cls,
+        base_document: TestDocument,
+        similarity: float = 0.8,
+        count: int = 5,
     ) -> list[TestDocument]:
         """Create documents similar to a base document."""
         similar_docs = []

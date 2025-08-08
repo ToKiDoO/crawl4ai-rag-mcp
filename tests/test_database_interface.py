@@ -3,7 +3,6 @@ Test suite for VectorDatabase interface contract.
 Both Supabase and Qdrant adapters must pass these tests.
 """
 
-
 import pytest
 
 
@@ -48,7 +47,10 @@ class TestVectorDatabaseInterface:
     @pytest.mark.asyncio
     @pytest.mark.parametrize("adapter_name", ["supabase", "qdrant"])
     async def test_add_and_search_documents(
-        self, adapter_name, get_adapter, sample_documents,
+        self,
+        adapter_name,
+        get_adapter,
+        sample_documents,
     ):
         """Test document addition and searching"""
         adapter = await get_adapter(adapter_name)
@@ -70,7 +72,8 @@ class TestVectorDatabaseInterface:
         # Search for documents
         query_embedding = [0.15] * 1536
         results = await adapter.search_documents(
-            query_embedding=query_embedding, match_count=10,
+            query_embedding=query_embedding,
+            match_count=10,
         )
 
         # Verify results
@@ -91,7 +94,10 @@ class TestVectorDatabaseInterface:
     @pytest.mark.asyncio
     @pytest.mark.parametrize("adapter_name", ["supabase", "qdrant"])
     async def test_search_with_filters(
-        self, adapter_name, get_adapter, sample_documents,
+        self,
+        adapter_name,
+        get_adapter,
+        sample_documents,
     ):
         """Test searching with metadata filters"""
         adapter = await get_adapter(adapter_name)
@@ -142,7 +148,9 @@ class TestVectorDatabaseInterface:
 
         # Search with source filter
         results = await adapter.search_documents(
-            query_embedding=[0.65] * 1536, match_count=10, source_filter="source1.com",
+            query_embedding=[0.65] * 1536,
+            match_count=10,
+            source_filter="source1.com",
         )
 
         # Should only return results from source1
@@ -168,7 +176,8 @@ class TestVectorDatabaseInterface:
 
         # Verify it exists
         results = await adapter.search_documents(
-            query_embedding=[0.8] * 1536, match_count=10,
+            query_embedding=[0.8] * 1536,
+            match_count=10,
         )
         assert any(r["url"] == url for r in results)
 
@@ -177,14 +186,18 @@ class TestVectorDatabaseInterface:
 
         # Verify it's gone
         results = await adapter.search_documents(
-            query_embedding=[0.8] * 1536, match_count=10,
+            query_embedding=[0.8] * 1536,
+            match_count=10,
         )
         assert not any(r["url"] == url for r in results)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("adapter_name", ["supabase", "qdrant"])
     async def test_code_examples_operations(
-        self, adapter_name, get_adapter, sample_code_examples,
+        self,
+        adapter_name,
+        get_adapter,
+        sample_code_examples,
     ):
         """Test code example operations"""
         adapter = await get_adapter(adapter_name)
@@ -206,7 +219,8 @@ class TestVectorDatabaseInterface:
 
         # Search code examples
         results = await adapter.search_code_examples(
-            query_embedding=[0.3] * 1536, match_count=10,
+            query_embedding=[0.3] * 1536,
+            match_count=10,
         )
 
         # Verify results
@@ -230,7 +244,9 @@ class TestVectorDatabaseInterface:
 
         # Update/create source
         await adapter.update_source_info(
-            source_id=source_id, summary="A test source for unit tests", word_count=1000,
+            source_id=source_id,
+            summary="A test source for unit tests",
+            word_count=1000,
         )
 
         # Get all sources
@@ -270,7 +286,8 @@ class TestVectorDatabaseInterface:
 
         # Search should return results
         results = await adapter.search_documents(
-            query_embedding=[0.25] * 1536, match_count=20,
+            query_embedding=[0.25] * 1536,
+            match_count=20,
         )
 
         assert len(results) > 0

@@ -118,7 +118,6 @@ def setup_environment():
         os.environ[key] = value
 
 
-
 @pytest.fixture
 def mock_external_dependencies():
     """Mock external dependencies for chat/RAG tests"""
@@ -143,7 +142,9 @@ class TestPerformRagQueryTool:
 
     @pytest.mark.asyncio
     async def test_rag_query_basic_functionality(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test basic RAG query functionality"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -164,14 +165,18 @@ class TestPerformRagQueryTool:
 
     @pytest.mark.asyncio
     async def test_rag_query_with_source_filter(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test RAG query with source filtering"""
         rag_fn = get_tool_function("perform_rag_query")
 
         # Execute RAG query with source filter
         result = await rag_fn(
-            mock_context, "How to use decorators?", source="python-guide.com",
+            mock_context,
+            "How to use decorators?",
+            source="python-guide.com",
         )
 
         # Parse and validate result
@@ -185,7 +190,9 @@ class TestPerformRagQueryTool:
 
     @pytest.mark.asyncio
     async def test_rag_query_with_match_count(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test RAG query with custom match count"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -203,7 +210,9 @@ class TestPerformRagQueryTool:
 
     @pytest.mark.asyncio
     async def test_rag_query_empty_results(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test RAG query with no matching results"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -222,7 +231,9 @@ class TestPerformRagQueryTool:
 
     @pytest.mark.asyncio
     async def test_rag_query_database_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test RAG query with database errors"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -242,7 +253,9 @@ class TestPerformRagQueryTool:
 
     @pytest.mark.asyncio
     async def test_rag_query_various_query_types(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test RAG query with different types of queries"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -270,7 +283,9 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_basic(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test basic code examples search functionality"""
         search_fn = get_tool_function("search_code_examples")
@@ -295,14 +310,18 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_with_source_filter(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test code examples search with source filtering"""
         search_fn = get_tool_function("search_code_examples")
 
         # Execute code search with source filter
         result = await search_fn(
-            mock_context, "async function", source_id="python-guide.com",
+            mock_context,
+            "async function",
+            source_id="python-guide.com",
         )
 
         # Parse and validate result
@@ -315,7 +334,9 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_match_count(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test code examples search with custom match count"""
         search_fn = get_tool_function("search_code_examples")
@@ -330,7 +351,9 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_empty_results(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test code examples search with no results"""
         search_fn = get_tool_function("search_code_examples")
@@ -349,7 +372,9 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_language_specific(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test searching for language-specific code examples"""
         search_fn = get_tool_function("search_code_examples")
@@ -372,7 +397,9 @@ class TestSearchCodeExamplesTool:
 
     @pytest.mark.asyncio
     async def test_search_code_examples_database_error(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test code examples search with database errors"""
         search_fn = get_tool_function("search_code_examples")
@@ -396,7 +423,9 @@ class TestChatToolsIntegration:
 
     @pytest.mark.asyncio
     async def test_rag_query_and_code_search_workflow(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test combining RAG query with code search"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -404,7 +433,8 @@ class TestChatToolsIntegration:
 
         # First, perform RAG query
         rag_result = await rag_fn(
-            mock_context, "How to implement async functions in Python?",
+            mock_context,
+            "How to implement async functions in Python?",
         )
         rag_data = json.loads(rag_result)
         assert rag_data["success"] is True
@@ -420,7 +450,9 @@ class TestChatToolsIntegration:
 
     @pytest.mark.asyncio
     async def test_chat_context_management(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test context management across multiple queries"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -447,7 +479,9 @@ class TestChatToolsIntegration:
 
     @pytest.mark.asyncio
     async def test_chat_tools_performance(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test performance of chat tools under various loads"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -484,7 +518,9 @@ class TestChatToolsIntegration:
 
     @pytest.mark.asyncio
     async def test_concurrent_chat_requests(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test handling multiple concurrent chat requests"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -525,7 +561,9 @@ class TestChatToolsErrorHandling:
 
     @pytest.mark.asyncio
     async def test_rag_query_invalid_inputs(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test RAG query with invalid inputs"""
         rag_fn = get_tool_function("perform_rag_query")
@@ -551,7 +589,9 @@ class TestChatToolsErrorHandling:
 
     @pytest.mark.asyncio
     async def test_code_search_invalid_inputs(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test code search with invalid inputs"""
         search_fn = get_tool_function("search_code_examples")
@@ -577,7 +617,9 @@ class TestChatToolsErrorHandling:
 
     @pytest.mark.asyncio
     async def test_chat_tools_memory_management(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test memory management with large queries and results"""
         rag_fn = get_tool_function("perform_rag_query")

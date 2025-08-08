@@ -145,7 +145,8 @@ class TestDatabaseFactoryCaseInsensitivity:
     """Test database factory handles case variations correctly"""
 
     @pytest.mark.parametrize(
-        "db_type", ["SUPABASE", "Supabase", "sUpAbAsE", "SUPABASE"],
+        "db_type",
+        ["SUPABASE", "Supabase", "sUpAbAsE", "SUPABASE"],
     )
     @patch("database.supabase_adapter.create_client")
     def test_supabase_case_insensitive(self, mock_create_client, db_type):
@@ -238,7 +239,9 @@ class TestDatabaseFactoryInitialization:
 
         # Act
         with patch.object(
-            SupabaseAdapter, "initialize", new_callable=AsyncMock,
+            SupabaseAdapter,
+            "initialize",
+            new_callable=AsyncMock,
         ) as mock_init:
             db = await create_and_initialize_database()
 
@@ -252,7 +255,9 @@ class TestDatabaseFactoryInitialization:
         """Test create and initialize for Qdrant adapter"""
         # Act
         with patch.object(
-            QdrantAdapter, "initialize", new_callable=AsyncMock,
+            QdrantAdapter,
+            "initialize",
+            new_callable=AsyncMock,
         ) as mock_init:
             db = await create_and_initialize_database()
 
@@ -264,7 +269,8 @@ class TestDatabaseFactoryInitialization:
     @patch.dict(os.environ, {"VECTOR_DATABASE": "supabase"})
     @patch("database.supabase_adapter.create_client")
     async def test_create_and_initialize_calls_initialize_exactly_once(
-        self, mock_create_client,
+        self,
+        mock_create_client,
     ):
         """Test that initialize is called exactly once"""
         # Arrange
@@ -273,7 +279,9 @@ class TestDatabaseFactoryInitialization:
 
         # Act
         with patch.object(
-            SupabaseAdapter, "initialize", new_callable=AsyncMock,
+            SupabaseAdapter,
+            "initialize",
+            new_callable=AsyncMock,
         ) as mock_init:
             db = await create_and_initialize_database()
 
@@ -293,7 +301,8 @@ class TestDatabaseFactoryInitialization:
     @patch.dict(os.environ, {"VECTOR_DATABASE": "supabase"})
     @patch("database.supabase_adapter.create_client")
     async def test_create_and_initialize_propagates_initialization_errors(
-        self, mock_create_client,
+        self,
+        mock_create_client,
     ):
         """Test that initialization errors are propagated"""
         # Arrange
@@ -302,7 +311,9 @@ class TestDatabaseFactoryInitialization:
 
         # Act & Assert
         with patch.object(
-            SupabaseAdapter, "initialize", new_callable=AsyncMock,
+            SupabaseAdapter,
+            "initialize",
+            new_callable=AsyncMock,
         ) as mock_init:
             mock_init.side_effect = RuntimeError("Initialization failed")
 
@@ -323,7 +334,8 @@ class TestDatabaseFactoryEnvironmentHandling:
         # Test Supabase second - should create different instance
         with patch.dict(os.environ, {"VECTOR_DATABASE": "supabase"}):
             with patch(
-                "database.supabase_adapter.create_client", return_value=MagicMock(),
+                "database.supabase_adapter.create_client",
+                return_value=MagicMock(),
             ):
                 db2 = create_database_client()
                 assert isinstance(db2, SupabaseAdapter)
@@ -421,7 +433,8 @@ class TestDatabaseFactoryIntegration:
         # Test Supabase adapter (would have different attributes)
         with patch.dict(os.environ, {"VECTOR_DATABASE": "supabase"}):
             with patch(
-                "database.supabase_adapter.create_client", return_value=MagicMock(),
+                "database.supabase_adapter.create_client",
+                return_value=MagicMock(),
             ):
                 supabase_db = create_database_client()
                 # Supabase adapter would have its own specific attributes

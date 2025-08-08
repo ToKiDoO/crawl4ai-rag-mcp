@@ -34,7 +34,9 @@ class TestEdgeCases:
         # Cleanup would go here
 
     async def add_documents_batch(
-        self, adapter, documents: list[dict[str, Any]],
+        self,
+        adapter,
+        documents: list[dict[str, Any]],
     ) -> dict[str, Any]:
         """Helper to add documents in batch format."""
         if not documents:
@@ -116,7 +118,8 @@ class TestEdgeCases:
 
         # Search for it
         search_result = await adapter.search_documents(
-            query_embedding=doc["embedding"], match_count=1,
+            query_embedding=doc["embedding"],
+            match_count=1,
         )
         assert len(search_result) > 0
         assert special_char in search_result[0]["content"]
@@ -221,7 +224,8 @@ class TestEdgeCases:
 
             # Search for it
             search_result = await adapter.search_documents(
-                query_embedding=doc["embedding"], match_count=10,
+                query_embedding=doc["embedding"],
+                match_count=10,
             )
 
             # Verify our document is in results
@@ -306,7 +310,8 @@ class TestEdgeCases:
             # Should handle gracefully (either error or use defaults)
             try:
                 results = await adapter.search_documents(
-                    query_embedding=[0.5] * 1536, match_count=limit,
+                    query_embedding=[0.5] * 1536,
+                    match_count=limit,
                 )
                 # If it succeeds, verify reasonable behavior
                 assert isinstance(results, list)
@@ -315,7 +320,8 @@ class TestEdgeCases:
                 pass
         else:
             results = await adapter.search_documents(
-                query_embedding=[0.5] * 1536, match_count=limit if limit > 0 else 10,
+                query_embedding=[0.5] * 1536,
+                match_count=limit if limit > 0 else 10,
             )
             assert isinstance(results, list)
             if limit > 0:

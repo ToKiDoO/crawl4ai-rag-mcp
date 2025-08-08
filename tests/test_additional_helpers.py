@@ -344,7 +344,10 @@ class TestTrackRequest:
 
             result = asyncio.run(
                 complex_function(
-                    mock_ctx, test_dict, test_list, extra_param="extra_value",
+                    mock_ctx,
+                    test_dict,
+                    test_list,
+                    extra_param="extra_value",
                 ),
             )
 

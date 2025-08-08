@@ -32,11 +32,13 @@ from tests.fixtures.neo4j_fixtures import (
 
 # Mock Neo4j imports before importing our modules
 with patch.dict(
-    "sys.modules", {"neo4j": MagicMock(), "neo4j.AsyncGraphDatabase": MagicMock()},
+    "sys.modules",
+    {"neo4j": MagicMock(), "neo4j.AsyncGraphDatabase": MagicMock()},
 ):
     # Now import our modules
     sys.path.insert(
-        0, os.path.join(os.path.dirname(__file__), "..", "knowledge_graphs"),
+        0,
+        os.path.join(os.path.dirname(__file__), "..", "knowledge_graphs"),
     )
     from parse_repo_into_neo4j import DirectNeo4jExtractor, Neo4jCodeAnalyzer
 
@@ -149,7 +151,8 @@ class TestDirectNeo4jExtractor:
         # This would be part of _create_graph method
         # We'll test it indirectly through analyze_repository
         result = await mock_extractor.analyze_repository(
-            sample_repository_data["url"], sample_repository_data["files"],
+            sample_repository_data["url"],
+            sample_repository_data["files"],
         )
 
         assert result is not None
@@ -165,7 +168,8 @@ class TestDirectNeo4jExtractor:
         ]
 
         result = await mock_extractor.analyze_repository(
-            sample_repository_data["url"], sample_repository_data["files"],
+            sample_repository_data["url"],
+            sample_repository_data["files"],
         )
 
         assert result is not None
@@ -181,7 +185,8 @@ class TestDirectNeo4jExtractor:
         ]
 
         result = await mock_extractor.analyze_repository(
-            sample_repository_data["url"], sample_repository_data["files"],
+            sample_repository_data["url"],
+            sample_repository_data["files"],
         )
 
         assert result is not None
@@ -204,7 +209,8 @@ class TestDirectNeo4jExtractor:
         ]
 
         result = await mock_extractor.analyze_repository(
-            sample_repository_data["url"], sample_repository_data["files"],
+            sample_repository_data["url"],
+            sample_repository_data["files"],
         )
 
         assert result is not None
@@ -227,14 +233,17 @@ class TestDirectNeo4jExtractor:
         ]
 
         result = await mock_extractor.analyze_repository(
-            sample_repository_data["url"], sample_repository_data["files"],
+            sample_repository_data["url"],
+            sample_repository_data["files"],
         )
 
         assert result is not None
 
     @pytest.mark.asyncio
     async def test_create_import_relationships(
-        self, mock_extractor, sample_repository_data,
+        self,
+        mock_extractor,
+        sample_repository_data,
     ):
         """Test creating import relationships between files"""
         await mock_extractor.initialize()
@@ -245,7 +254,8 @@ class TestDirectNeo4jExtractor:
         ]
 
         result = await mock_extractor.analyze_repository(
-            sample_repository_data["url"], sample_repository_data["files"],
+            sample_repository_data["url"],
+            sample_repository_data["files"],
         )
 
         assert result is not None
@@ -267,7 +277,9 @@ class TestDirectNeo4jExtractor:
 
     @pytest.mark.asyncio
     async def test_search_graph_with_parameters(
-        self, mock_extractor, neo4j_query_responses,
+        self,
+        mock_extractor,
+        neo4j_query_responses,
     ):
         """Test graph search with query parameters"""
         await mock_extractor.initialize()
@@ -292,7 +304,8 @@ class TestDirectNeo4jExtractor:
 
         with pytest.raises(Exception, match="Database constraint violation"):
             await mock_extractor.analyze_repository(
-                "https://github.com/test/repo", [{"path": "test.py", "classes": []}],
+                "https://github.com/test/repo",
+                [{"path": "test.py", "classes": []}],
             )
 
 
@@ -473,7 +486,9 @@ class TestNeo4jErrorHandling:
             mock_db.driver.return_value = mock_driver
 
             extractor = DirectNeo4jExtractor(
-                "bolt://localhost:7687", "test_user", "test_password",
+                "bolt://localhost:7687",
+                "test_user",
+                "test_password",
             )
             extractor.driver = mock_driver
             extractor.analyzer = MagicMock(spec=Neo4jCodeAnalyzer)
@@ -509,7 +524,8 @@ class TestNeo4jErrorHandling:
 
         with pytest.raises(ConstraintError):
             await extractor.analyze_repository(
-                "https://github.com/test/repo", [{"path": "test.py", "classes": []}],
+                "https://github.com/test/repo",
+                [{"path": "test.py", "classes": []}],
             )
 
     @pytest.mark.asyncio
@@ -524,7 +540,8 @@ class TestNeo4jErrorHandling:
 
         with pytest.raises(Exception, match="Transaction failed"):
             await extractor.analyze_repository(
-                "https://github.com/test/repo", [{"path": "test.py", "classes": []}],
+                "https://github.com/test/repo",
+                [{"path": "test.py", "classes": []}],
             )
 
         # Second attempt succeeds
@@ -532,7 +549,8 @@ class TestNeo4jErrorHandling:
         mock_driver.session_data = [{"result": "success"}]
 
         result = await extractor.analyze_repository(
-            "https://github.com/test/repo", [{"path": "test.py", "classes": []}],
+            "https://github.com/test/repo",
+            [{"path": "test.py", "classes": []}],
         )
 
         assert result is not None
@@ -566,7 +584,9 @@ class TestNeo4jPerformance:
             mock_db.driver.return_value = mock_driver
 
             extractor = DirectNeo4jExtractor(
-                "bolt://localhost:7687", "test_user", "test_password",
+                "bolt://localhost:7687",
+                "test_user",
+                "test_password",
             )
             extractor.driver = mock_driver
             extractor.analyzer = MagicMock(spec=Neo4jCodeAnalyzer)
@@ -575,7 +595,9 @@ class TestNeo4jPerformance:
 
     @pytest.mark.asyncio
     async def test_batch_operations_performance(
-        self, performance_extractor, performance_test_data,
+        self,
+        performance_extractor,
+        performance_test_data,
     ):
         """Test that batch operations perform better than individual operations"""
         await performance_extractor.initialize()
@@ -600,7 +622,8 @@ class TestNeo4jPerformance:
         start_time = time.time()
 
         result = await performance_extractor.analyze_repository(
-            "https://github.com/test/large-repo", files_data,
+            "https://github.com/test/large-repo",
+            files_data,
         )
 
         end_time = time.time()
@@ -614,7 +637,9 @@ class TestNeo4jPerformance:
 
     @pytest.mark.asyncio
     async def test_query_optimization(
-        self, performance_extractor, performance_test_data,
+        self,
+        performance_extractor,
+        performance_test_data,
     ):
         """Test that queries are optimized for performance"""
         await performance_extractor.initialize()
@@ -641,7 +666,9 @@ class TestNeo4jPerformance:
 
     @pytest.mark.asyncio
     async def test_concurrent_access_performance(
-        self, performance_extractor, concurrent_access_scenarios,
+        self,
+        performance_extractor,
+        concurrent_access_scenarios,
     ):
         """Test performance under concurrent access"""
         await performance_extractor.initialize()
@@ -652,11 +679,13 @@ class TestNeo4jPerformance:
             """Perform a single operation"""
             if operation_type == "find_module":
                 return await performance_extractor.search_graph(
-                    "MATCH (m:Module) WHERE m.name = $name RETURN m", params,
+                    "MATCH (m:Module) WHERE m.name = $name RETURN m",
+                    params,
                 )
             if operation_type == "find_class":
                 return await performance_extractor.search_graph(
-                    "MATCH (c:Class) WHERE c.name = $name RETURN c", params,
+                    "MATCH (c:Class) WHERE c.name = $name RETURN c",
+                    params,
                 )
             return await performance_extractor.search_graph(
                 "MATCH (n) RETURN count(n)",

@@ -1,42 +1,48 @@
 """Application context and lifecycle management for the Crawl4AI MCP server."""
 
-import os
 import sys
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any, AsyncIterator, Optional
+from typing import Any, Optional
 
 from crawl4ai import AsyncWebCrawler, BrowserConfig
-from database.base import VectorDatabase
-from database.factory import create_and_initialize_database
 from fastmcp import FastMCP
 from sentence_transformers import CrossEncoder
 
 from config import get_settings
+from database.base import VectorDatabase
+from database.factory import create_and_initialize_database
+
 from .logging import logger
 
 # Get settings instance
 settings = get_settings()
 
 # Global context storage
-_app_context: Optional['Crawl4AIContext'] = None
+_app_context: Optional["Crawl4AIContext"] = None
 
-def set_app_context(context: 'Crawl4AIContext') -> None:
+
+def set_app_context(context: "Crawl4AIContext") -> None:
     """Store the application context globally."""
     global _app_context
     _app_context = context
 
-def get_app_context() -> Optional['Crawl4AIContext']:
+
+def get_app_context() -> Optional["Crawl4AIContext"]:
     """Get the stored application context."""
     return _app_context
+
 
 # These imports are conditional based on Neo4j availability
 try:
     # Add knowledge_graphs directory to path for imports
     import sys
-    sys.path.append('/app/knowledge_graphs')
+
+    sys.path.append("/app/knowledge_graphs")
     from knowledge_graph_validator import KnowledgeGraphValidator
     from parse_repo_into_neo4j import DirectNeo4jExtractor
+
     KNOWLEDGE_GRAPH_AVAILABLE = True
 except ImportError:
     KNOWLEDGE_GRAPH_AVAILABLE = False
@@ -58,15 +64,17 @@ class Crawl4AIContext:
 def format_neo4j_error(error: Exception) -> str:
     """Format Neo4j errors for user-friendly display."""
     error_str = str(error).lower()
-    
+
     if "authentication" in error_str or "unauthorized" in error_str:
         return "Authentication failed. Please check your Neo4j username and password."
-    elif "failed to establish connection" in error_str or "connection refused" in error_str:
+    if (
+        "failed to establish connection" in error_str
+        or "connection refused" in error_str
+    ):
         return "Connection failed. Please ensure Neo4j is running and accessible at the specified URI."
-    elif "unable to retrieve routing information" in error_str:
+    if "unable to retrieve routing information" in error_str:
         return "Connection failed. The Neo4j URI may be incorrect or the database may not be accessible."
-    else:
-        return f"Neo4j error: {error!s}"
+    return f"Neo4j error: {error!s}"
 
 
 @asynccontextmanager
@@ -117,37 +125,40 @@ async def crawl4ai_lifespan(server: FastMCP) -> AsyncIterator[Crawl4AIContext]:
 
                 # Initialize knowledge graph validator
                 knowledge_validator = KnowledgeGraphValidator(
-                    neo4j_uri, neo4j_user, neo4j_password,
+                    neo4j_uri,
+                    neo4j_user,
+                    neo4j_password,
                 )
                 await knowledge_validator.initialize()
                 logger.info("✓ Knowledge graph validator initialized")
 
                 # Initialize repository extractor
                 repo_extractor = DirectNeo4jExtractor(
-                    neo4j_uri, neo4j_user, neo4j_password,
+                    neo4j_uri,
+                    neo4j_user,
+                    neo4j_password,
                 )
                 await repo_extractor.initialize()
                 logger.info("✓ Repository extractor initialized")
 
             except Exception as e:
                 logger.error(
-                    f"Failed to initialize Neo4j components: {format_neo4j_error(e)}"
+                    f"Failed to initialize Neo4j components: {format_neo4j_error(e)}",
                 )
                 knowledge_validator = None
                 repo_extractor = None
         else:
             logger.warning(
-                "Neo4j credentials not configured - knowledge graph tools will be unavailable"
+                "Neo4j credentials not configured - knowledge graph tools will be unavailable",
             )
+    elif not knowledge_graph_enabled:
+        logger.info(
+            "Knowledge graph functionality disabled - set USE_KNOWLEDGE_GRAPH=true to enable",
+        )
     else:
-        if not knowledge_graph_enabled:
-            logger.info(
-                "Knowledge graph functionality disabled - set USE_KNOWLEDGE_GRAPH=true to enable"
-            )
-        else:
-            logger.warning(
-                "Knowledge graph dependencies not available - install neo4j dependencies"
-            )
+        logger.warning(
+            "Knowledge graph dependencies not available - install neo4j dependencies",
+        )
 
     try:
         context = Crawl4AIContext(
@@ -157,10 +168,10 @@ async def crawl4ai_lifespan(server: FastMCP) -> AsyncIterator[Crawl4AIContext]:
             knowledge_validator=knowledge_validator,
             repo_extractor=repo_extractor,
         )
-        
+
         # Store the context globally for tool access
         set_app_context(context)
-        
+
         yield context
     finally:
         # Clean up all components

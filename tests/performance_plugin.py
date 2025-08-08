@@ -68,7 +68,8 @@ class PerformanceMonitorPlugin:
         self.config = config
         self.enabled = config.getoption("--perf-monitor", default=False)
         self.output_file = config.getoption(
-            "--perf-output", default="performance_metrics.json",
+            "--perf-output",
+            default="performance_metrics.json",
         )
         self.include_system = config.getoption("--perf-system-info", default=True)
         self.cpu_interval = config.getoption("--perf-cpu-interval", default=0.1)
@@ -303,7 +304,8 @@ def pytest_configure(config):
     # Register the plugin
     if config.getoption("--perf-monitor") or config.getoption("--perf-output"):
         config.pluginmanager.register(
-            PerformanceMonitorPlugin(config), "performance_monitor",
+            PerformanceMonitorPlugin(config),
+            "performance_monitor",
         )
 
 

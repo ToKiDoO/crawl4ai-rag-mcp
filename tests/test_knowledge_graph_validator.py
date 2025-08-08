@@ -40,7 +40,8 @@ with patch.dict(
 ):
     # Now import our modules
     sys.path.insert(
-        0, os.path.join(os.path.dirname(__file__), "..", "knowledge_graphs"),
+        0,
+        os.path.join(os.path.dirname(__file__), "..", "knowledge_graphs"),
     )
     from knowledge_graph_validator import (
         ImportValidation,
@@ -79,7 +80,9 @@ class TestValidationDataClasses:
     def test_validation_result_defaults(self):
         """Test ValidationResult with default values"""
         result = ValidationResult(
-            status=ValidationStatus.VALID, confidence=1.0, message="Test message",
+            status=ValidationStatus.VALID,
+            confidence=1.0,
+            message="Test message",
         )
 
         assert result.details == {}
@@ -93,7 +96,9 @@ class TestValidationDataClasses:
         mock_import_info.imports = ["TestClass"]
 
         validation_result = ValidationResult(
-            status=ValidationStatus.VALID, confidence=0.8, message="Import validated",
+            status=ValidationStatus.VALID,
+            confidence=0.8,
+            message="Import validated",
         )
 
         import_validation = ImportValidation(
@@ -239,7 +244,9 @@ class TestKnowledgeGraphValidator:
 
     @pytest.mark.asyncio
     async def test_validate_imports_invalid(
-        self, mock_validator, neo4j_query_responses,
+        self,
+        mock_validator,
+        neo4j_query_responses,
     ):
         """Test validation of invalid imports"""
         await mock_validator.initialize()
@@ -259,7 +266,9 @@ class TestKnowledgeGraphValidator:
 
     @pytest.mark.asyncio
     async def test_validate_class_instantiation_valid(
-        self, mock_validator, neo4j_query_responses,
+        self,
+        mock_validator,
+        neo4j_query_responses,
     ):
         """Test validation of valid class instantiation"""
         await mock_validator.initialize()
@@ -287,7 +296,9 @@ class TestKnowledgeGraphValidator:
 
     @pytest.mark.asyncio
     async def test_validate_method_call_valid(
-        self, mock_validator, neo4j_query_responses,
+        self,
+        mock_validator,
+        neo4j_query_responses,
     ):
         """Test validation of valid method calls"""
         await mock_validator.initialize()
@@ -314,7 +325,9 @@ class TestKnowledgeGraphValidator:
 
     @pytest.mark.asyncio
     async def test_validate_method_call_invalid(
-        self, mock_validator, neo4j_query_responses,
+        self,
+        mock_validator,
+        neo4j_query_responses,
     ):
         """Test validation of invalid method calls"""
         await mock_validator.initialize()
@@ -337,7 +350,9 @@ class TestKnowledgeGraphValidator:
 
     @pytest.mark.asyncio
     async def test_validate_attribute_access_valid(
-        self, mock_validator, neo4j_query_responses,
+        self,
+        mock_validator,
+        neo4j_query_responses,
     ):
         """Test validation of valid attribute access"""
         await mock_validator.initialize()
@@ -361,7 +376,9 @@ class TestKnowledgeGraphValidator:
 
     @pytest.mark.asyncio
     async def test_validate_function_call_valid(
-        self, mock_validator, neo4j_query_responses,
+        self,
+        mock_validator,
+        neo4j_query_responses,
     ):
         """Test validation of valid function calls"""
         await mock_validator.initialize()
@@ -396,7 +413,9 @@ class TestKnowledgeGraphValidator:
         provided_kwargs = {}
 
         result = mock_validator._validate_parameters(
-            expected_params, provided_args, provided_kwargs,
+            expected_params,
+            provided_args,
+            provided_kwargs,
         )
 
         assert result.status == ValidationStatus.VALID
@@ -413,7 +432,9 @@ class TestKnowledgeGraphValidator:
         provided_kwargs = {}
 
         result = mock_validator._validate_parameters(
-            expected_params, provided_args, provided_kwargs,
+            expected_params,
+            provided_args,
+            provided_kwargs,
         )
 
         assert result.status == ValidationStatus.UNCERTAIN
@@ -430,7 +451,9 @@ class TestKnowledgeGraphValidator:
         provided_kwargs = {}
 
         result = mock_validator._validate_parameters(
-            expected_params, provided_args, provided_kwargs,
+            expected_params,
+            provided_args,
+            provided_kwargs,
         )
 
         assert result.status == ValidationStatus.UNCERTAIN
@@ -447,7 +470,9 @@ class TestKnowledgeGraphValidator:
         provided_kwargs = {"param2": 42}
 
         result = mock_validator._validate_parameters(
-            expected_params, provided_args, provided_kwargs,
+            expected_params,
+            provided_args,
+            provided_kwargs,
         )
 
         assert result.status == ValidationStatus.VALID
@@ -529,7 +554,9 @@ class TestValidationCaching:
 
     @pytest.mark.asyncio
     async def test_cache_miss_triggers_query(
-        self, cached_validator, neo4j_query_responses,
+        self,
+        cached_validator,
+        neo4j_query_responses,
     ):
         """Test that cache miss triggers database query"""
         await cached_validator.initialize()
@@ -626,7 +653,11 @@ class TestConfidenceScoring:
         ]
 
         confidence = scoring_validator._calculate_overall_confidence(
-            import_validations, class_validations, method_validations, [], [],
+            import_validations,
+            class_validations,
+            method_validations,
+            [],
+            [],
         )
 
         # Should be moderate confidence due to mixed results
@@ -647,7 +678,11 @@ class TestConfidenceScoring:
         ]
 
         confidence = scoring_validator._calculate_overall_confidence(
-            import_validations, [], method_validations, [], [],
+            import_validations,
+            [],
+            method_validations,
+            [],
+            [],
         )
 
         # Should be low confidence since all validations are invalid

@@ -120,7 +120,8 @@ class TestNetworkErrorHandling:
     async def test_dns_resolution_failure(self, mock_ctx):
         """Test handling of DNS resolution failures"""
         dns_error = aiohttp.ClientConnectorError(
-            "Cannot connect to host nonexistent-domain.com:443 ssl:default", None,
+            "Cannot connect to host nonexistent-domain.com:443 ssl:default",
+            None,
         )
         mock_ctx.request_context.lifespan_context.crawler.arun.side_effect = dns_error
 
@@ -146,11 +147,17 @@ class TestNetworkErrorHandling:
         ],
     )
     async def test_http_status_code_handling(
-        self, mock_ctx, status_code, expected_type,
+        self,
+        mock_ctx,
+        status_code,
+        expected_type,
     ):
         """Test handling of various HTTP status codes"""
         http_error = aiohttp.ClientResponseError(
-            None, None, status=status_code, message=f"HTTP {status_code}",
+            None,
+            None,
+            status=status_code,
+            message=f"HTTP {status_code}",
         )
         mock_ctx.request_context.lifespan_context.crawler.arun.side_effect = http_error
 
@@ -295,7 +302,9 @@ class TestNetworkErrorHandling:
 
         scrape_func = scrape_urls.fn if hasattr(scrape_urls, "fn") else scrape_urls
         result = await scrape_func(
-            mock_ctx, ["https://site1.com"] * 50, max_concurrent=100,
+            mock_ctx,
+            ["https://site1.com"] * 50,
+            max_concurrent=100,
         )
 
         result_data = json.loads(result)
@@ -362,7 +371,8 @@ class TestNetworkErrorHandling:
     async def test_ssl_certificate_errors(self, mock_ctx):
         """Test handling of SSL certificate errors"""
         ssl_error = aiohttp.ClientConnectorCertificateError(
-            "SSL: CERTIFICATE_VERIFY_FAILED", None,
+            "SSL: CERTIFICATE_VERIFY_FAILED",
+            None,
         )
         mock_ctx.request_context.lifespan_context.crawler.arun.side_effect = ssl_error
 

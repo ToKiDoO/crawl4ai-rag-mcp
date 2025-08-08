@@ -18,7 +18,10 @@ class TestLifespan:
     @patch("src.crawl4ai_mcp.create_and_initialize_database")
     @patch("src.crawl4ai_mcp.CrossEncoder")
     async def test_crawl4ai_lifespan_basic(
-        self, mock_cross_encoder, mock_create_db, mock_crawler_class,
+        self,
+        mock_cross_encoder,
+        mock_create_db,
+        mock_crawler_class,
     ):
         """Test basic lifespan initialization."""
         from fastmcp import FastMCP
@@ -52,7 +55,10 @@ class TestLifespan:
     @patch("src.crawl4ai_mcp.create_and_initialize_database")
     @patch("src.crawl4ai_mcp.CrossEncoder")
     async def test_crawl4ai_lifespan_with_reranking(
-        self, mock_cross_encoder, mock_create_db, mock_crawler_class,
+        self,
+        mock_cross_encoder,
+        mock_create_db,
+        mock_crawler_class,
     ):
         """Test lifespan with reranking enabled."""
         from fastmcp import FastMCP
@@ -128,7 +134,9 @@ class TestLifespan:
     @patch("src.crawl4ai_mcp.AsyncWebCrawler")
     @patch("src.crawl4ai_mcp.create_and_initialize_database")
     async def test_crawl4ai_lifespan_knowledge_graph_failure(
-        self, mock_create_db, mock_crawler_class,
+        self,
+        mock_create_db,
+        mock_crawler_class,
     ):
         """Test lifespan when knowledge graph initialization fails."""
         from fastmcp import FastMCP

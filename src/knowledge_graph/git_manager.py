@@ -6,14 +6,10 @@ cloning, updating, branch/tag management, and history analysis.
 """
 
 import asyncio
-import json
 import logging
 import os
 import shutil
-import subprocess
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +25,8 @@ class GitRepositoryManager:
         self,
         url: str,
         target_dir: str,
-        branch: Optional[str] = None,
-        depth: Optional[int] = None,
+        branch: str | None = None,
+        depth: int | None = None,
         single_branch: bool = False,
     ) -> str:
         """
@@ -78,7 +74,7 @@ class GitRepositoryManager:
         except Exception as e:
             raise RuntimeError(f"Failed to clone repository: {e}")
 
-    async def update_repository(self, repo_dir: str, branch: Optional[str] = None) -> Dict:
+    async def update_repository(self, repo_dir: str, branch: str | None = None) -> dict:
         """
         Update an existing repository (pull latest changes).
 
@@ -119,7 +115,7 @@ class GitRepositoryManager:
             "updated": old_commit != new_commit,
         }
 
-    async def get_branches(self, repo_dir: str) -> List[Dict[str, str]]:
+    async def get_branches(self, repo_dir: str) -> list[dict[str, str]]:
         """
         Get all branches in the repository.
 
@@ -129,7 +125,12 @@ class GitRepositoryManager:
         Returns:
             List of branch information
         """
-        cmd = ["git", "branch", "-a", "--format=%(refname:short)|%(committerdate:iso)|%(subject)"]
+        cmd = [
+            "git",
+            "branch",
+            "-a",
+            "--format=%(refname:short)|%(committerdate:iso)|%(subject)",
+        ]
         result = await self._run_git_command(cmd, cwd=repo_dir)
 
         branches = []
@@ -137,15 +138,17 @@ class GitRepositoryManager:
             if line:
                 parts = line.split("|", 2)
                 if len(parts) >= 3:
-                    branches.append({
-                        "name": parts[0].replace("origin/", ""),
-                        "last_commit_date": parts[1],
-                        "last_commit_message": parts[2],
-                    })
+                    branches.append(
+                        {
+                            "name": parts[0].replace("origin/", ""),
+                            "last_commit_date": parts[1],
+                            "last_commit_message": parts[2],
+                        }
+                    )
 
         return branches
 
-    async def get_tags(self, repo_dir: str) -> List[Dict[str, str]]:
+    async def get_tags(self, repo_dir: str) -> list[dict[str, str]]:
         """
         Get all tags in the repository.
 
@@ -155,7 +158,12 @@ class GitRepositoryManager:
         Returns:
             List of tag information
         """
-        cmd = ["git", "tag", "-l", "--format=%(refname:short)|%(creatordate:iso)|%(subject)"]
+        cmd = [
+            "git",
+            "tag",
+            "-l",
+            "--format=%(refname:short)|%(creatordate:iso)|%(subject)",
+        ]
         result = await self._run_git_command(cmd, cwd=repo_dir)
 
         tags = []
@@ -163,17 +171,22 @@ class GitRepositoryManager:
             if line:
                 parts = line.split("|", 2)
                 if len(parts) >= 2:
-                    tags.append({
-                        "name": parts[0],
-                        "date": parts[1] if len(parts) > 1 else "",
-                        "message": parts[2] if len(parts) > 2 else "",
-                    })
+                    tags.append(
+                        {
+                            "name": parts[0],
+                            "date": parts[1] if len(parts) > 1 else "",
+                            "message": parts[2] if len(parts) > 2 else "",
+                        }
+                    )
 
         return tags
 
     async def get_commits(
-        self, repo_dir: str, limit: int = 100, branch: Optional[str] = None
-    ) -> List[Dict]:
+        self,
+        repo_dir: str,
+        limit: int = 100,
+        branch: str | None = None,
+    ) -> list[dict]:
         """
         Get commit history.
 
@@ -203,20 +216,25 @@ class GitRepositoryManager:
             if line:
                 parts = line.split("|", 4)
                 if len(parts) >= 5:
-                    commits.append({
-                        "hash": parts[0],
-                        "author_name": parts[1],
-                        "author_email": parts[2],
-                        "timestamp": int(parts[3]),
-                        "date": datetime.fromtimestamp(int(parts[3])).isoformat(),
-                        "message": parts[4],
-                    })
+                    commits.append(
+                        {
+                            "hash": parts[0],
+                            "author_name": parts[1],
+                            "author_email": parts[2],
+                            "timestamp": int(parts[3]),
+                            "date": datetime.fromtimestamp(int(parts[3])).isoformat(),
+                            "message": parts[4],
+                        }
+                    )
 
         return commits
 
     async def get_file_history(
-        self, repo_dir: str, file_path: str, limit: int = 50
-    ) -> List[Dict]:
+        self,
+        repo_dir: str,
+        file_path: str,
+        limit: int = 50,
+    ) -> list[dict]:
         """
         Get commit history for a specific file.
 
@@ -245,13 +263,15 @@ class GitRepositoryManager:
             if line:
                 parts = line.split("|", 3)
                 if len(parts) >= 4:
-                    history.append({
-                        "hash": parts[0],
-                        "author": parts[1],
-                        "timestamp": int(parts[2]),
-                        "date": datetime.fromtimestamp(int(parts[2])).isoformat(),
-                        "message": parts[3],
-                    })
+                    history.append(
+                        {
+                            "hash": parts[0],
+                            "author": parts[1],
+                            "timestamp": int(parts[2]),
+                            "date": datetime.fromtimestamp(int(parts[2])).isoformat(),
+                            "message": parts[3],
+                        }
+                    )
 
         return history
 
@@ -281,7 +301,7 @@ class GitRepositoryManager:
         result = await self._run_git_command(cmd, cwd=repo_dir)
         return result.strip()
 
-    async def get_repository_info(self, repo_dir: str) -> Dict:
+    async def get_repository_info(self, repo_dir: str) -> dict:
         """
         Get comprehensive repository information.
 
@@ -296,14 +316,18 @@ class GitRepositoryManager:
         # Get remote URL
         try:
             cmd = ["git", "config", "--get", "remote.origin.url"]
-            info["remote_url"] = (await self._run_git_command(cmd, cwd=repo_dir)).strip()
+            info["remote_url"] = (
+                await self._run_git_command(cmd, cwd=repo_dir)
+            ).strip()
         except:
             info["remote_url"] = None
 
         # Get current branch
         try:
             cmd = ["git", "rev-parse", "--abbrev-ref", "HEAD"]
-            info["current_branch"] = (await self._run_git_command(cmd, cwd=repo_dir)).strip()
+            info["current_branch"] = (
+                await self._run_git_command(cmd, cwd=repo_dir)
+            ).strip()
         except:
             info["current_branch"] = None
 
@@ -337,7 +361,9 @@ class GitRepositoryManager:
         # Get contributor count
         try:
             cmd = ["git", "log", "--format=%an"]
-            authors = (await self._run_git_command(cmd, cwd=repo_dir)).strip().split("\n")
+            authors = (
+                (await self._run_git_command(cmd, cwd=repo_dir)).strip().split("\n")
+            )
             info["contributor_count"] = len(set([a for a in authors if a]))
         except:
             info["contributor_count"] = 0
@@ -362,8 +388,11 @@ class GitRepositoryManager:
             return False
 
     async def get_changed_files(
-        self, repo_dir: str, from_commit: str, to_commit: str = "HEAD"
-    ) -> List[Dict]:
+        self,
+        repo_dir: str,
+        from_commit: str,
+        to_commit: str = "HEAD",
+    ) -> list[dict]:
         """
         Get files changed between two commits.
 
@@ -390,15 +419,19 @@ class GitRepositoryManager:
                         "R": "renamed",
                         "C": "copied",
                     }
-                    changed_files.append({
-                        "status": status_map.get(parts[0][0], "unknown"),
-                        "file": parts[1],
-                    })
+                    changed_files.append(
+                        {
+                            "status": status_map.get(parts[0][0], "unknown"),
+                            "file": parts[1],
+                        }
+                    )
 
         return changed_files
 
     async def _run_git_command(
-        self, cmd: List[str], cwd: Optional[str] = None
+        self,
+        cmd: list[str],
+        cwd: str | None = None,
     ) -> str:
         """
         Run a git command asynchronously.
@@ -438,6 +471,7 @@ class GitRepositoryManager:
         Args:
             path: Directory path to remove
         """
+
         def handle_remove_readonly(func, path, exc):
             try:
                 if os.path.exists(path):
@@ -448,7 +482,8 @@ class GitRepositoryManager:
 
         try:
             await asyncio.get_event_loop().run_in_executor(
-                None, lambda: shutil.rmtree(path, onerror=handle_remove_readonly)
+                None,
+                lambda: shutil.rmtree(path, onerror=handle_remove_readonly),
             )
         except Exception as e:
             self.logger.warning(f"Could not fully remove {path}: {e}")

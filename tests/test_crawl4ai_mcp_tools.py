@@ -14,8 +14,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import necessary components
 from fastmcp import Context
-from src.tools import register_tools
-from src.main import create_mcp_server
 
 
 class TestMCPTools:
@@ -86,7 +84,8 @@ class TestMCPTools:
 
                 # Mock database operations
                 with patch(
-                    "src.crawl4ai_mcp.store_crawled_page", new_callable=AsyncMock,
+                    "src.crawl4ai_mcp.store_crawled_page",
+                    new_callable=AsyncMock,
                 ) as mock_store:
                     mock_store.return_value = None
 
@@ -174,7 +173,10 @@ class TestMCPTools:
                 mock_context.request_context.lifespan_context.crawler.arun.return_value = mock_crawl_result
 
                 result = await search(
-                    mock_context, "test query", return_raw_markdown=True, num_results=1,
+                    mock_context,
+                    "test query",
+                    return_raw_markdown=True,
+                    num_results=1,
                 )
                 result_data = json.loads(result)
 
@@ -210,7 +212,9 @@ class TestMCPTools:
 
         # Test single URL scraping
         result = await scrape_urls(
-            mock_context, "https://example.com", return_raw_markdown=True,
+            mock_context,
+            "https://example.com",
+            return_raw_markdown=True,
         )
         result_data = json.loads(result)
 
@@ -328,7 +332,8 @@ class TestMCPTools:
 
         # Mock database operations
         with patch(
-            "src.crawl4ai_mcp.store_crawled_page", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.store_crawled_page",
+            new_callable=AsyncMock,
         ) as mock_store:
             mock_store.return_value = None
 
@@ -373,7 +378,8 @@ class TestMCPTools:
 
         # Mock database operations
         with patch(
-            "src.crawl4ai_mcp.store_crawled_page", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.store_crawled_page",
+            new_callable=AsyncMock,
         ) as mock_store:
             mock_store.return_value = None
 
@@ -431,7 +437,8 @@ class TestMCPTools:
         ]
 
         with patch(
-            "src.crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.return_value = mock_search_results
 
@@ -468,12 +475,16 @@ class TestMCPTools:
         ]
 
         with patch(
-            "src.crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.return_value = mock_search_results
 
             result = await perform_rag_query(
-                mock_context, "test query", source="specific-source.com", match_count=1,
+                mock_context,
+                "test query",
+                source="specific-source.com",
+                match_count=1,
             )
             result_data = json.loads(result)
 
@@ -508,10 +519,12 @@ class TestMCPTools:
             ]
 
             with patch(
-                "src.crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+                "src.crawl4ai_mcp.search_documents",
+                new_callable=AsyncMock,
             ) as mock_search:
                 with patch(
-                    "src.crawl4ai_mcp.keyword_search_documents", new_callable=AsyncMock,
+                    "src.crawl4ai_mcp.keyword_search_documents",
+                    new_callable=AsyncMock,
                 ) as mock_keyword:
                     mock_search.return_value = mock_search_results
                     mock_keyword.return_value = mock_search_results
@@ -536,7 +549,8 @@ class TestMCPTools:
         mock_context.request_context.lifespan_context.database_client = AsyncMock()
 
         with patch(
-            "src.crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.return_value = []  # No results
 
@@ -559,7 +573,8 @@ class TestMCPTools:
         mock_context.request_context.lifespan_context.database_client = AsyncMock()
 
         with patch(
-            "src.crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.side_effect = Exception("Database error")
 
@@ -606,7 +621,9 @@ class TestMCPTools:
             )
 
             result = await search_code_examples(
-                mock_context, "python function", match_count=1,
+                mock_context,
+                "python function",
+                match_count=1,
             )
             result_data = json.loads(result)
 
@@ -640,7 +657,8 @@ class TestMCPTools:
 
         # Mock database operations
         with patch(
-            "src.crawl4ai_mcp.store_crawled_page", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.store_crawled_page",
+            new_callable=AsyncMock,
         ) as mock_store:
             mock_store.return_value = None
 
@@ -689,7 +707,8 @@ class TestMCPTools:
 
             # Mock database operations
             with patch(
-                "src.crawl4ai_mcp.store_crawled_page", new_callable=AsyncMock,
+                "src.crawl4ai_mcp.store_crawled_page",
+                new_callable=AsyncMock,
             ) as mock_store:
                 mock_store.return_value = None
 
@@ -734,7 +753,8 @@ class TestMCPTools:
         mock_crawler.arun.return_value = mock_result
 
         with patch(
-            "src.crawl4ai_mcp.store_crawled_page", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.store_crawled_page",
+            new_callable=AsyncMock,
         ) as mock_store:
             mock_store.return_value = None
 
@@ -778,10 +798,12 @@ class TestMCPTools:
 
         # Mock RAG query results
         with patch(
-            "src.crawl4ai_mcp.store_crawled_page", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.store_crawled_page",
+            new_callable=AsyncMock,
         ) as mock_store:
             with patch(
-                "src.crawl4ai_mcp.search_documents", new_callable=AsyncMock,
+                "src.crawl4ai_mcp.search_documents",
+                new_callable=AsyncMock,
             ) as mock_search:
                 mock_store.return_value = None
                 mock_search.return_value = [
@@ -856,7 +878,8 @@ class TestMCPTools:
 
             # Mock graph verification
             with patch(
-                "src.crawl4ai_mcp.verify_with_knowledge_graph", new_callable=AsyncMock,
+                "src.crawl4ai_mcp.verify_with_knowledge_graph",
+                new_callable=AsyncMock,
             ) as mock_verify:
                 mock_verify.return_value = {
                     "verification_results": [
@@ -873,7 +896,8 @@ class TestMCPTools:
 
                 with patch("builtins.open", mock_open(read_data=test_script_content)):
                     result = await check_ai_script_hallucinations(
-                        mock_context, "/path/to/script.py",
+                        mock_context,
+                        "/path/to/script.py",
                     )
                     result_data = json.loads(result)
 
@@ -891,7 +915,8 @@ class TestMCPTools:
         # Mock environment without knowledge graph enabled
         with patch.dict(os.environ, {"ENABLE_KNOWLEDGE_GRAPH": "false"}):
             result = await check_ai_script_hallucinations(
-                mock_context, "/path/to/script.py",
+                mock_context,
+                "/path/to/script.py",
             )
             result_data = json.loads(result)
 
@@ -910,10 +935,12 @@ class TestMCPTools:
         ):
             # Mock file not found
             with patch(
-                "builtins.open", side_effect=FileNotFoundError("File not found"),
+                "builtins.open",
+                side_effect=FileNotFoundError("File not found"),
             ):
                 result = await check_ai_script_hallucinations(
-                    mock_context, "/nonexistent/script.py",
+                    mock_context,
+                    "/nonexistent/script.py",
                 )
                 result_data = json.loads(result)
 
@@ -990,7 +1017,8 @@ class TestMCPTools:
         with patch.dict(os.environ, {"USE_AGENTIC_RAG": "true"}):
             # Mock search results
             with patch(
-                "src.crawl4ai_mcp.search_code_examples_db", new_callable=AsyncMock,
+                "src.crawl4ai_mcp.search_code_examples_db",
+                new_callable=AsyncMock,
             ) as mock_search:
                 mock_search.return_value = [
                     {
@@ -1005,7 +1033,9 @@ class TestMCPTools:
                 ]
 
                 result = await search_code_examples(
-                    mock_context, "python function", match_count=1,
+                    mock_context,
+                    "python function",
+                    match_count=1,
                 )
                 result_data = json.loads(result)
 

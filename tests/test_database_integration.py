@@ -107,7 +107,9 @@ def process_data(data):
 
     @pytest.mark.asyncio
     async def test_add_documents_to_database_success(
-        self, sample_crawl_data, mock_openai_embeddings,
+        self,
+        sample_crawl_data,
+        mock_openai_embeddings,
     ):
         """Test successful document addition as used in crawl4ai_mcp.py"""
         mock_adapter = AsyncMock()
@@ -188,19 +190,26 @@ def process_data(data):
         # Test search_documents function
         query_embedding = [0.1] * 1536
         results = await utils.search_documents(
-            mock_adapter, query_embedding, match_count=5,
+            mock_adapter,
+            query_embedding,
+            match_count=5,
         )
 
         # Verify search was called correctly
         mock_adapter.search_documents.assert_called_once_with(
-            query_embedding, match_count=5, filter_metadata=None, source_filter=None,
+            query_embedding,
+            match_count=5,
+            filter_metadata=None,
+            source_filter=None,
         )
 
         assert results == mock_results
 
     @pytest.mark.asyncio
     async def test_code_examples_integration(
-        self, sample_code_examples, mock_openai_embeddings,
+        self,
+        sample_code_examples,
+        mock_openai_embeddings,
     ):
         """Test code example operations as used in crawl4ai_mcp.py"""
         mock_adapter = AsyncMock()
@@ -249,7 +258,12 @@ def process_data(data):
 
         # Should not raise exception due to retry logic
         await utils.add_documents_to_database(
-            mock_adapter, urls, chunk_numbers, contents, metadatas, url_to_full_document,
+            mock_adapter,
+            urls,
+            chunk_numbers,
+            contents,
+            metadatas,
+            url_to_full_document,
         )
 
         # Verify add_documents was called multiple times (retry)
@@ -291,11 +305,15 @@ def process_data(data):
 
         # Test update_source_info as used in crawl4ai_mcp.py
         await mock_adapter.update_source_info(
-            "example.com", "A test website with documentation", 1500,
+            "example.com",
+            "A test website with documentation",
+            1500,
         )
 
         mock_adapter.update_source_info.assert_called_once_with(
-            "example.com", "A test website with documentation", 1500,
+            "example.com",
+            "A test website with documentation",
+            1500,
         )
 
     @pytest.mark.asyncio
@@ -313,11 +331,14 @@ def process_data(data):
         # Test hybrid search pattern
         query_embedding = [0.1] * 1536
         vector_results_actual = await utils.search_documents(
-            mock_adapter, query_embedding, match_count=5,
+            mock_adapter,
+            query_embedding,
+            match_count=5,
         )
 
         keyword_results_actual = await mock_adapter.search_documents_by_keyword(
-            "test query", match_count=5,
+            "test query",
+            match_count=5,
         )
 
         # Verify both search types were called

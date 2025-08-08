@@ -6,7 +6,7 @@ Handles source tracking, metadata, and statistics.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -15,11 +15,11 @@ async def update_source_summary(
     database_client: Any,
     source_id: str,
     total_chunks: int,
-    last_crawled: Optional[datetime] = None,
+    last_crawled: datetime | None = None,
 ) -> None:
     """
     Update or create a source summary in the database.
-    
+
     Args:
         database_client: The database client instance
         source_id: The source identifier (usually domain name)
@@ -29,7 +29,7 @@ async def update_source_summary(
     try:
         if last_crawled is None:
             last_crawled = datetime.utcnow()
-        
+
         await database_client.update_source(
             source_id=source_id,
             total_chunks=total_chunks,
@@ -44,14 +44,14 @@ async def update_source_summary(
 async def get_source_statistics(
     database_client: Any,
     source_id: str,
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     """
     Get statistics for a specific source.
-    
+
     Args:
         database_client: The database client instance
         source_id: The source identifier
-    
+
     Returns:
         Dictionary with source statistics or None if not found
     """
@@ -66,13 +66,13 @@ async def get_source_statistics(
         raise
 
 
-async def list_all_sources(database_client: Any) -> List[Dict[str, Any]]:
+async def list_all_sources(database_client: Any) -> list[dict[str, Any]]:
     """
     List all sources in the database with their metadata.
-    
+
     Args:
         database_client: The database client instance
-    
+
     Returns:
         List of source dictionaries
     """

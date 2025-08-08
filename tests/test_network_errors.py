@@ -49,7 +49,9 @@ class TestNetworkErrors:
                 if "fail" in url:
                     raise aiohttp.ClientError("Failed to connect")
                 return MagicMock(
-                    success=True, html="<html>Success</html>", markdown="Success",
+                    success=True,
+                    html="<html>Success</html>",
+                    markdown="Success",
                 )
 
             mock_instance.arun = mock_arun

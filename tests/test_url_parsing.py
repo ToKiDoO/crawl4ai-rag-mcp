@@ -13,17 +13,19 @@ which only supports string parameters.
 Related outcomes: See mcp_tools_test_results.md for test results showing successful JSON array parsing
 """
 
-import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+import sys
 
-from crawl4ai_mcp import _parse_url_input, MCPToolError
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+
+from crawl4ai_mcp import MCPToolError, _parse_url_input
+
 
 def test_url_parsing():
     """Test the _parse_url_input function with various inputs."""
-    
+
     print("Testing _parse_url_input function...")
-    
+
     # Test 1: Single URL string
     try:
         result = _parse_url_input("https://example.com")
@@ -31,7 +33,7 @@ def test_url_parsing():
         assert result == ["https://example.com"]
     except Exception as e:
         print(f"❌ Single URL failed: {e}")
-    
+
     # Test 2: JSON array string
     try:
         result = _parse_url_input('["https://example.com", "https://test.com"]')
@@ -39,7 +41,7 @@ def test_url_parsing():
         assert result == ["https://example.com", "https://test.com"]
     except Exception as e:
         print(f"❌ JSON array failed: {e}")
-    
+
     # Test 3: Python list
     try:
         result = _parse_url_input(["https://example.com", "https://test.com"])
@@ -47,21 +49,21 @@ def test_url_parsing():
         assert result == ["https://example.com", "https://test.com"]
     except Exception as e:
         print(f"❌ Python list failed: {e}")
-    
+
     # Test 4: Invalid scheme
     try:
         result = _parse_url_input("ftp://example.com")
         print(f"❌ Invalid scheme should have failed: {result}")
     except MCPToolError as e:
         print(f"✅ Invalid scheme correctly rejected: {e}")
-    
+
     # Test 5: Empty input
     try:
         result = _parse_url_input("")
         print(f"❌ Empty input should have failed: {result}")
     except MCPToolError as e:
         print(f"✅ Empty input correctly rejected: {e}")
-    
+
     # Test 6: Too many URLs
     try:
         large_list = ["https://example.com"] * 101
@@ -69,15 +71,16 @@ def test_url_parsing():
         print(f"❌ Too many URLs should have failed: got {len(result)} URLs")
     except MCPToolError as e:
         print(f"✅ Too many URLs correctly rejected: {e}")
-    
+
     # Test 7: Malformed JSON
     try:
         result = _parse_url_input('["https://example.com"')  # Missing closing bracket
         print(f"❌ Malformed JSON should have failed: {result}")
     except MCPToolError as e:
         print(f"✅ Malformed JSON correctly rejected: {e}")
-    
+
     print("\nAll tests completed!")
+
 
 if __name__ == "__main__":
     test_url_parsing()

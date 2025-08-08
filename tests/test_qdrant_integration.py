@@ -76,7 +76,10 @@ class TestQdrantIntegration:
 
         # Store the document
         await store_crawled_page(
-            client, test_doc["url"], test_doc["content"], test_doc["metadata"],
+            client,
+            test_doc["url"],
+            test_doc["content"],
+            test_doc["metadata"],
         )
 
         # Allow time for indexing
@@ -84,7 +87,10 @@ class TestQdrantIntegration:
 
         # 2. Search for content
         results = await search_crawled_pages(
-            client, "Python programming web crawling", source="example.com", limit=5,
+            client,
+            "Python programming web crawling",
+            source="example.com",
+            limit=5,
         )
 
         # Verify results
@@ -95,7 +101,9 @@ class TestQdrantIntegration:
 
         # 3. Test source filtering
         results_filtered = await search_crawled_pages(
-            client, "Python programming", source="nonexistent.com",
+            client,
+            "Python programming",
+            source="nonexistent.com",
         )
         assert len(results_filtered) == 0
 
@@ -165,7 +173,10 @@ class TestQdrantIntegration:
 
         # Test batch retrieval by metadata
         topic_results = await search_crawled_pages(
-            client, "topic 5", source="batchtest.com", limit=20,
+            client,
+            "topic 5",
+            source="batchtest.com",
+            limit=20,
         )
         assert len(topic_results) > 0
 
@@ -196,7 +207,10 @@ class TestQdrantIntegration:
         # Store test documents
         for doc in test_docs:
             await store_crawled_page(
-                client, doc["url"], doc["content"], doc["metadata"],
+                client,
+                doc["url"],
+                doc["content"],
+                doc["metadata"],
             )
 
         await asyncio.sleep(1)
@@ -206,7 +220,9 @@ class TestQdrantIntegration:
         os.environ["USE_RERANKING"] = "false"
 
         results = await search_crawled_pages(
-            client, "Python async programming", limit=5,
+            client,
+            "Python async programming",
+            limit=5,
         )
         assert len(results) > 0
         standard_score = results[0]["similarity_score"]
@@ -214,14 +230,18 @@ class TestQdrantIntegration:
         # Test with hybrid search
         os.environ["USE_HYBRID_SEARCH"] = "true"
         results_hybrid = await search_crawled_pages(
-            client, "Python async programming", limit=5,
+            client,
+            "Python async programming",
+            limit=5,
         )
         assert len(results_hybrid) > 0
 
         # Test with reranking (mock since we need cross-encoder)
         os.environ["USE_RERANKING"] = "true"
         results_reranked = await search_crawled_pages(
-            client, "Python async programming", limit=5,
+            client,
+            "Python async programming",
+            limit=5,
         )
         assert len(results_reranked) > 0
 
@@ -312,13 +332,18 @@ def scrape_page(url):
         # Test very long content (should chunk properly)
         long_content = "Test content. " * 1000  # ~13k chars
         await store_crawled_page(
-            client, "https://longtest.com/doc", long_content, {"source": "longtest.com"},
+            client,
+            "https://longtest.com/doc",
+            long_content,
+            {"source": "longtest.com"},
         )
 
         # Verify it was stored and chunked
         await asyncio.sleep(1)
         results = await search_crawled_pages(
-            client, "Test content", source="longtest.com",
+            client,
+            "Test content",
+            source="longtest.com",
         )
         assert len(results) > 0
 
@@ -342,7 +367,9 @@ def scrape_page(url):
             """Simulate concurrent reads"""
             for i in range(5):
                 await search_crawled_pages(
-                    client, f"Worker {worker_id}", source="concurrent.com",
+                    client,
+                    f"Worker {worker_id}",
+                    source="concurrent.com",
                 )
                 await asyncio.sleep(0.1)
 
@@ -366,7 +393,10 @@ def scrape_page(url):
         # Verify data integrity
         await asyncio.sleep(1)
         all_results = await search_crawled_pages(
-            client, "Worker document", source="concurrent.com", limit=50,
+            client,
+            "Worker document",
+            source="concurrent.com",
+            limit=50,
         )
         assert len(all_results) >= 20  # At least 20 documents stored
 

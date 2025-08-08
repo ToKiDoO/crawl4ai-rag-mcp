@@ -7,9 +7,8 @@ import json
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from mcp.server.fastmcp import FastMCP
-
 from crawl4ai_mcp import Crawl4AIContext, mcp
+from mcp.server.fastmcp import FastMCP
 
 
 class MockMCPContext:

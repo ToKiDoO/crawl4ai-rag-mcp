@@ -190,7 +190,10 @@ class TestCrawlingFunctions:
         ]
 
         results = await crawl_recursive_internal_links(
-            mock_crawler, ["https://example.com"], max_depth=2, max_concurrent=2,
+            mock_crawler,
+            ["https://example.com"],
+            max_depth=2,
+            max_concurrent=2,
         )
 
         # Should have crawled 4 pages total
@@ -270,7 +273,11 @@ class TestCrawlingFunctions:
         # Test processing multiple URLs
         urls = ["https://example.com/1", "https://example.com/2"]
         results = await _process_multiple_urls(
-            ctx, urls, max_concurrent=2, batch_size=10, return_raw_markdown=False,
+            ctx,
+            urls,
+            max_concurrent=2,
+            batch_size=10,
+            return_raw_markdown=False,
         )
 
         assert results["total_urls"] == 2

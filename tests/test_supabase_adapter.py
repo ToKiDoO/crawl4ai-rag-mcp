@@ -37,7 +37,8 @@ class TestSupabaseAdapter:
     async def supabase_adapter(self, mock_supabase_client):
         """Create Supabase adapter with mocked client"""
         with patch(
-            "database.supabase_adapter.create_client", return_value=mock_supabase_client,
+            "database.supabase_adapter.create_client",
+            return_value=mock_supabase_client,
         ):
             from database.supabase_adapter import SupabaseAdapter
 
@@ -52,7 +53,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_add_documents_with_batch_processing(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test that documents are added in batches"""
         # Create 50 documents to test batching
@@ -77,7 +80,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_search_uses_match_crawled_pages_function(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test that search uses the correct Supabase RPC function"""
         query_embedding = [0.5] * 1536
@@ -99,7 +104,8 @@ class TestSupabaseAdapter:
         )
 
         results = await supabase_adapter.search_documents(
-            query_embedding=query_embedding, match_count=10,
+            query_embedding=query_embedding,
+            match_count=10,
         )
 
         # Verify RPC was called with correct function
@@ -132,12 +138,15 @@ class TestSupabaseAdapter:
             "source_filter": source_filter,
         }
         mock_supabase_client.rpc.assert_called_with(
-            "match_crawled_pages", expected_params,
+            "match_crawled_pages",
+            expected_params,
         )
 
     @pytest.mark.asyncio
     async def test_delete_documents_batch_operation(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test batch deletion of documents"""
         urls = ["https://test1.com", "https://test2.com", "https://test3.com"]
@@ -159,7 +168,9 @@ class TestSupabaseAdapter:
         )
 
         await supabase_adapter.update_source_info(
-            source_id="test.com", summary="Test source", word_count=1000,
+            source_id="test.com",
+            summary="Test source",
+            word_count=1000,
         )
 
         # Should try update first
@@ -178,7 +189,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_code_examples_operations(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test code example specific operations"""
         # Test add code examples
@@ -203,17 +216,21 @@ class TestSupabaseAdapter:
         mock_supabase_client.rpc.return_value.execute.return_value = MagicMock(data=[])
 
         await supabase_adapter.search_code_examples(
-            query_embedding=[0.1] * 1536, match_count=5,
+            query_embedding=[0.1] * 1536,
+            match_count=5,
         )
 
         # Verify correct RPC function was called
         mock_supabase_client.rpc.assert_called_with(
-            "match_code_examples", {"query_embedding": [0.1] * 1536, "match_count": 5},
+            "match_code_examples",
+            {"query_embedding": [0.1] * 1536, "match_count": 5},
         )
 
     @pytest.mark.asyncio
     async def test_error_handling_with_retry(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test that operations retry on failure"""
         # Make insert fail first time, succeed second time
@@ -284,7 +301,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_special_characters_handling(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test handling of special characters in content"""
         special_content = (
@@ -328,7 +347,9 @@ class TestSupabaseAdapter:
 
     @pytest.mark.asyncio
     async def test_keyword_search_documents(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test keyword search functionality"""
         # Mock response
@@ -345,7 +366,8 @@ class TestSupabaseAdapter:
 
         # Test without source filter
         results = await supabase_adapter.search_documents_by_keyword(
-            keyword="Python", match_count=10,
+            keyword="Python",
+            match_count=10,
         )
 
         assert len(results) == 1
@@ -353,14 +375,18 @@ class TestSupabaseAdapter:
 
         # Test with source filter
         await supabase_adapter.search_documents_by_keyword(
-            keyword="Python", match_count=10, source_filter="test.com",
+            keyword="Python",
+            match_count=10,
+            source_filter="test.com",
         )
 
         query_mock.eq.assert_called_with("source_id", "test.com")
 
     @pytest.mark.asyncio
     async def test_connection_error_handling(
-        self, supabase_adapter, mock_supabase_client,
+        self,
+        supabase_adapter,
+        mock_supabase_client,
     ):
         """Test handling of connection errors"""
         # Simulate connection error

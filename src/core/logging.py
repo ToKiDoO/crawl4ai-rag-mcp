@@ -13,14 +13,14 @@ def configure_logging() -> logging.Logger:
         format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s",
         handlers=[logging.StreamHandler(sys.stderr)],
     )
-    
+
     logger = logging.getLogger("crawl4ai-mcp")
-    
+
     # Enable debug mode from environment
     if os.getenv("MCP_DEBUG", "").lower() in ("true", "1", "yes"):
         logger.setLevel(logging.DEBUG)
         logger.debug("Debug mode enabled")
-    
+
     return logger
 
 

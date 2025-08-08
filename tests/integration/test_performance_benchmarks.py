@@ -67,7 +67,10 @@ class TestThroughputBenchmarks:
 
     @pytest.mark.asyncio
     async def test_batch_crawl_throughput(
-        self, qdrant_client, performance_monitor, performance_thresholds,
+        self,
+        qdrant_client,
+        performance_monitor,
+        performance_thresholds,
     ):
         """Benchmark batch crawling throughput."""
 
@@ -155,7 +158,8 @@ class TestThroughputBenchmarks:
 
         # Performance analysis
         best_throughput = max(
-            results.values(), key=lambda x: x["throughput_urls_per_second"],
+            results.values(),
+            key=lambda x: x["throughput_urls_per_second"],
         )
 
         # Should achieve reasonable throughput
@@ -174,7 +178,10 @@ class TestThroughputBenchmarks:
 
     @pytest.mark.asyncio
     async def test_search_throughput(
-        self, qdrant_client, performance_monitor, performance_thresholds,
+        self,
+        qdrant_client,
+        performance_monitor,
+        performance_thresholds,
     ):
         """Benchmark search operation throughput."""
 
@@ -224,7 +231,8 @@ class TestThroughputBenchmarks:
 
             for query in search_queries * 5:  # 25 total searches
                 results = await qdrant_client.search_crawled_pages(
-                    query=query, match_count=10,
+                    query=query,
+                    match_count=10,
                 )
                 sequential_results.append(results)
 
@@ -415,7 +423,9 @@ class TestLatencyBenchmarks:
 
     @pytest.mark.asyncio
     async def test_single_operation_latencies(
-        self, qdrant_client, performance_thresholds,
+        self,
+        qdrant_client,
+        performance_thresholds,
     ):
         """Benchmark latency for individual operations."""
 
@@ -462,7 +472,8 @@ class TestLatencyBenchmarks:
                 start_time = time.time()
 
                 results = await qdrant_client.search_crawled_pages(
-                    query=f"latency test document {i}", match_count=5,
+                    query=f"latency test document {i}",
+                    match_count=5,
                 )
 
                 latency = (time.time() - start_time) * 1000
@@ -537,7 +548,8 @@ class TestLatencyBenchmarks:
 
             start_time = time.time()
             results = await cold_client.search_crawled_pages(
-                query="cold start performance", match_count=5,
+                query="cold start performance",
+                match_count=5,
             )
             second_op_time = (time.time() - start_time) * 1000
 
@@ -614,7 +626,8 @@ class TestScalabilityBenchmarks:
                     start_time = time.time()
 
                     search_results = await qdrant_client.search_crawled_pages(
-                        query=f"scaling test topic {i % 20}", match_count=10,
+                        query=f"scaling test topic {i % 20}",
+                        match_count=10,
                     )
 
                     search_time = (time.time() - start_time) * 1000

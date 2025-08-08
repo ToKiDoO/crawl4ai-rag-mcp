@@ -42,7 +42,8 @@ class TestEmbeddingFunctions:
         assert len(result) == 1536
         assert result[0] == 0.1
         mock_create.assert_called_once_with(
-            model="text-embedding-3-small", input=["test text"],
+            model="text-embedding-3-small",
+            input=["test text"],
         )
 
     @patch("utils.openai.embeddings.create")
@@ -133,7 +134,9 @@ class TestEmbeddingFunctions:
     @patch("utils.openai.embeddings.create")
     @patch("utils.time.sleep")
     def test_create_embeddings_batch_max_retries_then_fallback(
-        self, mock_sleep, mock_create,
+        self,
+        mock_sleep,
+        mock_create,
     ):
         """Test batch embedding falls back to individual after max retries"""
         # All batch attempts fail
@@ -273,7 +276,9 @@ class TestDocumentOperations:
     @patch("utils.create_embeddings_batch")
     @patch("utils.concurrent.futures.ThreadPoolExecutor")
     async def test_add_documents_contextual_processing_error(
-        self, mock_executor, mock_embeddings,
+        self,
+        mock_executor,
+        mock_embeddings,
     ):
         """Test document addition with contextual embedding processing error"""
         # Setup mock executor to simulate processing error
@@ -406,7 +411,9 @@ class TestDocumentOperations:
 
         # Test
         results = await search_documents(
-            database=mock_db, query="test query", match_count=10,
+            database=mock_db,
+            query="test query",
+            match_count=10,
         )
 
         # Verify
@@ -520,7 +527,8 @@ def hello():
         markdown4 = """```python
 ```"""
         blocks4 = extract_code_blocks(
-            markdown4, min_length=0,
+            markdown4,
+            min_length=0,
         )  # Use min_length=0 for empty code
         assert len(blocks4) == 1
         assert blocks4[0]["language"] == "python"
@@ -581,7 +589,9 @@ This is context after the code block.
 
         # Test
         summary = generate_code_example_summary(
-            code="def test(): pass", context_before="Before", context_after="After",
+            code="def test(): pass",
+            context_before="Before",
+            context_after="After",
         )
 
         assert summary == "A test function example"
@@ -661,7 +671,9 @@ class TestCodeExampleOperations:
 
         # Test
         results = await search_code_examples(
-            database=mock_db, query="test function", match_count=5,
+            database=mock_db,
+            query="test function",
+            match_count=5,
         )
 
         # Verify
@@ -688,7 +700,8 @@ class TestSourceSummary:
 
         # Test
         summary = extract_source_summary(
-            "pytest.org", "Content about pytest testing framework",
+            "pytest.org",
+            "Content about pytest testing framework",
         )
 
         assert summary == "This is a testing library"
@@ -864,7 +877,9 @@ class TestBatchProcessingAndEdgeCases:
         long_context_after = "A" * 1000  # Long context
 
         summary = generate_code_example_summary(
-            long_code, long_context_before, long_context_after,
+            long_code,
+            long_context_before,
+            long_context_after,
         )
 
         assert summary == "Summary of code"

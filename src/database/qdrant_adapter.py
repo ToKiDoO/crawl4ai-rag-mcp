@@ -290,20 +290,21 @@ class QdrantAdapter:
     ) -> list[dict[str, Any]]:
         """
         Generic search method that generates embeddings internally.
-        
+
         Args:
             query: Search query string
             match_count: Maximum number of results to return
             filter_metadata: Optional metadata filter
             source_filter: Optional source filter
-            
+
         Returns:
             List of matching documents with similarity scores
         """
         # Generate embedding for the query
         from utils import create_embedding
+
         query_embedding = create_embedding(query)
-        
+
         # Delegate to the existing search_documents method
         return await self.search_documents(
             query_embedding=query_embedding,
@@ -321,13 +322,13 @@ class QdrantAdapter:
     ) -> list[dict[str, Any]]:
         """
         Hybrid search combining vector similarity and keyword matching.
-        
+
         Args:
             query: Search query string
             match_count: Maximum number of results to return
             filter_metadata: Optional metadata filter
             source_filter: Optional source filter
-            
+
         Returns:
             List of matching documents combining vector and keyword results
         """
@@ -338,50 +339,56 @@ class QdrantAdapter:
             filter_metadata=filter_metadata,
             source_filter=source_filter,
         )
-        
+
         # Perform keyword search
         keyword_results = await self.search_documents_by_keyword(
             keyword=query,
             match_count=match_count // 2 + 1,  # Get half from keyword search
             source_filter=source_filter,
         )
-        
+
         # Combine and deduplicate results
         combined_results = {}
-        
+
         # Add vector results with their similarity scores
         for result in vector_results:
             doc_id = result.get("id", result.get("url", ""))
             if doc_id:
                 result["search_type"] = "vector"
-                result["combined_score"] = result.get("similarity", 0.0) * 0.7  # Weight vector search more
+                result["combined_score"] = (
+                    result.get("similarity", 0.0) * 0.7
+                )  # Weight vector search more
                 combined_results[doc_id] = result
-        
+
         # Add keyword results (give them a base similarity score)
         for result in keyword_results:
             doc_id = result.get("id", result.get("url", ""))
             if doc_id:
                 if doc_id in combined_results:
                     # Document found in both searches - boost the score
-                    combined_results[doc_id]["combined_score"] += 0.3  # Boost for appearing in both
+                    combined_results[doc_id]["combined_score"] += (
+                        0.3  # Boost for appearing in both
+                    )
                     combined_results[doc_id]["search_type"] = "hybrid"
                 else:
                     # Document only found in keyword search
                     result["search_type"] = "keyword"
                     result["similarity"] = 0.5  # Base similarity for keyword matches
-                    result["combined_score"] = 0.3  # Lower weight for keyword-only matches
+                    result["combined_score"] = (
+                        0.3  # Lower weight for keyword-only matches
+                    )
                     combined_results[doc_id] = result
-        
+
         # Sort by combined score and return top results
         final_results = list(combined_results.values())
         final_results.sort(key=lambda x: x.get("combined_score", 0), reverse=True)
-        
+
         # Update similarity to reflect combined score and limit results
         for result in final_results[:match_count]:
             result["similarity"] = result.get("combined_score", 0)
             # Remove the temporary combined_score field
             result.pop("combined_score", None)
-        
+
         return final_results[:match_count]
 
     async def get_documents_by_url(self, url: str) -> list[dict[str, Any]]:
@@ -551,12 +558,13 @@ class QdrantAdapter:
             # Generate embedding if query is a string
             if isinstance(query, str):
                 from utils import create_embedding
+
                 final_embedding = create_embedding(query)
             else:
                 final_embedding = query
         else:
             raise ValueError("Either 'query' or 'query_embedding' must be provided")
-            
+
         # Build filter if needed
         filter_conditions = []
 
@@ -700,12 +708,12 @@ class QdrantAdapter:
     ) -> list[dict[str, Any]]:
         """
         Get all code examples for a specific repository.
-        
+
         Args:
             repo_name: Repository name to filter by
             code_type: Optional code type filter ('class', 'method', 'function')
             match_count: Maximum number of results
-            
+
         Returns:
             List of code examples from the repository
         """
@@ -715,7 +723,7 @@ class QdrantAdapter:
                 match=MatchValue(value=repo_name),
             ),
         ]
-        
+
         if code_type:
             filter_conditions.append(
                 FieldCondition(
@@ -723,34 +731,34 @@ class QdrantAdapter:
                     match=MatchValue(value=code_type),
                 ),
             )
-        
+
         search_filter = Filter(must=filter_conditions)
-        
+
         loop = asyncio.get_event_loop()
-        
+
         def scroll_repository_code():
             return self.client.scroll(
                 collection_name=self.CODE_EXAMPLES,
                 scroll_filter=search_filter,
                 limit=match_count,
             )
-        
+
         scroll_result = await loop.run_in_executor(None, scroll_repository_code)
         points, _ = scroll_result
-        
+
         # Format results
         formatted_results = []
         for point in points:
             doc = point.payload.copy()
             doc["id"] = point.id
             formatted_results.append(doc)
-        
+
         return formatted_results
 
     async def delete_repository_code_examples(self, repo_name: str) -> None:
         """
         Delete all code examples for a specific repository.
-        
+
         Args:
             repo_name: Repository name to delete code examples for
         """
@@ -762,23 +770,23 @@ class QdrantAdapter:
                 ),
             ],
         )
-        
+
         loop = asyncio.get_event_loop()
-        
+
         def scroll_for_deletion():
             return self.client.scroll(
                 collection_name=self.CODE_EXAMPLES,
                 scroll_filter=filter_condition,
                 limit=1000,
             )
-        
+
         scroll_result = await loop.run_in_executor(None, scroll_for_deletion)
         points, _ = scroll_result
-        
+
         if points:
             # Extract point IDs
             point_ids = [point.id for point in points]
-            
+
             # Delete the points
             await loop.run_in_executor(
                 None,
@@ -796,13 +804,13 @@ class QdrantAdapter:
     ) -> list[dict[str, Any]]:
         """
         Search for code examples by method/function signature.
-        
+
         Args:
             method_name: Name of method or function to search for
             class_name: Optional class name to filter by
             repo_filter: Optional repository name to filter by
             match_count: Maximum number of results
-            
+
         Returns:
             List of matching code examples
         """
@@ -812,7 +820,7 @@ class QdrantAdapter:
                 match=MatchValue(value=method_name),
             ),
         ]
-        
+
         if class_name:
             filter_conditions.append(
                 FieldCondition(
@@ -820,7 +828,7 @@ class QdrantAdapter:
                     match=MatchValue(value=class_name),
                 ),
             )
-        
+
         if repo_filter:
             filter_conditions.append(
                 FieldCondition(
@@ -828,28 +836,28 @@ class QdrantAdapter:
                     match=MatchValue(value=repo_filter),
                 ),
             )
-        
+
         search_filter = Filter(must=filter_conditions)
-        
+
         loop = asyncio.get_event_loop()
-        
+
         def scroll_signature_search():
             return self.client.scroll(
                 collection_name=self.CODE_EXAMPLES,
                 scroll_filter=search_filter,
                 limit=match_count,
             )
-        
+
         scroll_result = await loop.run_in_executor(None, scroll_signature_search)
         points, _ = scroll_result
-        
+
         # Format results
         formatted_results = []
         for point in points:
             doc = point.payload.copy()
             doc["id"] = point.id
             formatted_results.append(doc)
-        
+
         return formatted_results
 
     async def add_source(

@@ -107,7 +107,10 @@ async def get_adapter():
                     )
                 # Call original method
                 return await original_search_supabase(
-                    query_embedding, match_count, filter_metadata, source_filter,
+                    query_embedding,
+                    match_count,
+                    filter_metadata,
+                    source_filter,
                 )
 
             adapter.search_documents = search_with_validation_supabase
@@ -254,7 +257,8 @@ async def get_adapter():
                         ] = {
                             "source_id": params.get("p_source_id", "test-source.com"),
                             "summary": params.get(
-                                "p_summary", "A test source for unit tests",
+                                "p_summary",
+                                "A test source for unit tests",
                             ),
                             "total_word_count": params.get("p_word_count", 1000),
                         }
@@ -298,7 +302,8 @@ async def get_adapter():
                 # In the delete test, this gets called with point IDs
                 # We'll just track that deletion happened
                 if collection_name == "crawled_pages" and isinstance(
-                    points_selector, list,
+                    points_selector,
+                    list,
                 ):
                     # Mark URL as deleted based on the test scenario
                     if "test-delete-1" in points_selector:
@@ -345,7 +350,10 @@ async def get_adapter():
                     )
                 # Call original method
                 return await original_search_documents(
-                    query_embedding, match_count, filter_metadata, source_filter,
+                    query_embedding,
+                    match_count,
+                    filter_metadata,
+                    source_filter,
                 )
 
             adapter.search_documents = search_with_validation
@@ -514,7 +522,8 @@ async def get_adapter():
                         # Check each condition in the filter
                         for condition in query_filter.must:
                             if hasattr(condition, "key") and hasattr(
-                                condition, "match",
+                                condition,
+                                "match",
                             ):
                                 key = condition.key
                                 expected_value = condition.match.value
@@ -636,7 +645,8 @@ def mock_openai_embeddings():
         _MOCK_CACHE["openai_embeddings"] = mock_response
 
     with patch(
-        "openai.embeddings.create", return_value=_MOCK_CACHE["openai_embeddings"],
+        "openai.embeddings.create",
+        return_value=_MOCK_CACHE["openai_embeddings"],
     ) as mock_create:
         yield mock_create
 

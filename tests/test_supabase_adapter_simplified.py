@@ -27,7 +27,8 @@ class TestSupabaseAdapterSimplified:
         from unittest.mock import patch
 
         with patch(
-            "database.supabase_adapter.create_client", return_value=fake_supabase_client,
+            "database.supabase_adapter.create_client",
+            return_value=fake_supabase_client,
         ):
             from database.supabase_adapter import SupabaseAdapter
 
@@ -62,7 +63,9 @@ class TestSupabaseAdapterSimplified:
 
     @pytest.mark.asyncio
     async def test_search_documents_simple(
-        self, supabase_adapter, fake_supabase_client,
+        self,
+        supabase_adapter,
+        fake_supabase_client,
     ):
         """Test searching documents with simple fake client"""
         # Set up RPC results
@@ -79,7 +82,8 @@ class TestSupabaseAdapterSimplified:
         ]
 
         results = await supabase_adapter.search_documents(
-            query_embedding=[0.5] * 1536, match_count=10,
+            query_embedding=[0.5] * 1536,
+            match_count=10,
         )
 
         assert len(results) == 1
@@ -88,7 +92,9 @@ class TestSupabaseAdapterSimplified:
 
     @pytest.mark.asyncio
     async def test_delete_documents_simple(
-        self, supabase_adapter, fake_supabase_client,
+        self,
+        supabase_adapter,
+        fake_supabase_client,
     ):
         """Test deleting documents with simple fake client"""
         # Pre-populate some data
@@ -116,19 +122,24 @@ class TestSupabaseAdapterSimplified:
 
         with pytest.raises(Exception):
             await supabase_adapter.search_documents(
-                query_embedding=[0.5] * 1536, match_count=10,
+                query_embedding=[0.5] * 1536,
+                match_count=10,
             )
 
     @pytest.mark.asyncio
     async def test_update_source_info_simple(
-        self, supabase_adapter, fake_supabase_client,
+        self,
+        supabase_adapter,
+        fake_supabase_client,
     ):
         """Test updating source info with simple fake client"""
         # Pre-populate source data
         fake_supabase_client.data["source_info"] = []
 
         await supabase_adapter.update_source_info(
-            source_id="test.com", total_pages=10, total_chunks=50,
+            source_id="test.com",
+            total_pages=10,
+            total_chunks=50,
         )
 
         # Since update logic might insert if not exists, check both tables
@@ -138,7 +149,9 @@ class TestSupabaseAdapterSimplified:
 
     @pytest.mark.asyncio
     async def test_get_documents_by_url_simple(
-        self, supabase_adapter, fake_supabase_client,
+        self,
+        supabase_adapter,
+        fake_supabase_client,
     ):
         """Test getting documents by URL with simple fake client"""
         # Pre-populate data
@@ -155,7 +168,9 @@ class TestSupabaseAdapterSimplified:
 
     @pytest.mark.asyncio
     async def test_batch_operations_simple(
-        self, supabase_adapter, fake_supabase_client,
+        self,
+        supabase_adapter,
+        fake_supabase_client,
     ):
         """Test batch operations with simple fake client"""
         # Create many documents to test batching

@@ -214,7 +214,10 @@ class SupabaseAdapter:
                 print(f"Error deleting code examples for {url}: {e}")
 
     async def update_source_info(
-        self, source_id: str, summary: str, word_count: int,
+        self,
+        source_id: str,
+        summary: str,
+        word_count: int,
     ) -> None:
         """Update or create source information"""
         if not self.client:
@@ -266,7 +269,10 @@ class SupabaseAdapter:
             return []
 
     async def search_documents_by_keyword(
-        self, keyword: str, match_count: int = 10, source_filter: str | None = None,
+        self,
+        keyword: str,
+        match_count: int = 10,
+        source_filter: str | None = None,
     ) -> list[dict[str, Any]]:
         """Search for documents containing a keyword"""
         if not self.client:
@@ -289,7 +295,10 @@ class SupabaseAdapter:
             return []
 
     async def search_code_examples_by_keyword(
-        self, keyword: str, match_count: int = 10, source_filter: str | None = None,
+        self,
+        keyword: str,
+        match_count: int = 10,
+        source_filter: str | None = None,
     ) -> list[dict[str, Any]]:
         """Search for code examples containing a keyword"""
         if not self.client:
@@ -343,7 +352,9 @@ class SupabaseAdapter:
                     print(f"Error deleting record for URL {url}: {inner_e}")
 
     async def _insert_with_retry(
-        self, table_name: str, batch_data: list[dict[str, Any]],
+        self,
+        table_name: str,
+        batch_data: list[dict[str, Any]],
     ) -> None:
         """Insert data with retry logic"""
         retry_delay = self.retry_delay

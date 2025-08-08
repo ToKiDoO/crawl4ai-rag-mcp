@@ -19,6 +19,7 @@ from crawl4ai_mcp import (
     parse_github_repository,
     query_knowledge_graph,
 )
+
 from tests.test_doubles import FakeCrawler
 
 
@@ -207,7 +208,8 @@ class TestKnowledgeGraphTools:
 
         # Test
         result = await parse_github_repository(
-            ctx, repo_url="https://github.com/user/test-repo",
+            ctx,
+            repo_url="https://github.com/user/test-repo",
         )
 
         # Verify
@@ -227,7 +229,8 @@ class TestKnowledgeGraphTools:
 
         # Test
         result = await parse_github_repository(
-            ctx, repo_url="https://github.com/user/test-repo",
+            ctx,
+            repo_url="https://github.com/user/test-repo",
         )
 
         # Verify
@@ -288,7 +291,9 @@ class TestErrorHandling:
         with patch("crawl4ai_mcp.search_documents", return_value=[]):
             # Test
             result = await perform_rag_query(
-                ctx, query="non-existent content", match_count=5,
+                ctx,
+                query="non-existent content",
+                match_count=5,
             )
 
         # Verify
@@ -357,7 +362,9 @@ class TestSmartCrawlUrl:
             from crawl4ai_mcp import smart_crawl_url
 
             result = await smart_crawl_url(
-                ctx, url="https://example.com/sitemap.xml", max_depth=1,
+                ctx,
+                url="https://example.com/sitemap.xml",
+                max_depth=1,
             )
 
             # Verify
@@ -393,7 +400,9 @@ class TestSmartCrawlUrl:
         from crawl4ai_mcp import smart_crawl_url
 
         result = await smart_crawl_url(
-            ctx, url="https://example.com/llms.txt", return_raw_markdown=True,
+            ctx,
+            url="https://example.com/llms.txt",
+            return_raw_markdown=True,
         )
 
         # Verify
@@ -478,7 +487,10 @@ class TestSearchIntegration:
         from crawl4ai_mcp import search
 
         result = await search(
-            ctx, query="test", return_raw_markdown=True, num_results=1,
+            ctx,
+            query="test",
+            return_raw_markdown=True,
+            num_results=1,
         )
 
         # Verify
@@ -566,7 +578,9 @@ class TestCodeExamples:
             from crawl4ai_mcp import search_code_examples
 
             result = await search_code_examples(
-                ctx, query="hello function", match_count=5,
+                ctx,
+                query="hello function",
+                match_count=5,
             )
 
             # Verify
@@ -588,7 +602,10 @@ class TestCodeExamples:
             from crawl4ai_mcp import search_code_examples
 
             result = await search_code_examples(
-                ctx, query="test", source_id="github.com", match_count=5,
+                ctx,
+                query="test",
+                source_id="github.com",
+                match_count=5,
             )
 
             # Verify
@@ -596,7 +613,9 @@ class TestCodeExamples:
             assert result_json["success"] is True
             assert result_json["source_filter"] == "github.com"
             mock_db_client.search_code_examples.assert_called_once_with(
-                query_text="test", source_id="github.com", match_count=5,
+                query_text="test",
+                source_id="github.com",
+                match_count=5,
             )
 
 

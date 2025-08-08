@@ -149,10 +149,13 @@ class TestMCPToolsComprehensive:
         )
 
         with patch(
-            "src.crawl4ai_mcp.add_documents_to_database", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.add_documents_to_database",
+            new_callable=AsyncMock,
         ):
             result = await scrape_urls(
-                mock_context, "https://example.com", return_raw_markdown=True,
+                mock_context,
+                "https://example.com",
+                return_raw_markdown=True,
             )
             result_data = json.loads(result)
 
@@ -201,7 +204,8 @@ class TestMCPToolsComprehensive:
         ]
 
         with patch(
-            "src.utils.search_documents", new_callable=AsyncMock,
+            "src.utils.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.return_value = mock_search_results
 
@@ -218,7 +222,8 @@ class TestMCPToolsComprehensive:
         from src.crawl4ai_mcp import perform_rag_query
 
         with patch(
-            "src.utils.search_documents", new_callable=AsyncMock,
+            "src.utils.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.return_value = []
 
@@ -234,7 +239,8 @@ class TestMCPToolsComprehensive:
         from src.crawl4ai_mcp import perform_rag_query
 
         with patch(
-            "src.utils.search_documents", new_callable=AsyncMock,
+            "src.utils.search_documents",
+            new_callable=AsyncMock,
         ) as mock_search:
             mock_search.side_effect = Exception("Database error")
 
@@ -286,7 +292,8 @@ class TestMCPToolsComprehensive:
         )
 
         with patch(
-            "src.crawl4ai_mcp.add_documents_to_database", new_callable=AsyncMock,
+            "src.crawl4ai_mcp.add_documents_to_database",
+            new_callable=AsyncMock,
         ):
             result = await smart_crawl_url(
                 mock_context,
@@ -332,10 +339,13 @@ class TestMCPToolsComprehensive:
             ]
 
             with patch(
-                "src.utils.search_code_examples", return_value=mock_results,
+                "src.utils.search_code_examples",
+                return_value=mock_results,
             ) as mock_search:
                 result = await search_code_examples(
-                    mock_context, "python function", match_count=1,
+                    mock_context,
+                    "python function",
+                    match_count=1,
                 )
                 result_data = json.loads(result)
 
@@ -352,7 +362,8 @@ class TestMCPToolsComprehensive:
 
         with patch.dict(os.environ, {"USE_KNOWLEDGE_GRAPH": "false"}):
             result = await check_ai_script_hallucinations(
-                mock_context, "/path/to/script.py",
+                mock_context,
+                "/path/to/script.py",
             )
             result_data = json.loads(result)
 
@@ -386,7 +397,8 @@ class TestMCPToolsComprehensive:
 
             # Mock the analyzer and reporter classes and validation function
             with patch(
-                "src.crawl4ai_mcp.validate_script_path", return_value={"valid": True},
+                "src.crawl4ai_mcp.validate_script_path",
+                return_value={"valid": True},
             ) as mock_validate:
                 with patch("src.crawl4ai_mcp.AIScriptAnalyzer") as mock_analyzer_class:
                     with patch(
@@ -422,7 +434,8 @@ class TestMCPToolsComprehensive:
                             mock_reporter_class.return_value = mock_reporter
 
                             result = await check_ai_script_hallucinations(
-                                mock_context, "/path/to/script.py",
+                                mock_context,
+                                "/path/to/script.py",
                             )
                             result_data = json.loads(result)
 

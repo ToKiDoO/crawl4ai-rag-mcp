@@ -112,7 +112,6 @@ def setup_environment():
         os.environ[key] = value
 
 
-
 @pytest.fixture
 def mock_external_dependencies():
     """Mock external dependencies for search tests"""
@@ -139,7 +138,9 @@ class TestSearchToolAdvanced:
 
     @pytest.mark.asyncio
     async def test_search_with_pagination(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search with various result limits"""
         search_fn = get_tool_function("search")
@@ -169,7 +170,9 @@ class TestSearchToolAdvanced:
             # Test different result limits
             for num_results in [1, 5, 10, 20]:
                 result = await search_fn(
-                    mock_context, "test query", num_results=num_results,
+                    mock_context,
+                    "test query",
+                    num_results=num_results,
                 )
                 result_data = json.loads(result)
 
@@ -178,7 +181,9 @@ class TestSearchToolAdvanced:
 
     @pytest.mark.asyncio
     async def test_search_with_batch_processing(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search with different batch sizes"""
         search_fn = get_tool_function("search")
@@ -204,14 +209,19 @@ class TestSearchToolAdvanced:
             # Test different batch sizes
             for batch_size in [5, 10, 20]:
                 result = await search_fn(
-                    mock_context, "test query", batch_size=batch_size, num_results=10,
+                    mock_context,
+                    "test query",
+                    batch_size=batch_size,
+                    num_results=10,
                 )
                 result_data = json.loads(result)
                 assert result_data["success"] is True
 
     @pytest.mark.asyncio
     async def test_search_concurrent_processing(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search with different concurrency levels"""
         search_fn = get_tool_function("search")
@@ -237,14 +247,18 @@ class TestSearchToolAdvanced:
             # Test different concurrency levels
             for max_concurrent in [1, 3, 5, 10]:
                 result = await search_fn(
-                    mock_context, "test query", max_concurrent=max_concurrent,
+                    mock_context,
+                    "test query",
+                    max_concurrent=max_concurrent,
                 )
                 result_data = json.loads(result)
                 assert result_data["success"] is True
 
     @pytest.mark.asyncio
     async def test_search_rag_vs_raw_modes(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search in both RAG and raw markdown modes"""
         search_fn = get_tool_function("search")
@@ -269,7 +283,8 @@ class TestSearchToolAdvanced:
 
             # Mock perform_rag_query for RAG mode
             with patch(
-                "crawl4ai_mcp.perform_rag_query", new_callable=AsyncMock,
+                "crawl4ai_mcp.perform_rag_query",
+                new_callable=AsyncMock,
             ) as mock_rag:
                 mock_rag.return_value = json.dumps(
                     {
@@ -280,14 +295,18 @@ class TestSearchToolAdvanced:
 
                 # Test RAG mode
                 result_rag = await search_fn(
-                    mock_context, "test query", return_raw_markdown=False,
+                    mock_context,
+                    "test query",
+                    return_raw_markdown=False,
                 )
                 result_rag_data = json.loads(result_rag)
                 assert result_rag_data["success"] is True
 
                 # Test raw markdown mode
                 result_raw = await search_fn(
-                    mock_context, "test query", return_raw_markdown=True,
+                    mock_context,
+                    "test query",
+                    return_raw_markdown=True,
                 )
                 result_raw_data = json.loads(result_raw)
                 assert result_raw_data["success"] is True
@@ -298,7 +317,9 @@ class TestSearchToolAdvanced:
 
     @pytest.mark.asyncio
     async def test_search_query_variations(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search with different query types and lengths"""
         search_fn = get_tool_function("search")
@@ -342,7 +363,9 @@ class TestSearchToolErrorHandling:
 
     @pytest.mark.asyncio
     async def test_search_network_errors(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search behavior with various network errors"""
         search_fn = get_tool_function("search")
@@ -367,7 +390,9 @@ class TestSearchToolErrorHandling:
 
     @pytest.mark.asyncio
     async def test_search_malformed_responses(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search behavior with malformed SearXNG responses"""
         search_fn = get_tool_function("search")
@@ -396,7 +421,9 @@ class TestSearchToolErrorHandling:
 
     @pytest.mark.asyncio
     async def test_search_scraping_failures(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search behavior when scraping fails"""
         search_fn = get_tool_function("search")
@@ -446,7 +473,9 @@ class TestSearchToolPerformance:
 
     @pytest.mark.asyncio
     async def test_search_response_time_limits(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search completes within reasonable time limits"""
         search_fn = get_tool_function("search")
@@ -497,7 +526,9 @@ class TestSearchToolPerformance:
 
     @pytest.mark.asyncio
     async def test_concurrent_search_requests(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test handling multiple concurrent search requests"""
         search_fn = get_tool_function("search")
@@ -546,7 +577,9 @@ class TestSearchToolPerformance:
 
     @pytest.mark.asyncio
     async def test_search_memory_efficiency(
-        self, mock_context, mock_external_dependencies,
+        self,
+        mock_context,
+        mock_external_dependencies,
     ):
         """Test search doesn't consume excessive memory"""
         search_fn = get_tool_function("search")
@@ -576,7 +609,9 @@ class TestSearchToolPerformance:
 
             # Execute search with larger dataset
             result = await search_fn(
-                mock_context, "memory efficiency test", num_results=20,
+                mock_context,
+                "memory efficiency test",
+                num_results=20,
             )
 
             result_data = json.loads(result)
